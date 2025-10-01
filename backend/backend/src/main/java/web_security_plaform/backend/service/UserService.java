@@ -1,5 +1,4 @@
-package gxyt.backend.service;
-
+package web_security_plaform.backend.service;
 import org.springframework.stereotype.Service;
 
 @Service

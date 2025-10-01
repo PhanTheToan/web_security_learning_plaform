@@ -37,22 +37,15 @@ public class User {
 
     @NotBlank
     @Size(max = 255)
-    private String password;
-
-    @Size(max = 255)
     private String fullName;
 
-    @Size(max = 15)
-    private String phoneNumber;
-
+    @NotBlank
     @Size(max = 255)
-    private String address;
+    private String password;
 
     @Column(columnDefinition = "TIMESTAMP")
     private LocalDateTime createdAt;
 
-    @Temporal(TemporalType.TIMESTAMP)
-    private Date updatedAt;
 
     @ManyToMany(fetch = FetchType.LAZY)
     @JoinTable(name = "user_roles",
@@ -61,9 +54,9 @@ public class User {
     @Builder.Default
     private Set<Role> roles = new HashSet<>();
 
-    @Column(name = "reset_password_token")
-    private String resetPasswordToken;
-
-    @Column(name = "reset_password_expires")
-    private LocalDateTime resetPasswordExpires;
+//    @Column(name = "reset_password_token")
+//    private String resetPasswordToken;
+//
+//    @Column(name = "reset_password_expires")
+//    private LocalDateTime resetPasswordExpires;
 }
