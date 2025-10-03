@@ -1,9 +1,14 @@
 package web_security_plaform.backend.payload.request;
 
 import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Size;
 import lombok.Data;
+import web_security_plaform.backend.model.ENum.EGender;
 
+import java.time.LocalDate;
+import java.time.LocalDateTime;
+import java.util.Date;
 import java.util.Set;
 
 @Data
@@ -22,7 +27,15 @@ public class SignupRequest {
     @Size(max = 50)
     private String fullName;
 
+    @NotNull(message = "Not null pls!!!")
+    private EGender gender;
+
+    @NotNull(message = "Date of birth cannot be null")
+    private LocalDate dateOfBirth;
+
     @NotBlank
-    @Size(max = 100)
-    private String address;
+    @Size(max = 255)
+    private String email;
+
+    private Set<Integer> roleIds;
 }

@@ -2,13 +2,16 @@ package web_security_plaform.backend.model;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Size;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
+import web_security_plaform.backend.model.ENum.EGender;
 
 
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.Date;
 import java.util.HashSet;
@@ -38,6 +41,12 @@ public class User {
     @NotBlank
     @Size(max = 255)
     private String fullName;
+
+    @NotNull(message = "Not null pls!!!")
+    private EGender gender;
+
+    @NotNull(message = "Date of birth cannot be null")
+    private LocalDate dateOfBirth;
 
     @NotBlank
     @Size(max = 255)

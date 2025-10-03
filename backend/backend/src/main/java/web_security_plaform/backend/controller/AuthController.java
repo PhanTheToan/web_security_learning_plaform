@@ -96,6 +96,9 @@ public class AuthController {
                 .username(signUpRequest.getUsername())
                 .password(encoder.encode(signUpRequest.getPassword()))
                 .fullName(signUpRequest.getFullName())
+                .dateOfBirth(signUpRequest.getDateOfBirth())
+                .gender(signUpRequest.getGender())
+                .email(signUpRequest.getEmail())
                 .build();
 
         // Assign USER role by default
