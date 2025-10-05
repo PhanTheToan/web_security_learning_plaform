@@ -50,6 +50,27 @@ public class AdminController {
         return new ResponseEntity<>(responseDTO, HttpStatus.CREATED);
 
     }
+    @PutMapping("/labs/{id}")
+    public ResponseEntity<?> updateLab(@Valid @RequestBody LabRequest labRequest, Principal principal, @PathVariable int id) {
+        User author = userService.findByUsername(principal.getName());
+        if (author == null) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Author not found.");
+        }
+
+        Lab newLabEntity = labService.updateLabs(labRequest, author, id);
+        LabResponseDTO responseDTO = mapToLabResponseDTO(newLabEntity);
+
+        return new ResponseEntity<>(responseDTO, HttpStatus.CREATED);
+
+    }
+    @GetMapping("/labs/{id}")
+    public ResponseEntity<LabDetailDto> getLabById(@PathVariable int id) {
+        LabDetailDto labDetail = labService.getLabDetailById(id);
+        if (labDetail == null) {
+            return ResponseEntity.notFound().build();
+        }
+        return ResponseEntity.ok(labDetail);
+    }
     private LabResponseDTO mapToLabResponseDTO(Lab lab) {
         LabResponseDTO dto = new LabResponseDTO();
         dto.setId(lab.getId());

@@ -3,7 +3,6 @@ package web_security_plaform.backend.payload.dto;
 import lombok.Data;
 import web_security_plaform.backend.model.ENum.EDifficulty;
 import web_security_plaform.backend.model.ENum.EStatus;
-import web_security_plaform.backend.model.User;
 
 import java.util.List;
 import java.util.Set;
@@ -17,4 +16,11 @@ public class LabDetailDto {
     private EStatus status;
     private String authorName;
     private Set<TagDTO> tags;
+    private String description;
+    private String hint;
+    private String solution;
+    private String fixVulnerabilities;
+    private Integer timeoutMinutes;
+    private List<CommunitySolutionsDTO> communitySolutionDTOS;
+
 }
