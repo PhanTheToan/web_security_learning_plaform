@@ -8,10 +8,10 @@ export function HeroSection() {
         <div className="grid md:grid-cols-2 gap-12 items-center">
           <div>
             <h1 className="text-[#ffffff] text-4xl md:text-5xl lg:text-6xl font-bold leading-tight mb-6">
-              Proactive Protection for Reactive Times
+              HACK TO LEARN
             </h1>
             <p className="text-[#ffffff]/70 text-lg mb-8 leading-relaxed">
-              Stay ahead of cyber threats with our comprehensive security solutions designed for modern businesses.
+              Hack to understand, destroy to build — At LockByte, we turn the complex into simple, turn theory into practice and with a team of experts with 20 years of information security experience, are ready to turn your passion into a career.
             </p>
             <div className="flex flex-wrap gap-4">
               <Button className="relative bg-gradient-to-r from-[#9747ff] via-[#5a5bed] to-[#821db6] hover:from-[#821db6] hover:via-[#9747ff] hover:to-[#5a5bed] text-[#ffffff] px-6 py-6 text-base rounded-full transition-all duration-500 shadow-[0_0_30px_rgba(151,71,255,0.4)] hover:shadow-[0_0_40px_rgba(151,71,255,0.6)] hover:scale-105">
