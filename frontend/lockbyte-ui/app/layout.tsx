@@ -17,9 +17,9 @@ const jetbrainsMono = JetBrains_Mono({
 })
 
 export const metadata: Metadata = {
-  title: "LockByte - Proactive Protection for Reactive Times",
-  description: "Comprehensive cybersecurity solutions for modern businesses",
-  generator: "v0.app",
+  title: "LockByte - Hack to Learn",
+  description: "Web Security Academy - Learning Platform",
+  generator: "ptt-sec",
 }
 
 export default function RootLayout({
