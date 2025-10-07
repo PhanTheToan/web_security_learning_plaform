@@ -134,7 +134,7 @@ export function Footer() {
 
         {/* Bottom Bar */}
         <div className="pt-8 border-t border-[#ffffff]/10 flex flex-col md:flex-row items-center justify-between gap-4">
-          <p className="text-[#ffffff]/60 text-sm">© 2025 LockByte. All rights reserved.</p>
+          <p className="text-[#ffffff]/60 text-sm">© 2025 LockByte - PTT Cybersecurity. All rights reserved.</p>
           <div className="flex items-center gap-6">
             <Globe className="w-4 h-4 text-[#9747ff]" />
             <Users className="w-4 h-4 text-[#5a5bed]" />

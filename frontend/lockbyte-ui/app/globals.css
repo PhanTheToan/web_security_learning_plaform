@@ -2,12 +2,6 @@
 @import "tw-animate-css";
 
 :root {
-    --navy-bg: #252d47;
-    --purple-primary: #9747ff;
-    --purple-secondary: #5a5bed;
-    --purple-dark: #821db6;
-    --gray-light: #d9d9d9;
-
     --background: oklch(1 0 0);
     --foreground: oklch(0.145 0 0);
     --card: oklch(1 0 0);
@@ -44,12 +38,6 @@
 }
 
 .dark {
-    --navy-bg: #252d47;
-    --purple-primary: #9747ff;
-    --purple-secondary: #5a5bed;
-    --purple-dark: #821db6;
-    --gray-light: #d9d9d9;
-
     --background: oklch(0.145 0 0);
     --foreground: oklch(0.985 0 0);
     --card: oklch(0.145 0 0);
@@ -131,6 +119,218 @@
 
     body {
         @apply bg-background text-foreground;
-        font-feature-settings: "rlig" 1, "calt" 1;
+    }
+}
+
+@layer base {
+
+    /* 1. Hiệu ứng cho ổ khóa chính */
+    @keyframes float-and-rotate {
+
+        0%,
+        100% {
+            transform: translateY(0px) rotateY(0deg) scale(1);
+            filter: brightness(1);
+        }
+
+        25% {
+            transform: translateY(-10px) rotateY(5deg) scale(1.01);
+            filter: brightness(1.1);
+        }
+
+        50% {
+            transform: translateY(-20px) rotateY(0deg) scale(1.02);
+            filter: brightness(1.2);
+        }
+
+        75% {
+            transform: translateY(-10px) rotateY(-5deg) scale(1.01);
+            filter: brightness(1.1);
+        }
+    }
+
+    /* 2. Hiệu ứng cho các hạt sáng lấp lánh */
+    @keyframes sparkle {
+
+        0%,
+        100% {
+            opacity: 0;
+            transform: scale(0);
+        }
+
+        20% {
+            opacity: 1;
+            transform: scale(1);
+        }
+
+        40% {
+            opacity: 0;
+            transform: scale(0);
+        }
+    }
+
+    /* 3. Hiệu ứng cho vòng cung Hologram xoay */
+    @keyframes spin-slow {
+        from {
+            transform: rotate(0deg);
+        }
+
+        to {
+            transform: rotate(360deg);
+        }
+    }
+
+    @keyframes spin-slow-reverse {
+        from {
+            transform: rotate(360deg);
+        }
+
+        to {
+            transform: rotate(0deg);
+        }
+    }
+
+    /* 4. Hiệu ứng cho các ký tự số bay lơ lửng */
+    @keyframes float-subtle {
+        0% {
+            transform: translateY(0);
+            opacity: 0;
+        }
+
+        25%,
+        75% {
+            opacity: 0.7;
+        }
+
+        100% {
+            transform: translateY(-40px);
+            opacity: 0;
+        }
+    }
+
+    @keyframes float-subtle-2 {
+        0% {
+            transform: translateY(0);
+            opacity: 0;
+        }
+
+        30%,
+        70% {
+            opacity: 0.6;
+        }
+
+        100% {
+            transform: translateY(-80px);
+            opacity: 0;
+        }
+    }
+
+    /* 5. Hiệu ứng Glitch tinh chỉnh (ngắt quãng) */
+    @keyframes subtle-glitch {
+        0% {
+            transform: translate(0, 0) skew(0);
+        }
+
+        2% {
+            transform: translate(2px, -3px) skew(1deg);
+        }
+
+        4% {
+            transform: translate(-2px, 2px) skew(-1deg);
+        }
+
+        6% {
+            transform: translate(0, 0) skew(0);
+        }
+
+        100% {
+            transform: translate(0, 0) skew(0);
+        }
+    }
+
+    @keyframes subtle-glitch-pseudo {
+        0% {
+            content: '';
+        }
+
+        2% {
+            clip-path: polygon(0 40%, 100% 40%, 100% 45%, 0 45%);
+            transform: translate(-5px, 0);
+            opacity: 0.8;
+        }
+
+        6% {
+            clip-path: polygon(0 60%, 100% 60%, 100% 62%, 0 62%);
+            transform: translate(5px, 0);
+            opacity: 0.8;
+        }
+
+        8% {
+            content: none;
+        }
+
+        100% {
+            content: none;
+        }
+    }
+}
+
+@layer utilities {
+
+    /* 1. Class cho ổ khóa chính */
+    .animate-float-and-rotate {
+        animation: float-and-rotate 8s ease-in-out infinite;
+    }
+
+    /* 2. Class cho các hạt sáng lấp lánh */
+    .animate-sparkle {
+        animation: sparkle 5s ease-out infinite;
+    }
+
+    /* 3. Class cho vòng cung Hologram */
+    .animate-spin-slow {
+        animation: spin-slow 20s linear infinite;
+    }
+
+    .animate-spin-slow-reverse {
+        animation: spin-slow-reverse 15s linear infinite;
+    }
+
+    /* 4. Class cho các ký tự số bay lơ lửng */
+    .animate-float-subtle {
+        animation: float-subtle 8s ease-in-out infinite;
+    }
+
+    .animate-float-subtle-2 {
+        animation: float-subtle-2 12s ease-in-out infinite;
+    }
+
+    /* 5. Class và pseudo-elements cho Glitch tinh chỉnh */
+    .glitch-wrapper-subtle {
+        position: relative;
+    }
+
+    .glitch-wrapper-subtle>img {
+        animation: subtle-glitch 4s ease-in-out infinite;
+    }
+
+    .glitch-wrapper-subtle::before,
+    .glitch-wrapper-subtle::after {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background: #252d47;
+        /* Đặt màu nền giống với section để che tốt hơn */
+        z-index: 10;
+        opacity: 0;
+        animation: subtle-glitch-pseudo 4s ease-in-out infinite;
+    }
+
+    .glitch-wrapper-subtle::after {
+        animation-delay: -2s;
+        /* Chạy lệch pha với ::before */
     }
 }

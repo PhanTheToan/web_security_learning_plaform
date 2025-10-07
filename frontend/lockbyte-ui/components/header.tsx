@@ -1,9 +1,36 @@
+"use client"
+
 import { Shield, Search, Menu } from "lucide-react"
 import Link from "next/link"
+import { useState, useEffect } from "react"
 
 export function Header() {
+  const [isScrolled, setIsScrolled] = useState(false)
+
+  useEffect(() => {
+    const handleScroll = () => {
+      if (window.scrollY > 10) {
+        setIsScrolled(true)
+      } else {
+        setIsScrolled(false)
+      }
+    }
+
+    window.addEventListener("scroll", handleScroll)
+
+    return () => {
+      window.removeEventListener("scroll", handleScroll)
+    }
+  }, [])
+
   return (
-    <header className="bg-[#252d47] border-b border-[#ffffff]/10">
+    <header
+      className={`sticky top-0 z-50 transition-all duration-300 ${
+        isScrolled
+          ? "bg-[#252d47]/90 backdrop-blur-lg border-b border-[#ffffff]/10 shadow-lg"
+          : "bg-[#252d47] border-b border-transparent"
+      }`}
+    >
       <div className="container mx-auto px-6 py-4">
         <div className="flex items-center justify-between">
           <Link href="/" className="flex items-center gap-2 hover:opacity-80 transition-opacity">
