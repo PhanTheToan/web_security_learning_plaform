@@ -37,7 +37,6 @@ public class UserInfoResponse {
         this.email = email;
         this.roles = roles;
         this.fullName = fullName;
-
     }
 
 }
