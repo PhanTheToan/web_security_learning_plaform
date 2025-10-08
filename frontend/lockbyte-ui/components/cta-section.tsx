@@ -1,5 +1,6 @@
 import { Button } from "@/components/ui/button"
 import { ArrowRight } from "lucide-react"
+import Image from "next/image";
 
 export function CtaSection() {
   return (
@@ -20,12 +21,15 @@ export function CtaSection() {
           </div>
 
           <div className="relative">
-            <div className="bg-[#ffffff]/5 backdrop-blur-sm rounded-2xl p-8 border border-[#ffffff]/10 aspect-video flex items-center justify-center">
-              <img
-                src="/security-operations-center.png"
-                alt="Security Operations"
-                className="w-full h-full object-cover rounded-lg"
-              />
+            <div className="bg-[#ffffff]/5 backdrop-blur-sm rounded-2xl p-4 border border-[#ffffff]/10 aspect-video flex items-center justify-center">
+              <div className="relative w-full h-full">
+                <Image
+                  src="/security-operations-center.png"
+                  alt="Security Operations"
+                  fill
+                  className="object-cover rounded-lg"
+                />
+              </div>
             </div>
           </div>
         </div>

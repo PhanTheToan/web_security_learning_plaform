@@ -1,5 +1,6 @@
 import { Button } from "@/components/ui/button"
 import { ArrowRight } from "lucide-react"
+import Image from "next/image";
 
 export function HeroSection() {
   return (
@@ -33,9 +34,11 @@ export function HeroSection() {
             <div className="absolute w-[120%] h-[120%] border border-t-[#9747ff]/50 border-l-transparent border-r-transparent border-b-transparent rounded-full animate-spin-slow-reverse"></div>
 
             <div className="relative glitch-wrapper-subtle">
-              <img
+              <Image
                 src="/cybersecurity-dashboard-interface.png"
                 alt="Cyber Security Lock"
+                width={600}
+                height={450}
                 className="relative z-10 w-full max-w-xl object-contain 
                  animate-float-and-rotate transform-gpu 
                  drop-shadow-[0_0_25px_rgba(151,71,255,0.7)] 

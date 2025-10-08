@@ -1,4 +1,5 @@
 import { Lightbulb, Users, Clock, CheckCircle } from "lucide-react"
+import Image from "next/image";
 
 const features = [
   {
@@ -29,12 +30,15 @@ export function WhyChooseSection() {
       <div className="container mx-auto px-6">
         <div className="grid md:grid-cols-2 gap-12 items-center">
           <div className="relative">
-            <div className="bg-[#f5f5f5] rounded-2xl p-8 aspect-square flex items-center justify-center">
-              <img
-                src="/security-team-collaboration.jpg"
-                alt="Why Choose LockByte"
-                className="w-full h-full object-cover rounded-lg"
-              />
+            <div className="bg-[#f5f5f5] rounded-2xl p-4 aspect-square flex items-center justify-center">
+              <div className="relative w-full h-full">
+                <Image
+                  src="/security-team-collaboration.jpg"
+                  alt="Why Choose LockByte"
+                  fill
+                  className="object-cover rounded-lg"
+                />
+              </div>
             </div>
           </div>
 

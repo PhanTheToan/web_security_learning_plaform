@@ -32,7 +32,7 @@ import java.time.LocalDateTime;
 import java.util.*;
 import java.util.stream.Collectors;
 
-@CrossOrigin(origins = "https://websecurity.com/", maxAge = 3600, allowCredentials = "true")
+@CrossOrigin(origins = "https://lockbyte.com/", maxAge = 3600, allowCredentials = "true")
 @RestController
 @RequestMapping("/api/auth")
 public class AuthController {
@@ -141,69 +141,4 @@ public class AuthController {
         return userRepository.existsByUsername(username);
     }
 
-//    @PostMapping("/reset-password")
-//    public ResponseEntity<?> resetPassword(@RequestBody Long userId) {
-//        Optional<User> optionalUser = userRepository.findById(userId);
-//
-//        if (optionalUser.isPresent()) {
-//            User user = optionalUser.get();
-//
-//            // Generate unique token
-//            String token = UUID.randomUUID().toString();
-//
-//            // Save the token and the expiry time (5 minutes from now) in the database
-//            user.setResetPasswordToken(token);
-//            user.setResetPasswordExpires(LocalDateTime.now().plusMinutes(5));
-//            userRepository.save(user);
-//
-//            // Generate reset link
-//            String resetLink = "https://web-security.com/new-password.html?token=" + token;
-//
-//            // Return reset link as part of the response
-//            return ResponseEntity.ok(resetLink);
-//        } else {
-//            return ResponseEntity.badRequest().body("Error: User not found!");
-//        }
-//    }
-
-//    @PostMapping("/update-password")
-//    public ResponseEntity<?> updatePassword(@RequestBody Map<String, String> request) {
-//        String token = request.get("token");
-//        String newPassword = request.get("newPassword");
-//
-//        Optional<User> optionalUser = Optional.ofNullable(userRepository.findByResetPasswordToken(token));
-//
-//        if (optionalUser.isPresent() && isTokenValid(optionalUser.get())) {
-//            updateUserPassword(optionalUser.get(), newPassword);
-//            return ResponseEntity.ok(PASSWORD_UPDATED_SUCCESSFULLY);
-//        } else {
-//            return ResponseEntity.badRequest().body(ERROR_INVALID_OR_EXPIRED_RESET_PASSWORD_LINK);
-//        }
-//    }
-//
-//    private boolean isTokenValid(User user) {
-//        return LocalDateTime.now().isBefore(user.getResetPasswordExpires());
-//    }
-//
-//    private void updateUserPassword(User user, String newPassword) {
-//        user.setPassword(encoder.encode(newPassword));
-//        userRepository.save(user);
-//    }
-//
-//    @PostMapping("/reset-default-password")
-//    public ResponseEntity<?> resetDefaultPassword(@RequestBody Long userId) {
-//        Optional<User> optionalUser = userRepository.findById(userId);
-//
-//        if (optionalUser.isPresent()) {
-//            User user = optionalUser.get();
-//
-//            // Reset password to default
-//            user.setPassword(encoder.encode("123456"));
-//            userRepository.save(user);
-//
-//            return ResponseEntity.ok("Mật khẩu đã thay đổi về mặc định");
-//        } else {
-//            return ResponseEntity.badRequest().body("Error: User not found!");
-//        }
-//    }
 }

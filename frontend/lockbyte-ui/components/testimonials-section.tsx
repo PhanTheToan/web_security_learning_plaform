@@ -1,4 +1,5 @@
 import { Quote } from "lucide-react"
+import Image from "next/image";
 
 const testimonials = [
   {
@@ -35,11 +36,13 @@ export function TestimonialsSection() {
               className="bg-gradient-to-br from-[#ffffff]/5 via-[#ffffff]/3 to-[#9747ff]/5 backdrop-blur-sm rounded-xl p-8 border border-[#ffffff]/10 hover:from-[#ffffff]/8 hover:via-[#9747ff]/5 hover:to-[#9747ff]/10 transition-all duration-300"
             >
               <Quote className="w-8 h-8 text-[#9747ff] mb-4" />
-              <p className="text-[#ffffff]/90 text-lg leading-relaxed mb-6">"{testimonial.quote}"</p>
+              <p className="text-[#ffffff]/90 text-lg leading-relaxed mb-6">&quot;{testimonial.quote}&quot;</p>
               <div className="flex items-center gap-3">
-                <img
+                <Image
                   src={testimonial.avatar || "/placeholder.svg"}
                   alt={testimonial.author}
+                  width={40}
+                  height={40}
                   className="w-10 h-10 rounded-full"
                 />
                 <div>
