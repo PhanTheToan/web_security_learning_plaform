@@ -17,7 +17,7 @@ const jetbrainsMono = JetBrains_Mono({
 })
 
 export const metadata: Metadata = {
-  title: "LockByte - Hack to Learn",
+  title: "CyberLock - Hack to Learn",
   description: "Web Security Academy - Learning Platform",
   generator: "ptt-sec",
 }

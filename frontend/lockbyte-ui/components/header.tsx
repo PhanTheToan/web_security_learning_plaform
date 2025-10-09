@@ -1,6 +1,7 @@
 'use client';
 
-import { Shield, Search, Menu, LogOut, User } from 'lucide-react';
+import { LockIcon } from '@/components/icons/lock-icon';
+import { Search, Menu, LogOut, User } from 'lucide-react';
 import Link from 'next/link';
 import { useState, useEffect } from 'react';
 import { useAuth } from '@/contexts/AuthContext';
@@ -28,17 +29,16 @@ export function Header() {
 
   return (
     <header
-      className={`sticky top-0 z-50 transition-all duration-300 ${
-        isScrolled
+      className={`sticky top-0 z-50 transition-all duration-300 ${isScrolled
           ? 'bg-[#252d47]/90 backdrop-blur-lg border-b border-[#ffffff]/10 shadow-lg'
           : 'bg-[#252d47] border-b border-transparent'
-      }`}
+        }`}
     >
       <div className="container mx-auto px-6 py-4">
         <div className="flex items-center justify-between">
           <Link href="/" className="flex items-center gap-2 hover:opacity-80 transition-opacity">
-            <Shield className="w-6 h-6 text-[#9747ff]" />
-            <span className="text-[#ffffff] font-semibold text-lg">LockByte</span>
+            <LockIcon className="w-6 h-6 text-[#9747ff]" />
+            <span className="text-[#ffffff] font-semibold text-lg">CyberLock</span>
           </Link>
 
           <nav className="hidden md:flex items-center gap-8">

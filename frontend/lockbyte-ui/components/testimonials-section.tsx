@@ -4,7 +4,7 @@ import Image from "next/image";
 const testimonials = [
   {
     quote:
-      "LockByte's team was instrumental in handling our security needs. We feel truly amazing knowing our data is protected.",
+      "CyberLock's team was instrumental in handling our security needs. We feel truly amazing knowing our data is protected.",
     author: "John Smith",
     role: "CEO, Tech Innovations",
     avatar: "/professional-male.jpg",

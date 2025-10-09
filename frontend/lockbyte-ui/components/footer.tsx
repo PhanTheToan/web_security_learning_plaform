@@ -36,7 +36,7 @@ export function Footer() {
           <div className="lg:col-span-1">
             <div className="flex items-center gap-2 mb-4">
               <Shield className="w-6 h-6 text-[#9747ff]" />
-              <span className="text-[#ffffff] font-semibold text-lg">LockByte</span>
+              <span className="text-[#ffffff] font-semibold text-lg">CyberLock</span>
             </div>
             <p className="text-[#ffffff]/60 text-sm leading-relaxed">
               Protecting businesses from cyber threats since 2020.
@@ -134,7 +134,7 @@ export function Footer() {
 
         {/* Bottom Bar */}
         <div className="pt-8 border-t border-[#ffffff]/10 flex flex-col md:flex-row items-center justify-between gap-4">
-          <p className="text-[#ffffff]/60 text-sm">© 2025 LockByte - PTT Cybersecurity. All rights reserved.</p>
+          <p className="text-[#ffffff]/60 text-sm">© 2025 CyberLock - PTT Cybersecurity. All rights reserved.</p>
           <div className="flex items-center gap-6">
             <Globe className="w-4 h-4 text-[#9747ff]" />
             <Users className="w-4 h-4 text-[#5a5bed]" />

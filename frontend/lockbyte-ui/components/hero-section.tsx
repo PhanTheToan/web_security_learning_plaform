@@ -12,7 +12,7 @@ export function HeroSection() {
               HACK TO LEARN
             </h1>
             <p className="text-[#ffffff]/70 text-lg mb-8 leading-relaxed">
-              Hack to understand, destroy to build — At LockByte, we turn the complex into simple, turn theory into practice and with a team of experts with 20 years of information security experience, are ready to turn your passion into a career.
+              Hack to understand, destroy to build — At CyberLock, we turn the complex into simple, turn theory into practice and with a team of experts with 20 years of information security experience, are ready to turn your passion into a career.
             </p>
             <div className="flex flex-wrap gap-4">
               <Button className="relative bg-gradient-to-r from-[#9747ff] via-[#5a5bed] to-[#821db6] hover:from-[#821db6] hover:via-[#9747ff] hover:to-[#5a5bed] text-[#ffffff] px-6 py-6 text-base rounded-full transition-all duration-500 shadow-[0_0_30px_rgba(151,71,255,0.4)] hover:shadow-[0_0_40px_rgba(151,71,255,0.6)] hover:scale-105">

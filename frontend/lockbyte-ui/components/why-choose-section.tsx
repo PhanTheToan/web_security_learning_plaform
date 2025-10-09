@@ -34,7 +34,7 @@ export function WhyChooseSection() {
               <div className="relative w-full h-full">
                 <Image
                   src="/security-team-collaboration.jpg"
-                  alt="Why Choose LockByte"
+                  alt="Why Choose CyberLock"
                   fill
                   className="object-cover rounded-lg"
                 />
@@ -43,7 +43,7 @@ export function WhyChooseSection() {
           </div>
 
           <div>
-            <h2 className="text-[#252d47] text-3xl md:text-4xl font-bold mb-12">Why Choose LockByte?</h2>
+            <h2 className="text-[#252d47] text-3xl md:text-4xl font-bold mb-12">Why Choose CyberLock?</h2>
 
             <div className="space-y-6">
               {features.map((feature, index) => (

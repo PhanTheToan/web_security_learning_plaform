@@ -41,6 +41,9 @@ module.exports = {
                 'pulse-light': 'pulse-light 4s ease-in-out infinite', // Thời gian animation dài hơn
                 sparkle: 'sparkle 5s ease-out infinite', // Animation cho hạt sáng
             },
+            boxShadow: {
+                'neon-purple': '0 0 15px rgba(168, 85, 247, 0.5)',
+            },
         },
     },
     plugins: [],

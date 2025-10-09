@@ -9,7 +9,7 @@ export function CtaSection() {
         <div className="grid md:grid-cols-2 gap-12 items-center">
           <div>
             <h2 className="text-[#ffffff] text-3xl md:text-4xl font-bold mb-6 leading-tight">
-              Secure your business today with LockByte.
+              Secure your business today with CyberLock.
             </h2>
             <p className="text-[#ffffff]/70 text-lg mb-8 leading-relaxed">
               Join hundreds of businesses that trust us with their cybersecurity needs.

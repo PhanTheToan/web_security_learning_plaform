@@ -45,7 +45,7 @@ export function HowItWorksSection() {
     <section className="bg-[#252d47] py-20 sm:py-28">
       <div className="container mx-auto px-6">
         <h2 className="text-white text-3xl md:text-4xl font-bold text-center mb-20">
-          How LockByte Works
+          How CyberLock Works
         </h2>
 
         <div ref={timelineRef} className="relative max-w-4xl mx-auto">
