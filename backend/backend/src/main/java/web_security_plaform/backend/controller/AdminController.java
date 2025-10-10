@@ -63,6 +63,7 @@ public class AdminController {
         return new ResponseEntity<>(responseDTO, HttpStatus.CREATED);
 
     }
+
     @GetMapping("/labs/{id}")
     public ResponseEntity<LabDetailDto> getLabById(@PathVariable int id) {
         LabDetailDto labDetail = labService.getLabDetailById(id);
