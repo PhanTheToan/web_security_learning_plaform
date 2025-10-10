@@ -10,7 +10,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover"
 import { Command, CommandEmpty, CommandGroup, CommandInput, CommandItem, CommandList } from "@/components/ui/command"
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
-import { PlusCircle, Pencil, Trash2, Search, X, Check, ChevronsUpDown } from "lucide-react"
+import { PlusCircle, Pencil, Trash2, Search, X, Check } from "lucide-react"
 import { cn } from "@/lib/utils"
 
 // Type Definitions
@@ -67,7 +67,7 @@ export default function LabsPage() {
         setAllTags(tagsData)
 
       } catch (e) {
-        setError(e.message)
+        setError(e instanceof Error ? e.message : "An unknown error occurred")
       } finally {
         setIsLoading(false)
       }

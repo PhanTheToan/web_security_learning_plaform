@@ -41,8 +41,13 @@ interface LabFormProps {
   initialData?: LabData
 }
 
+interface MarkdownEditorProps {
+  value: string
+  onChange: (value: string) => void
+}
+
 // Markdown Editor Component
-const MarkdownEditor = ({ value, onChange }) => {
+const MarkdownEditor = ({ value, onChange }: MarkdownEditorProps) => {
   return (
     <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
       <textarea
@@ -88,7 +93,7 @@ export function LabForm({ mode = "create", initialData }: LabFormProps) {
         const res = await fetch(apiUrl, { credentials: "include" })
         if (res.ok) setAllTags(await res.json())
         else toast.error("Failed to load tags.")
-      } catch (error) {
+      } catch {
         toast.error("Failed to load tags.")
       }
     }
@@ -125,6 +130,11 @@ export function LabForm({ mode = "create", initialData }: LabFormProps) {
 
   // Form submission handler
   const handleSubmit = async () => {
+    if (mode === "edit" && !initialData) {
+      toast.error("Cannot update lab without initial data.")
+      return
+    }
+
     const labData = {
       name,
       description,
@@ -140,7 +150,7 @@ export function LabForm({ mode = "create", initialData }: LabFormProps) {
 
     const isEdit = mode === "edit"
     const baseUrl = `${process.env.NEXT_PUBLIC_API_URL}/admin/labs`
-    const url = isEdit ? `${baseUrl}/${initialData.id}` : baseUrl
+    const url = isEdit ? `${baseUrl}/${initialData!.id}` : baseUrl
     const method = isEdit ? "PUT" : "POST"
 
     try {
@@ -158,10 +168,9 @@ export function LabForm({ mode = "create", initialData }: LabFormProps) {
         const errorData = await res.json()
         toast.error(`Failed to ${isEdit ? "update" : "create"} lab: ${errorData.message || "Unknown error"}`)
       }
-    } catch (error) {
-      toast.error(`An error occurred while submitting the lab.`)
-    }
-  }
+                } catch {
+                toast.error(`An error occurred while submitting the lab.`)
+              }  }
 
   return (
     <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">

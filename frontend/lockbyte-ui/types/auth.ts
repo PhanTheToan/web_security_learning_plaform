@@ -4,6 +4,7 @@ export interface User {
   email: string;
   roles: string[];
   fullName: string;
+  avatarUrl?: string;
 }
 
 export interface SignUpData {

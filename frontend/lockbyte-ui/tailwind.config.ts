@@ -1,5 +1,7 @@
-/** @type {import('tailwindcss').Config} */
-module.exports = {
+import type { Config } from 'tailwindcss'
+import type { PluginUtils } from 'tailwindcss/plugin'
+
+const config: Config = {
     content: [
         './pages/**/*.{js,ts,jsx,tsx,mdx}',
         './components/**/*.{js,ts,jsx,tsx,mdx}',
@@ -52,7 +54,7 @@ module.exports = {
             boxShadow: {
                 'neon-purple': '0 0 15px rgba(168, 85, 247, 0.5)',
             },
-            typography: ({ theme }) => ({
+            typography: ({ theme }: PluginUtils) => ({
                 DEFAULT: {
                     css: {
                         'code, pre, kbd, samp': {
@@ -67,3 +69,5 @@ module.exports = {
     require('@tailwindcss/typography'),
   ],
 }
+
+export default config

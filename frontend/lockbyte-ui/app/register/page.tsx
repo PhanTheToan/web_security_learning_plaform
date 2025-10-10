@@ -136,7 +136,7 @@ export default function RegisterPage() {
                         selected={formData.dateOfBirth ? new Date(formData.dateOfBirth) : undefined}
                         onSelect={handleDateChange}
                         initialFocus
-                        captionLayout="dropdown-buttons"
+                        captionLayout="dropdown"
                         fromYear={1900}
                         toYear={new Date().getFullYear()}
                       />

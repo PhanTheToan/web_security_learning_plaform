@@ -44,8 +44,9 @@ export default function EditLabPage() {
         const data = await res.json();
         setLabData(data);
       } catch (e) {
-        setError(e.message);
-        toast.error(e.message);
+        const errorMessage = e instanceof Error ? e.message : "An unknown error occurred";
+        setError(errorMessage);
+        toast.error(errorMessage);
       } finally {
         setIsLoading(false);
       }
