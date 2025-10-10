@@ -44,7 +44,12 @@ const Sidebar = () => {
                   >
                     {item.icon}
                   </span>
-                  <span>{item.label}</span>
+                  <span className={`
+                    ${isActive ? 'font-bold text-white drop-shadow-[0_0_8px_rgba(255,255,255,0.7)]' : 'text-[#ffffff]/70 group-hover:text-white group-hover:drop-shadow-[0_0_8px_rgba(255,255,255,0.5)]'}
+                    transition-all duration-300
+                  `}>
+                    {item.label}
+                  </span>
                 </Link>
               </li>
             )

@@ -23,13 +23,13 @@ interface Lab {
 
 // Helper component for status-specific badges
 const StatusBadge = ({ status }: { status: Lab["status"] }) => {
-  const statusVariants = {
-    Published: "default",
-    Draft: "secondary",
-    Archived: "outline",
-  } as const
-  return <Badge variant={statusVariants[status]}>{status}</Badge>
-}
+  const statusStyles = {
+    Published: "bg-green-500/30 text-white border-transparent",
+    Draft: "bg-red-500/30 text-white border-transparent",
+    Archived: "bg-gray-500/30 text-white border-transparent",
+  } as const;
+  return <Badge className={statusStyles[status]}>{status}</Badge>;
+};
 
 export default function LabsPage() {
   const [labs, setLabs] = useState<Lab[]>([])
@@ -93,7 +93,7 @@ export default function LabsPage() {
                     <Badge
                       key={tag.id}
                       variant="secondary"
-                      className="bg-primary/10 text-primary border border-primary/30 hover:bg-primary/20 rounded-lg"
+                      className="bg-primary/10 text-white/60 border border-primary/30 hover:bg-primary/20 rounded-lg"
                     >
                       {tag.name}
                     </Badge>

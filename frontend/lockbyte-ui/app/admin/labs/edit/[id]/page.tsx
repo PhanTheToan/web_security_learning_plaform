@@ -57,8 +57,8 @@ export default function EditLabPage() {
   return (
     <div className="space-y-6">
       <div>
-        <h1 className="text-2xl font-bold tracking-tight text-primary">Edit Lab</h1>
-        <p className="text-muted-foreground">Update the details for this lab.</p>
+        <h1 className="text-2xl font-bold tracking-tight text-white/90">Edit Lab</h1>
+        <p className="text-white/70">Update the details for this lab.</p>
       </div>
       <Separator />
 

@@ -51,7 +51,9 @@ const MarkdownEditor = ({ value, onChange }) => {
         className="w-full h-96 p-4 border-2 border-primary/40 rounded-xl bg-card/50 backdrop-blur-sm font-mono text-sm text-white placeholder:text-white/40 focus-visible:ring-2 focus-visible:ring-primary focus-visible:border-primary/60 transition-all duration-300 shadow-[0_0_15px_rgba(99,102,241,0.1)]"
         placeholder="Enter markdown content here...\n\nExample for image: ![Alt text](image_url)"
       />
-      <div className="prose prose-invert max-w-none p-4 border-2 border-primary/40 rounded-xl bg-card/50 backdrop-blur-sm overflow-auto h-96 shadow-[0_0_15px_rgba(99,102,241,0.1)]">
+      <div
+        className="prose prose-invert max-w-none p-4 border-2 border-primary/40 rounded-xl bg-card/50 backdrop-blur-sm overflow-auto h-96 shadow-[0_0_15px_rgba(99,102,241,0.1)] font-mono text-sm text-white"
+      >
         <ReactMarkdown rehypePlugins={[rehypeRaw, rehypeSanitize]}>{value}</ReactMarkdown>
       </div>
     </div>
@@ -252,11 +254,14 @@ export function LabForm({ mode = "create", initialData }: LabFormProps) {
                     <SelectValue placeholder="Select status" />
                   </SelectTrigger>
                   <SelectContent className="bg-card/95 backdrop-blur-sm border-[#ffffff]/20 rounded-xl">
-                    <SelectItem value="Draft" className="text-white">
+                    <SelectItem value="Draft" className="text-white hover:bg-[#9747ff]/10 focus:bg-[#9747ff]/10 focus:text-white focus:drop-shadow-[0_0_5px_rgba(255,255,255,0.8)] transition-all duration-200">
                       Draft
                     </SelectItem>
-                    <SelectItem value="Published" className="text-white">
+                    <SelectItem value="Published" className="text-white hover:bg-[#9747ff]/10 focus:bg-[#9747ff]/10 focus:text-white focus:drop-shadow-[0_0_5px_rgba(255,255,255,0.8)] transition-all duration-200">
                       Published
+                    </SelectItem>
+                    <SelectItem value="Archived" className="text-white hover:bg-[#9747ff]/10 focus:bg-[#9747ff]/10 focus:text-white focus:drop-shadow-[0_0_5px_rgba(255,255,255,0.8)] transition-all duration-200">
+                      Archived
                     </SelectItem>
                   </SelectContent>
                 </Select>
@@ -270,16 +275,16 @@ export function LabForm({ mode = "create", initialData }: LabFormProps) {
                     <SelectValue placeholder="Select difficulty" />
                   </SelectTrigger>
                   <SelectContent className="bg-card/95 backdrop-blur-sm border-[#ffffff]/20 rounded-xl">
-                    <SelectItem value="Easy" className="text-white">
+                    <SelectItem value="Easy" className="text-white hover:bg-[#9747ff]/10 focus:bg-[#9747ff]/10 focus:text-white focus:drop-shadow-[0_0_5px_rgba(255,255,255,0.8)] transition-all duration-200">
                       Easy
                     </SelectItem>
-                    <SelectItem value="Medium" className="text-white">
+                    <SelectItem value="Medium" className="text-white hover:bg-[#9747ff]/10 focus:bg-[#9747ff]/10 focus:text-white focus:drop-shadow-[0_0_5px_rgba(255,255,255,0.8)] transition-all duration-200">
                       Medium
                     </SelectItem>
-                    <SelectItem value="Hard" className="text-white">
+                    <SelectItem value="Hard" className="text-white hover:bg-[#9747ff]/10 focus:bg-[#9747ff]/10 focus:text-white focus:drop-shadow-[0_0_5px_rgba(255,255,255,0.8)] transition-all duration-200">
                       Hard
                     </SelectItem>
-                    <SelectItem value="Expert" className="text-white">
+                    <SelectItem value="Expert" className="text-white hover:bg-[#9747ff]/10 focus:bg-[#9747ff]/10 focus:text-white focus:drop-shadow-[0_0_5px_rgba(255,255,255,0.8)] transition-all duration-200">
                       Expert
                     </SelectItem>
                   </SelectContent>

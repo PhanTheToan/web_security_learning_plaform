@@ -52,7 +52,18 @@ module.exports = {
             boxShadow: {
                 'neon-purple': '0 0 15px rgba(168, 85, 247, 0.5)',
             },
+            typography: ({ theme }) => ({
+                DEFAULT: {
+                    css: {
+                        'code, pre, kbd, samp': {
+                            fontFamily: theme('fontFamily.mono').join(', '),
+                        },
+                    },
+                },
+            }),
         },
     },
-    plugins: [],
+    plugins: [
+    require('@tailwindcss/typography'),
+  ],
 }

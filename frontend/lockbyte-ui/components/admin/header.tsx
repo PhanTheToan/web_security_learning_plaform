@@ -36,7 +36,7 @@ const AdminHeader = () => {
 
   return (
     <header className="flex-shrink-0 h-20 flex items-center justify-between px-6 md:px-8 bg-gradient-to-r from-[#ffffff]/5 via-[#9747ff]/5 to-[#5a5bed]/5 backdrop-blur-sm border-b border-[#ffffff]/10">
-      <h1 className="text-2xl font-bold bg-gradient-to-r from-[#ffffff] via-[#9747ff] to-[#ffffff] bg-clip-text text-transparent">
+      <h1 className="text-2xl font-bold bg-gradient-to-r from-[#ffffff] via-[#9747ff] to-[#ffffff] bg-clip-text text-white">
         {title}
       </h1>
 
@@ -51,21 +51,21 @@ const AdminHeader = () => {
                 </AvatarFallback>
               </Avatar>
               <div className="hidden md:flex flex-col items-start">
-                <span className="font-medium text-sm text-foreground">{user.fullName || user.username}</span>
+                <span className="font-medium text-sm text-white">{user.fullName || user.username}</span>
                 <span className="text-xs text-[#9747ff]">Admin</span>
               </div>
               <ChevronsUpDown className="h-4 w-4 text-[#ffffff]/70 hidden md:block" />
             </button>
           </DropdownMenuTrigger>
-          <DropdownMenuContent className="w-56 bg-[#252d47]/95 backdrop-blur-sm border-[#9747ff]/30" align="end">
-            <DropdownMenuLabel>My Account</DropdownMenuLabel>
+          <DropdownMenuContent className="w-56 bg-[#252d47]/95 backdrop-blur-sm border-[#9747ff]/30 text-white" align="end">
+            <DropdownMenuLabel className="text-white/80">My Account</DropdownMenuLabel>
             <DropdownMenuSeparator className="bg-[#ffffff]/10" />
-            <DropdownMenuItem className="hover:bg-[#9747ff]/10 focus:bg-[#9747ff]/10">
+            <DropdownMenuItem className="hover:bg-[#9747ff]/10 focus:bg-[#9747ff]/10 focus:text-white focus:drop-shadow-[0_0_5px_rgba(255,255,255,0.8)] transition-all duration-200">
               <User className="mr-2 h-4 w-4" />
               <span>Profile</span>
             </DropdownMenuItem>
             <Link href="/" passHref>
-              <DropdownMenuItem className="hover:bg-[#9747ff]/10 focus:bg-[#9747ff]/10">
+              <DropdownMenuItem className="hover:bg-[#9747ff]/10 focus:bg-[#9747ff]/10 focus:text-white focus:drop-shadow-[0_0_5px_rgba(255,255,255,0.8)] transition-all duration-200">
                 <ExternalLink className="mr-2 h-4 w-4" />
                 <span>Go to Main Site</span>
               </DropdownMenuItem>
@@ -73,7 +73,7 @@ const AdminHeader = () => {
             <DropdownMenuSeparator className="bg-[#ffffff]/10" />
             <DropdownMenuItem
               onClick={logout}
-              className="hover:bg-destructive/10 focus:bg-destructive/10 text-destructive"
+              className="hover:bg-[#9747ff]/10 focus:bg-[#9747ff]/10 focus:text-white focus:drop-shadow-[0_0_5px_rgba(255,255,255,0.8)] transition-all duration-200"
             >
               <LogOut className="mr-2 h-4 w-4" />
               <span>Logout</span>

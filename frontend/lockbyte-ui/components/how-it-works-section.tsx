@@ -91,7 +91,7 @@ export function HowItWorksSection() {
                   >
                     <div className="w-1/2 px-4">
                       <motion.div
-                        className="bg-gradient-to-br from-white/5 via-white/3 to-[#9747ff]/5 backdrop-blur-sm rounded-xl p-6 border border-white/10 shadow-lg hover:from-white/10 hover:via-[#9747ff]/10 hover:to-[#9747ff]/20 transition-all duration-300"
+                        className="bg-gradient-to-br from-white/5 via-white/3 to-[#9747ff]/5 backdrop-blur-sm rounded-2xl p-6 border border-white/10 shadow-lg hover:from-white/10 hover:via-[#9747ff]/10 hover:to-[#9747ff]/20 transition-all duration-300"
                         variants={cardVariants}
                         whileHover={{ scale: 1.03 }}
                       >

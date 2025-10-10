@@ -50,11 +50,11 @@ export default function LoginPage() {
                   <Input
                     id="username"
                     type="text"
-                    placeholder="phantoan"
+                    placeholder="username"
                     required
                     value={username}
                     onChange={(e: ChangeEvent<HTMLInputElement>) => setUsername(e.target.value)}
-                    className="pl-11 bg-[#ffffff]/5 border-[#ffffff]/10 text-[#ffffff] placeholder:text-[#ffffff]/40 focus:border-[#9747ff] focus:ring-[#9747ff]/20 rounded-lg h-12"
+                    className="pl-11 bg-[#ffffff]/5 border-[#ffffff]/10 text-[#ffffff] placeholder:text-[#ffffff]/40 focus:border-[#9747ff] focus:ring-[#9747ff]/20 rounded h-12"
                   />
                 </div>
               </div>
@@ -77,7 +77,7 @@ export default function LoginPage() {
                     required
                     value={password}
                     onChange={(e: ChangeEvent<HTMLInputElement>) => setPassword(e.target.value)}
-                    className="pl-11 bg-[#ffffff]/5 border-[#ffffff]/10 text-[#ffffff] placeholder:text-[#ffffff]/40 focus:border-[#9747ff] focus:ring-[#9747ff]/20 rounded-lg h-12"
+                    className="pl-11 bg-[#ffffff]/5 border-[#ffffff]/10 text-[#ffffff] placeholder:text-[#ffffff]/40 focus:border-[#9747ff] focus:ring-[#9747ff]/20 rounded h-12"
                   />
                 </div>
               </div>

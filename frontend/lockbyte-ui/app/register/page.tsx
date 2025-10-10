@@ -6,9 +6,14 @@ import { Header } from "@/components/header";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Mail, Lock, User, ArrowRight, Calendar, Users } from "lucide-react";
+import { Mail, Lock, User, ArrowRight, Calendar as CalendarIcon, Users, Check } from "lucide-react";
+import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
+import { Command, CommandEmpty, CommandGroup, CommandItem, CommandList } from "@/components/ui/command";
+import { Calendar } from "@/components/ui/calendar";
 import Link from "next/link";
 import { SignUpData } from '@/types/auth';
+import { cn } from '@/lib/utils';
+import { format } from 'date-fns';
 
 export default function RegisterPage() {
   const { signup } = useAuth();
@@ -22,10 +27,25 @@ export default function RegisterPage() {
   });
   const [error, setError] = useState('');
   const [success, setSuccess] = useState('');
+  const [isGenderPopoverOpen, setGenderPopoverOpen] = useState(false);
 
-  const handleChange = (e: ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
+  const handleChange = (e: ChangeEvent<HTMLInputElement>) => {
     const { id, value } = e.target;
-    setFormData((prev) => ({ ...prev, [id]: value as SignUpData[keyof SignUpData] }));
+    setFormData((prev) => ({ ...prev, [id]: value }));
+  };
+
+  const handleDateChange = (date: Date | undefined) => {
+    if (date) {
+      setFormData((prev) => ({
+        ...prev,
+        dateOfBirth: format(date, 'yyyy-MM-dd'),
+      }));
+    }
+  };
+
+  const handleGenderChange = (gender: 'MALE' | 'FEMALE' | 'OTHER') => {
+    setFormData((prev) => ({ ...prev, gender }));
+    setGenderPopoverOpen(false);
   };
 
   const handleSubmit = async (e: FormEvent<HTMLFormElement>) => {
@@ -44,6 +64,12 @@ export default function RegisterPage() {
     }
   };
 
+  const genderOptions = [
+    { value: 'MALE', label: 'Male' },
+    { value: 'FEMALE', label: 'Female' },
+    { value: 'OTHER', label: 'Other' },
+  ];
+
   return (
     <div className="min-h-screen bg-[#252d47] flex flex-col">
       <Header />
@@ -60,7 +86,7 @@ export default function RegisterPage() {
                 <Label htmlFor="username" className="text-[#ffffff] text-sm font-medium">Username</Label>
                 <div className="relative">
                   <User className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-[#9747ff]" />
-                  <Input id="username" type="text" placeholder="phantoan" required onChange={handleChange} value={formData.username} className="pl-11 bg-[#ffffff]/5 border-[#ffffff]/10 text-[#ffffff] placeholder:text-[#ffffff]/40 focus:border-[#9747ff] focus:ring-[#9747ff]/20 rounded-lg h-12" />
+                  <Input id="username" type="text" placeholder="username" required onChange={handleChange} value={formData.username} className="pl-11 bg-[#ffffff]/5 border-[#ffffff]/10 text-[#ffffff] placeholder:text-[#ffffff]/40 focus:border-[#9747ff] focus:ring-[#9747ff]/20 rounded h-12" />
                 </div>
               </div>
 
@@ -68,7 +94,7 @@ export default function RegisterPage() {
                 <Label htmlFor="fullName" className="text-[#ffffff] text-sm font-medium">Full Name</Label>
                 <div className="relative">
                   <User className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-[#9747ff]" />
-                  <Input id="fullName" type="text" placeholder="Phan_Toan_admin" required onChange={handleChange} value={formData.fullName} className="pl-11 bg-[#ffffff]/5 border-[#ffffff]/10 text-[#ffffff] placeholder:text-[#ffffff]/40 focus:border-[#9747ff] focus:ring-[#9747ff]/20 rounded-lg h-12" />
+                  <Input id="fullName" type="text" placeholder="Full name" required onChange={handleChange} value={formData.fullName} className="pl-11 bg-[#ffffff]/5 border-[#ffffff]/10 text-[#ffffff] placeholder:text-[#ffffff]/40 focus:border-[#9747ff] focus:ring-[#9747ff]/20 rounded h-12" />
                 </div>
               </div>
 
@@ -76,7 +102,7 @@ export default function RegisterPage() {
                 <Label htmlFor="email" className="text-[#ffffff] text-sm font-medium">Email Address</Label>
                 <div className="relative">
                   <Mail className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-[#9747ff]" />
-                  <Input id="email" type="email" placeholder="phantoan3009@gmail.com" required onChange={handleChange} value={formData.email} className="pl-11 bg-[#ffffff]/5 border-[#ffffff]/10 text-[#ffffff] placeholder:text-[#ffffff]/40 focus:border-[#9747ff] focus:ring-[#9747ff]/20 rounded-lg h-12" />
+                  <Input id="email" type="email" placeholder="example@gmail.com" required onChange={handleChange} value={formData.email} className="pl-11 bg-[#ffffff]/5 border-[#ffffff]/10 text-[#ffffff] placeholder:text-[#ffffff]/40 focus:border-[#9747ff] focus:ring-[#9747ff]/20 rounded h-12" />
                 </div>
               </div>
 
@@ -84,28 +110,80 @@ export default function RegisterPage() {
                 <Label htmlFor="password" className="text-[#ffffff] text-sm font-medium">Password</Label>
                 <div className="relative">
                   <Lock className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-[#9747ff]" />
-                  <Input id="password" type="password" placeholder="••••••••" required onChange={handleChange} value={formData.password} className="pl-11 bg-[#ffffff]/5 border-[#ffffff]/10 text-[#ffffff] placeholder:text-[#ffffff]/40 focus:border-[#9747ff] focus:ring-[#9747ff]/20 rounded-lg h-12" />
+                  <Input id="password" type="password" placeholder="••••••••" required onChange={handleChange} value={formData.password} className="pl-11 bg-[#ffffff]/5 border-[#ffffff]/10 text-[#ffffff] placeholder:text-[#ffffff]/40 focus:border-[#9747ff] focus:ring-[#9747ff]/20 rounded h-12" />
                 </div>
               </div>
 
               <div className="grid grid-cols-2 gap-4">
                 <div className="space-y-2">
                   <Label htmlFor="dateOfBirth" className="text-[#ffffff] text-sm font-medium">Date of Birth</Label>
-                  <div className="relative">
-                    <Calendar className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-[#9747ff]" />
-                    <Input id="dateOfBirth" type="date" required onChange={handleChange} value={formData.dateOfBirth} className="pl-11 bg-[#ffffff]/5 border-[#ffffff]/10 text-[#ffffff] placeholder:text-[#ffffff]/40 focus:border-[#9747ff] focus:ring-[#9747ff]/20 rounded-lg h-12" />
-                  </div>
+                  <Popover>
+                    <PopoverTrigger asChild>
+                      <Button
+                        variant={"outline"}
+                        className={cn(
+                          "w-full justify-start text-left font-normal h-12 bg-[#ffffff]/5 border-[#ffffff]/10 hover:bg-[#ffffff]/10 text-white hover:text-white",
+                          !formData.dateOfBirth && "text-white/40"
+                        )}
+                      >
+                        <CalendarIcon className="mr-2 h-4 w-4" />
+                        {formData.dateOfBirth ? format(new Date(formData.dateOfBirth), "PPP") : <span>Pick a date</span>}
+                      </Button>
+                    </PopoverTrigger>
+                    <PopoverContent className="w-auto p-0 bg-[#2c3554] border-[#ffffff]/20 text-white" align="start">
+                      <Calendar
+                        mode="single"
+                        selected={formData.dateOfBirth ? new Date(formData.dateOfBirth) : undefined}
+                        onSelect={handleDateChange}
+                        initialFocus
+                        captionLayout="dropdown-buttons"
+                        fromYear={1900}
+                        toYear={new Date().getFullYear()}
+                      />
+                    </PopoverContent>
+                  </Popover>
                 </div>
                 <div className="space-y-2">
                   <Label htmlFor="gender" className="text-[#ffffff] text-sm font-medium">Gender</Label>
-                  <div className="relative">
-                     <Users className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-[#9747ff]" />
-                    <select id="gender" onChange={handleChange} value={formData.gender} className="w-full pl-11 bg-[#ffffff]/5 border-[#ffffff]/10 text-[#ffffff] placeholder:text-[#ffffff]/40 focus:border-[#9747ff] focus:ring-[#9747ff]/20 rounded-lg h-12 appearance-none">
-                      <option value="MALE">Male</option>
-                      <option value="FEMALE">Female</option>
-                      <option value="OTHER">Other</option>
-                    </select>
-                  </div>
+                  <Popover open={isGenderPopoverOpen} onOpenChange={setGenderPopoverOpen}>
+                    <PopoverTrigger asChild>
+                      <Button
+                        variant="outline"
+                        role="combobox"
+                        aria-expanded={isGenderPopoverOpen}
+                        className="w-full justify-between h-12 bg-[#ffffff]/5 border-[#ffffff]/10 hover:bg-[#ffffff]/10 text-white hover:text-white"
+                      >
+                        {formData.gender
+                          ? genderOptions.find((g) => g.value === formData.gender)?.label
+                          : "Select gender..."}
+                        <Users className="ml-2 h-4 w-4 shrink-0 opacity-50" />
+                      </Button>
+                    </PopoverTrigger>
+                    <PopoverContent className="w-[--radix-popover-trigger-width] p-0 bg-[#2c3554] border-[#ffffff]/20 text-white">
+                      <Command>
+                        <CommandList>
+                          <CommandEmpty>No gender found.</CommandEmpty>
+                          <CommandGroup>
+                            {genderOptions.map((option) => (
+                              <CommandItem
+                                key={option.value}
+                                onSelect={() => handleGenderChange(option.value as 'MALE' | 'FEMALE' | 'OTHER')}
+                                className="hover:bg-[#9747ff]/10 rounded-lg"
+                              >
+                                <Check
+                                  className={cn(
+                                    "mr-2 h-4 w-4",
+                                    formData.gender === option.value ? "opacity-100 text-[#9747ff]" : "opacity-0"
+                                  )}
+                                />
+                                {option.label}
+                              </CommandItem>
+                            ))}
+                          </CommandGroup>
+                        </CommandList>
+                      </Command>
+                    </PopoverContent>
+                  </Popover>
                 </div>
               </div>
 

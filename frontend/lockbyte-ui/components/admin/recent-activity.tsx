@@ -45,16 +45,22 @@ export function RecentActivity() {
       <div className="flex border-b border-primary/20 mb-4">
         <button
           onClick={() => setActiveTab("newUsers")}
-          className={`px-4 py-2 text-sm font-medium transition-all duration-300 relative ${activeTab === "newUsers" ? "text-primary" : "text-white/70 hover:text-white"
-            }`}
+          className={`px-4 py-2 text-sm font-medium transition-all duration-300 relative ${
+            activeTab === "newUsers" 
+              ? "text-white font-bold drop-shadow-[0_0_8px_rgba(151,71,255,0.7)]" 
+              : "text-white/70 hover:text-white"
+          }`}
         >
           {activeTab === "newUsers" && <div className="absolute bottom-0 left-0 right-0 h-0.5 bg-primary" />}
           New Users
         </button>
         <button
           onClick={() => setActiveTab("recentSolves")}
-          className={`px-4 py-2 text-sm font-medium transition-all duration-300 relative ${activeTab === "recentSolves" ? "text-primary" : "text-white/70 hover:text-white"
-            }`}
+          className={`px-4 py-2 text-sm font-medium transition-all duration-300 relative ${
+            activeTab === "recentSolves" 
+              ? "text-white font-bold drop-shadow-[0_0_8px_rgba(151,71,255,0.7)]" 
+              : "text-white/70 hover:text-white"
+          }`}
         >
           {activeTab === "recentSolves" && <div className="absolute bottom-0 left-0 right-0 h-0.5 bg-primary" />}
           Recent Solves
