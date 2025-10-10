@@ -1,28 +1,23 @@
-import React from "react";
-import { Icon } from "lucide-react";
+import type React from "react"
 
 interface StatCardProps {
-  icon: React.ElementType;
-  title: string;
-  value: string;
-  color: string;
+  icon: React.ElementType
+  title: string
+  value: string
 }
 
-export function StatCard({ icon: Icon, title, value, color }: StatCardProps) {
-  const glowColor = `shadow-[0_0_15px_rgba(${color},0.4)]`;
-  const borderColor = `border-purple-500/30`;
-  const hoverBorderColor = `hover:border-purple-500/80`;
-
+export function StatCard({ icon: Icon, title, value }: StatCardProps) {
   return (
-    <div
-      className={`bg-gray-800/50 backdrop-blur-sm p-6 rounded-lg border ${borderColor} ${hoverBorderColor} transition-all duration-300 cursor-pointer group ${glowColor}`}>
+    <div className="bg-gradient-to-br from-[#ffffff]/8 via-[#9747ff]/5 to-[#5a5bed]/8 backdrop-blur-sm p-6 rounded-xl border border-[#ffffff]/10 hover:border-[#9747ff]/60 hover:from-[#9747ff]/10 hover:via-[#5a5bed]/8 hover:to-[#821db6]/10 transition-all duration-500 cursor-pointer group hover:shadow-[0_0_30px_rgba(151,71,255,0.2)] hover:scale-[1.02]">
       <div className="flex items-center justify-between">
         <div className="flex flex-col">
-          <p className="text-sm text-gray-400 mb-2">{title}</p>
+          <p className="text-sm text-[#ffffff]/70 mb-2">{title}</p>
           <p className="text-3xl font-bold text-white">{value}</p>
         </div>
-        <Icon className="w-10 h-10 text-purple-400 group-hover:scale-110 transition-transform" />
+        <div className="bg-gradient-to-br from-[#9747ff]/20 to-[#5a5bed]/10 p-3 rounded-xl group-hover:from-[#9747ff]/30 group-hover:to-[#821db6]/20 transition-all duration-300 shadow-lg group-hover:shadow-[0_0_20px_rgba(151,71,255,0.3)]">
+          <Icon className="w-8 h-8 text-[#9747ff] group-hover:text-[#ffffff] group-hover:scale-110 transition-all" />
+        </div>
       </div>
     </div>
-  );
+  )
 }

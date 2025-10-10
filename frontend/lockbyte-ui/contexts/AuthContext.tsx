@@ -29,16 +29,24 @@ export function AuthProvider({ children }: { children: ReactNode }) {
           headers: {
             'Content-Type': 'application/json',
           },
+          credentials: 'include',
         });
 
         if (res.ok) {
           const userData = await res.json();
           setUser(userData);
+          if (userData.roles && userData.roles.includes('ROLE_ADMIN')) {
+            document.cookie = "isAdmin=true; path=/; max-age=86400"; // Expires in 1 day
+          } else {
+            document.cookie = "isAdmin=; path=/; expires=Thu, 01 Jan 1970 00:00:00 GMT";
+          }
         } else {
           setUser(null);
+          document.cookie = "isAdmin=; path=/; expires=Thu, 01 Jan 1970 00:00:00 GMT";
         }
       } catch (error) {
         setUser(null);
+        document.cookie = "isAdmin=; path=/; expires=Thu, 01 Jan 1970 00:00:00 GMT";
       } finally {
         setIsLoading(false);
       }
@@ -54,11 +62,15 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         'Content-Type': 'application/json',
       },
       body: JSON.stringify({ username, password }),
+      credentials: 'include',
     });
 
     if (res.ok) {
       const userData = await res.json();
       setUser(userData);
+      if (userData.roles && userData.roles.includes('ROLE_ADMIN')) {
+        document.cookie = "isAdmin=true; path=/; max-age=86400"; // Expires in 1 day
+      }
       router.push('/');
     } else {
       const errorData = await res.json();
@@ -73,13 +85,14 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         'Content-Type': 'application/json',
       },
       body: JSON.stringify(userData),
+      credentials: 'include',
     });
 
     const data = await res.json();
 
     if (res.ok) {
-        router.push('/login');
-        return data;
+      router.push('/login');
+      return data;
     } else {
       throw new Error(data.message || 'Failed to sign up');
     }
@@ -87,14 +100,16 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   const logout = async () => {
     try {
-        await fetch(`${API_URL}/auth/signout`, {
-            method: 'POST',
-        });
+      await fetch(`${API_URL}/auth/signout`, {
+        method: 'POST',
+        credentials: 'include',
+      });
     } catch (error) {
-        console.error('Signout error', error);
+      console.error('Signout error', error);
     } finally {
-        setUser(null);
-        router.push('/login');
+      setUser(null);
+      document.cookie = "isAdmin=; path=/; expires=Thu, 01 Jan 1970 00:00:00 GMT";
+      router.push('/login');
     }
   };
 

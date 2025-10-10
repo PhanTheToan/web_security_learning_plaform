@@ -1,40 +1,45 @@
 @import "tailwindcss";
 @import "tw-animate-css";
 
-:root {
-    --background: oklch(1 0 0);
-    --foreground: oklch(0.145 0 0);
-    --card: oklch(1 0 0);
-    --card-foreground: oklch(0.145 0 0);
-    --popover: oklch(1 0 0);
-    --popover-foreground: oklch(0.145 0 0);
-    --primary: oklch(0.205 0 0);
-    --primary-foreground: oklch(0.985 0 0);
-    --secondary: oklch(0.97 0 0);
-    --secondary-foreground: oklch(0.205 0 0);
-    --muted: oklch(0.97 0 0);
-    --muted-foreground: oklch(0.556 0 0);
-    --accent: oklch(0.97 0 0);
-    --accent-foreground: oklch(0.205 0 0);
-    --destructive: oklch(0.577 0.245 27.325);
-    --destructive-foreground: oklch(0.577 0.245 27.325);
-    --border: oklch(0.922 0 0);
-    --input: oklch(0.922 0 0);
-    --ring: oklch(0.708 0 0);
-    --chart-1: oklch(0.646 0.222 41.116);
-    --chart-2: oklch(0.6 0.118 184.704);
-    --chart-3: oklch(0.398 0.07 227.392);
-    --chart-4: oklch(0.828 0.189 84.429);
-    --chart-5: oklch(0.769 0.188 70.08);
-    --radius: 0.625rem;
-    --sidebar: oklch(0.985 0 0);
-    --sidebar-foreground: oklch(0.145 0 0);
-    --sidebar-primary: oklch(0.205 0 0);
-    --sidebar-primary-foreground: oklch(0.985 0 0);
-    --sidebar-accent: oklch(0.97 0 0);
-    --sidebar-accent-foreground: oklch(0.205 0 0);
-    --sidebar-border: oklch(0.922 0 0);
-    --sidebar-ring: oklch(0.708 0 0);
+@custom-variant dark (&:is(.dark *));
+
+.admin-theme {
+    --background: 222 30% 16%;
+    /* #252d47 - matching homepage background */
+    --foreground: 0 0% 100%;
+    --card: 222 28% 18%;
+    /* Slightly lighter than background for cards */
+    --card-foreground: 0 0% 100%;
+    --popover: 222 28% 18%;
+    --popover-foreground: 0 0% 100%;
+    --primary: 262 83% 65%;
+    /* #9747ff - matching homepage purple */
+    --primary-foreground: 0 0% 100%;
+    --secondary: 248 73% 62%;
+    /* #5a5bed - matching homepage secondary purple */
+    --secondary-foreground: 0 0% 100%;
+    --muted: 222 25% 22%;
+    --muted-foreground: 220 9% 70%;
+    /* Lighter muted text for better readability */
+    --accent: 286 47% 40%;
+    /* #821db6 - matching homepage dark purple */
+    --accent-foreground: 0 0% 100%;
+    --destructive: 0 84.2% 60.2%;
+    --destructive-foreground: 0 0% 100%;
+    --border: 0 0% 100% / 0.1;
+    /* White border with low opacity like homepage */
+    --input: 222 25% 22%;
+    --ring: 262 83% 65%;
+    --radius: 0.75rem;
+    /* Matching homepage rounded-xl */
+
+    /* Added homepage gradient colors */
+    --gradient-from: 262 83% 65%;
+    /* #9747ff */
+    --gradient-via: 248 73% 62%;
+    /* #5a5bed */
+    --gradient-to: 286 47% 40%;
+    /* #821db6 */
 }
 
 .dark {
@@ -73,7 +78,6 @@
 }
 
 @theme inline {
-    /* optional: --font-sans, --font-serif, --font-mono if they are applied in the layout.tsx */
     --color-background: var(--background);
     --color-foreground: var(--foreground);
     --color-card: var(--card);
@@ -102,6 +106,7 @@
     --radius-md: calc(var(--radius) - 2px);
     --radius-lg: var(--radius);
     --radius-xl: calc(var(--radius) + 4px);
+    /* 16px for extra rounded corners */
     --color-sidebar: var(--sidebar);
     --color-sidebar-foreground: var(--sidebar-foreground);
     --color-sidebar-primary: var(--sidebar-primary);
@@ -123,8 +128,6 @@
 }
 
 @layer base {
-
-    /* 1. Hiệu ứng cho ổ khóa chính */
     @keyframes float-and-rotate {
 
         0%,
@@ -149,7 +152,6 @@
         }
     }
 
-    /* 2. Hiệu ứng cho các hạt sáng lấp lánh */
     @keyframes sparkle {
 
         0%,
@@ -169,7 +171,6 @@
         }
     }
 
-    /* 3. Hiệu ứng cho vòng cung Hologram xoay */
     @keyframes spin-slow {
         from {
             transform: rotate(0deg);
@@ -190,7 +191,6 @@
         }
     }
 
-    /* 4. Hiệu ứng cho các ký tự số bay lơ lửng */
     @keyframes float-subtle {
         0% {
             transform: translateY(0);
@@ -225,7 +225,6 @@
         }
     }
 
-    /* 5. Hiệu ứng Glitch tinh chỉnh (ngắt quãng) */
     @keyframes subtle-glitch {
         0% {
             transform: translate(0, 0) skew(0);
@@ -250,7 +249,7 @@
 
     @keyframes subtle-glitch-pseudo {
         0% {
-            content: '';
+            content: "";
         }
 
         2% {
@@ -273,21 +272,30 @@
             content: none;
         }
     }
+
+    /* Added purple glow animation for admin interface */
+    @keyframes glow-purple {
+
+        0%,
+        100% {
+            box-shadow: 0 0 10px rgba(151, 71, 255, 0.3), 0 0 20px rgba(151, 71, 255, 0.2);
+        }
+
+        50% {
+            box-shadow: 0 0 20px rgba(151, 71, 255, 0.5), 0 0 30px rgba(151, 71, 255, 0.3);
+        }
+    }
 }
 
 @layer utilities {
-
-    /* 1. Class cho ổ khóa chính */
     .animate-float-and-rotate {
         animation: float-and-rotate 8s ease-in-out infinite;
     }
 
-    /* 2. Class cho các hạt sáng lấp lánh */
     .animate-sparkle {
         animation: sparkle 5s ease-out infinite;
     }
 
-    /* 3. Class cho vòng cung Hologram */
     .animate-spin-slow {
         animation: spin-slow 20s linear infinite;
     }
@@ -296,7 +304,6 @@
         animation: spin-slow-reverse 15s linear infinite;
     }
 
-    /* 4. Class cho các ký tự số bay lơ lửng */
     .animate-float-subtle {
         animation: float-subtle 8s ease-in-out infinite;
     }
@@ -305,7 +312,6 @@
         animation: float-subtle-2 12s ease-in-out infinite;
     }
 
-    /* 5. Class và pseudo-elements cho Glitch tinh chỉnh */
     .glitch-wrapper-subtle {
         position: relative;
     }
@@ -316,14 +322,13 @@
 
     .glitch-wrapper-subtle::before,
     .glitch-wrapper-subtle::after {
-        content: '';
+        content: "";
         position: absolute;
         top: 0;
         left: 0;
         width: 100%;
         height: 100%;
         background: #252d47;
-        /* Đặt màu nền giống với section để che tốt hơn */
         z-index: 10;
         opacity: 0;
         animation: subtle-glitch-pseudo 4s ease-in-out infinite;
@@ -331,19 +336,67 @@
 
     .glitch-wrapper-subtle::after {
         animation-delay: -2s;
-        /* Chạy lệch pha với ::before */
+    }
+
+    /* Added purple glow utility class */
+    .animate-glow-purple {
+        animation: glow-purple 3s infinite ease-in-out;
+    }
+
+    /* Updated glassmorphism to match homepage style */
+    .glass-card {
+        background: linear-gradient(135deg,
+                rgba(255, 255, 255, 0.08) 0%,
+                rgba(151, 71, 255, 0.05) 50%,
+                rgba(90, 91, 237, 0.08) 100%);
+        backdrop-filter: blur(10px);
+        border: 1px solid rgba(255, 255, 255, 0.1);
+    }
+
+    .glass-card-hover {
+        background: linear-gradient(135deg,
+                rgba(151, 71, 255, 0.1) 0%,
+                rgba(90, 91, 237, 0.08) 50%,
+                rgba(130, 29, 182, 0.1) 100%);
+        border: 1px solid rgba(151, 71, 255, 0.6);
     }
 }
 
 @keyframes glow {
-  0%, 100% {
-    box-shadow: 0 0 5px #9747ff, 0 0 10px #9747ff, 0 0 15px #9747ff;
-  }
-  50% {
-    box-shadow: 0 0 10px #9747ff, 0 0 20px #9747ff, 0 0 30px #9747ff;
-  }
+
+    0%,
+    100% {
+        box-shadow: 0 0 5px #9747ff, 0 0 10px #9747ff, 0 0 15px #9747ff;
+    }
+
+    50% {
+        box-shadow: 0 0 10px #9747ff, 0 0 20px #9747ff, 0 0 30px #9747ff;
+    }
 }
 
 .animate-glow {
-  animation: glow 2s infinite ease-in-out;
+    animation: glow 2s infinite ease-in-out;
+}
+
+.prose code::before,
+.prose code::after {
+    content: "";
+}
+
+.prose code {
+    border-radius: 0.375rem;
+    /* Increased from 0.25rem for better rounded corners */
+    background-color: hsl(var(--muted));
+    padding: 0.125rem 0.375rem;
+    font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
+    font-size: 0.875rem;
+    line-height: 1.25rem;
+    font-weight: 600;
+}
+
+.prose pre {
+    border-radius: 0.75rem;
+    /* Increased from 0.5rem to match admin theme */
+    background-color: hsl(var(--muted));
+    padding: 1rem;
 }

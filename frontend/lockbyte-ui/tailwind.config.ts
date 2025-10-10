@@ -7,6 +7,14 @@ module.exports = {
     ],
     theme: {
         extend: {
+            colors: {
+                'status-success-fg': 'hsl(var(--status-success-fg))',
+                'status-success-bg': 'hsl(var(--status-success-bg))',
+                'status-warning-fg': 'hsl(var(--status-warning-fg))',
+                'status-warning-bg': 'hsl(var(--status-warning-bg))',
+                'status-danger-fg': 'hsl(var(--status-danger-fg))',
+                'status-danger-bg': 'hsl(var(--status-danger-bg))',
+            },
             keyframes: {
                 'float-and-rotate': {
                     '0%, 100%': {
