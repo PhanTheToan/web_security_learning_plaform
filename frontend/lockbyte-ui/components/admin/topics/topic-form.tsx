@@ -22,11 +22,16 @@ import {
   CardFooter,
 } from "@/components/ui/card";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
-import { Command, CommandEmpty, CommandGroup, CommandInput, CommandItem, CommandList } from "@/components/ui/command";
+import { Command, CommandEmpty, CommandGroup, CommandItem, CommandList } from "@/components/ui/command";
 import MarkdownEditor from "@/components/admin/shared/markdown-editor";
 
+interface Lab {
+  id: string;
+  name: string;
+}
+
 // Mock data for labs and tags
-const mockLabs = [
+const mockLabs: Lab[] = [
   { id: "LAB001", name: "SQL Injection Fundamentals" },
   { id: "LAB002", name: "XSS Attack Vectors" },
   { id: "LAB003", name: "CSRF Prevention Techniques" },
@@ -36,7 +41,7 @@ const mockLabs = [
 const mockTags = ["Web Basics", "Attack Vectors", "SQL", "XSS", "CSRF"];
 
 export function TopicForm() {
-  const [relatedLabs, setRelatedLabs] = useState<any[]>([]);
+  const [relatedLabs, setRelatedLabs] = useState<Lab[]>([]);
   const [selectedTags, setSelectedTags] = useState([mockTags[0], mockTags[1]]);
 
   // State for Markdown Editor and Link Insertion
@@ -45,7 +50,7 @@ export function TopicForm() {
 
   // STATE MỚI
   const [searchQuery, setSearchQuery] = useState(""); // Lưu trữ nội dung ô tìm kiếm
-  const [searchResults, setSearchResults] = useState<any[]>([]); // Lưu kết quả tìm kiếm từ API
+  const [searchResults, setSearchResults] = useState<Lab[]>([]); // Lưu kết quả tìm kiếm từ API
   const [isSearching, setIsSearching] = useState(false); // Hiển thị trạng thái loading
   const [isPopoverOpen, setIsPopoverOpen] = useState(false);
 
@@ -78,7 +83,7 @@ export function TopicForm() {
 
 
   // HÀM ĐỂ THÊM LAB VÀO DANH SÁCH relatedLabs
-  const handleAddLab = (labToAdd: any) => {
+  const handleAddLab = (labToAdd: Lab) => {
     // Kiểm tra để không thêm lab đã có trong danh sách
     if (!relatedLabs.some(lab => lab.id === labToAdd.id)) {
       setRelatedLabs(prevLabs => [...prevLabs, labToAdd]);
@@ -88,7 +93,7 @@ export function TopicForm() {
     setIsPopoverOpen(false); // **Đóng Popover một cách chủ động**
   };
 
-  const removeLab = (lab: any) => {
+  const removeLab = (lab: Lab) => {
     setRelatedLabs(relatedLabs.filter((l) => l.id !== lab.id));
   };
 

@@ -3,8 +3,6 @@
 import ReactMarkdown from "react-markdown";
 import rehypeRaw from "rehype-raw";
 import rehypeSanitize from "rehype-sanitize";
-import { Button } from "@/components/ui/button";
-import { LinkIcon } from "lucide-react";
 
 interface MarkdownEditorProps {
   value: string;

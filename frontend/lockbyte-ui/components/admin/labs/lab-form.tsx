@@ -210,16 +210,16 @@ export function LabForm({ mode = "create", initialData }: LabFormProps) {
                 </TabsTrigger>
               </TabsList>
               <TabsContent value="description">
-                <MarkdownEditor value={description} onChange={setDescription} textareaRef={descriptionRef} onInsertLabClick={() => { /* TODO */ }} />
+                <MarkdownEditor value={description} onChange={setDescription} textareaRef={descriptionRef} />
               </TabsContent>
               <TabsContent value="solution">
-                <MarkdownEditor value={solution} onChange={setSolution} textareaRef={solutionRef} onInsertLabClick={() => { /* TODO */ }} />
+                <MarkdownEditor value={solution} onChange={setSolution} textareaRef={solutionRef} />
               </TabsContent>
               <TabsContent value="hint">
-                <MarkdownEditor value={hint} onChange={setHint} textareaRef={hintRef} onInsertLabClick={() => { /* TODO */ }} />
+                <MarkdownEditor value={hint} onChange={setHint} textareaRef={hintRef} />
               </TabsContent>
               <TabsContent value="fix">
-                <MarkdownEditor value={fixVulnerabilities} onChange={setFixVulnerabilities} textareaRef={fixRef} onInsertLabClick={() => { /* TODO */ }} />
+                <MarkdownEditor value={fixVulnerabilities} onChange={setFixVulnerabilities} textareaRef={fixRef} />
               </TabsContent>
             </Tabs>
           </CardContent>
