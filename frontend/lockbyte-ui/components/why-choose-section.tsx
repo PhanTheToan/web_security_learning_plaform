@@ -1,5 +1,7 @@
+"use client";
 import { Lightbulb, Users, Clock, CheckCircle } from "lucide-react"
-import Image from "next/image";
+import React from 'react';
+import { DotLottieReact } from '@lottiefiles/dotlottie-react';
 
 const features = [
   {
@@ -30,15 +32,12 @@ export function WhyChooseSection() {
       <div className="container mx-auto px-6">
         <div className="grid md:grid-cols-2 gap-12 items-center">
           <div className="relative">
-            <div className="bg-[#f5f5f5] rounded-2xl p-4 aspect-square flex items-center justify-center">
-              <div className="relative w-full h-full">
-                <Image
-                  src="/security-team-collaboration.jpg"
-                  alt="Why Choose CyberLock"
-                  fill
-                  className="object-cover rounded-lg"
-                />
-              </div>
+            <div className=" rounded-2xl p-4 aspect-square flex items-center justify-center">
+              <DotLottieReact
+                src="/maintenance cyber security.lottie"
+                loop
+                autoplay
+              />
             </div>
           </div>
 
@@ -56,7 +55,8 @@ export function WhyChooseSection() {
                     <p className="text-[#252d47]/70 leading-relaxed">{feature.description}</p>
                   </div>
                 </div>
-              ))}
+              ))
+              }
             </div>
           </div>
         </div>

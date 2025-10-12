@@ -1,6 +1,9 @@
+"use client";
 import { Button } from "@/components/ui/button"
 import { ArrowRight } from "lucide-react"
 import Image from "next/image";
+import React from 'react';
+import { DotLottieReact } from '@lottiefiles/dotlottie-react';
 
 export function CtaSection() {
   return (
@@ -21,13 +24,12 @@ export function CtaSection() {
           </div>
 
           <div className="relative">
-            <div className="bg-[#ffffff]/5 backdrop-blur-sm rounded-2xl p-4 border border-[#ffffff]/10 aspect-video flex items-center justify-center">
+            <div className="aspect-video flex items-center justify-center">
               <div className="relative w-full h-full">
-                <Image
-                  src="/security-operations-center.png"
-                  alt="Security Operations"
-                  fill
-                  className="object-cover rounded-lg"
+                <DotLottieReact
+                  src="/Artificial intelligence digital technology.lottie"
+                  loop
+                  autoplay
                 />
               </div>
             </div>
