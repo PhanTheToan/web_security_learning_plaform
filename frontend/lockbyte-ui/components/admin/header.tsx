@@ -35,7 +35,7 @@ const AdminHeader = () => {
   const title = generateTitle(pathname)
 
   return (
-    <header className="flex-shrink-0 h-20 flex items-center justify-between px-6 md:px-8 bg-gradient-to-r from-[#ffffff]/5 via-[#9747ff]/5 to-[#5a5bed]/5 backdrop-blur-sm border-b border-[#ffffff]/10">
+    <header className="sticky top-0 z-10 flex-shrink-0 h-20 flex items-center justify-between px-6 md:px-8 bg-gradient-to-r from-[#ffffff]/5 via-[#9747ff]/5 to-[#5a5bed]/5 backdrop-blur-sm border-b border-[#ffffff]/10">
       <h1 className="text-2xl font-bold bg-gradient-to-r from-[#ffffff] via-[#9747ff] to-[#ffffff] bg-clip-text text-white">
         {title}
       </h1>

@@ -42,8 +42,8 @@ export function HowItWorksSection() {
   })
 
   return (
-    <section className="bg-[#252d47] py-20 sm:py-28">
-      <div className="container mx-auto px-6">
+    <section className="py-20">
+      <div className="container mx-auto px-6 relative z-10">
         <h2 className="text-white text-3xl md:text-4xl font-bold text-center mb-20">
           How CyberLock Works
         </h2>

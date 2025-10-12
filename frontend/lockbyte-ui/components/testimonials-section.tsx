@@ -20,8 +20,8 @@ const testimonials = [
 
 export function TestimonialsSection() {
   return (
-    <section className="bg-[#252d47] py-20">
-      <div className="container mx-auto px-6">
+    <section className="py-20">
+      <div className="container mx-auto px-6 relative z-10">
         <div className="flex items-center justify-between mb-12">
           <h2 className="text-[#ffffff] text-3xl md:text-4xl font-bold">What Our Clients Say</h2>
           <button className="bg-gradient-to-r from-[#9747ff] via-[#821db6] to-[#9747ff] hover:from-[#821db6] hover:via-[#9747ff] hover:to-[#821db6] text-[#ffffff] px-6 py-2 rounded-full text-sm transition-all duration-300">

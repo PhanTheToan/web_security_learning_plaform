@@ -28,8 +28,8 @@ const features = [
 
 export function WhyChooseSection() {
   return (
-    <section className="bg-[#ffffff] py-20">
-      <div className="container mx-auto px-6">
+    <section className="bg-white/80 dark:bg-gray-900/80 py-20 backdrop-blur-sm">
+      <div className="container mx-auto px-6 relative z-10">
         <div className="grid md:grid-cols-2 gap-12 items-center">
           <div className="relative">
             <div className=" rounded-2xl p-4 aspect-square flex items-center justify-center">

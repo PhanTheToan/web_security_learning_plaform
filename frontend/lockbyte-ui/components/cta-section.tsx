@@ -7,8 +7,8 @@ import { DotLottieReact } from '@lottiefiles/dotlottie-react';
 
 export function CtaSection() {
   return (
-    <section className="bg-[#252d47] py-20">
-      <div className="container mx-auto px-6">
+    <section className="py-20">
+      <div className="container mx-auto px-6 relative z-10">
         <div className="grid md:grid-cols-2 gap-12 items-center">
           <div>
             <h2 className="text-[#ffffff] text-3xl md:text-4xl font-bold mb-6 leading-tight">

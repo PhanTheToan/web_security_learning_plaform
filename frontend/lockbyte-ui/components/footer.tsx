@@ -4,7 +4,7 @@ import { Input } from "@/components/ui/input"
 
 export function Footer() {
   return (
-    <footer className="bg-[#252d47] border-t border-[#ffffff]/10">
+    <footer className="py-12">
       {/* Newsletter Section */}
       <div className="border-b border-[#ffffff]/10">
         <div className="container mx-auto px-6 py-12">
@@ -30,7 +30,7 @@ export function Footer() {
       </div>
 
       {/* Main Footer */}
-      <div className="container mx-auto px-6 py-12">
+      <div className="container mx-auto px-6 py-12 relative z-10">
         <div className="grid md:grid-cols-2 lg:grid-cols-5 gap-8 mb-12">
           {/* Brand */}
           <div className="lg:col-span-1">
