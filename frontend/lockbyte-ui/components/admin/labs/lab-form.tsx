@@ -1,6 +1,6 @@
 "use client"
 
-import { useState, useEffect, useCallback } from "react"
+import { useState, useEffect, useCallback, useRef } from "react"
 import { useRouter } from "next/navigation"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
@@ -12,11 +12,9 @@ import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover
 import { Command, CommandEmpty, CommandGroup, CommandInput, CommandItem, CommandList } from "@/components/ui/command"
 import { Badge } from "@/components/ui/badge"
 import { MoveIcon as RemoveIcon, Check } from "lucide-react"
-import ReactMarkdown from "react-markdown"
-import rehypeRaw from "rehype-raw"
-import rehypeSanitize from "rehype-sanitize"
 import { cn } from "@/lib/utils"
 import { toast } from "sonner"
+import MarkdownEditor from "@/components/admin/shared/markdown-editor"
 
 // Type definitions
 interface Tag {
@@ -41,30 +39,6 @@ interface LabFormProps {
   initialData?: LabData
 }
 
-interface MarkdownEditorProps {
-  value: string
-  onChange: (value: string) => void
-}
-
-// Markdown Editor Component
-const MarkdownEditor = ({ value, onChange }: MarkdownEditorProps) => {
-  return (
-    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-      <textarea
-        value={value}
-        onChange={(e) => onChange(e.target.value)}
-        className="w-full h-96 p-4 border-2 border-primary/40 rounded-xl bg-card/50 backdrop-blur-sm font-mono text-sm text-white placeholder:text-white/40 focus-visible:ring-2 focus-visible:ring-primary focus-visible:border-primary/60 transition-all duration-300 shadow-[0_0_15px_rgba(99,102,241,0.1)]"
-        placeholder="Enter markdown content here...\n\nExample for image: ![Alt text](image_url)"
-      />
-      <div
-        className="prose prose-invert max-w-none p-4 border-2 border-primary/40 rounded-xl bg-card/50 backdrop-blur-sm overflow-auto h-96 shadow-[0_0_15px_rgba(99,102,241,0.1)] font-mono text-sm text-white"
-      >
-        <ReactMarkdown rehypePlugins={[rehypeRaw, rehypeSanitize]}>{value}</ReactMarkdown>
-      </div>
-    </div>
-  )
-}
-
 // Main Lab Form Component
 export function LabForm({ mode = "create", initialData }: LabFormProps) {
   const router = useRouter()
@@ -79,6 +53,12 @@ export function LabForm({ mode = "create", initialData }: LabFormProps) {
   const [difficulty, setDifficulty] = useState("Easy")
   const [timeoutMinutes, setTimeoutMinutes] = useState(60)
   const [status, setStatus] = useState("Draft")
+
+  // Refs for markdown editors
+  const descriptionRef = useRef<HTMLTextAreaElement>(null);
+  const solutionRef = useRef<HTMLTextAreaElement>(null);
+  const hintRef = useRef<HTMLTextAreaElement>(null);
+  const fixRef = useRef<HTMLTextAreaElement>(null);
 
   // Tags State
   const [allTags, setAllTags] = useState<Tag[]>([])
@@ -230,16 +210,16 @@ export function LabForm({ mode = "create", initialData }: LabFormProps) {
                 </TabsTrigger>
               </TabsList>
               <TabsContent value="description">
-                <MarkdownEditor value={description} onChange={setDescription} />
+                <MarkdownEditor value={description} onChange={setDescription} textareaRef={descriptionRef} onInsertLabClick={() => { /* TODO */ }} />
               </TabsContent>
               <TabsContent value="solution">
-                <MarkdownEditor value={solution} onChange={setSolution} />
+                <MarkdownEditor value={solution} onChange={setSolution} textareaRef={solutionRef} onInsertLabClick={() => { /* TODO */ }} />
               </TabsContent>
               <TabsContent value="hint">
-                <MarkdownEditor value={hint} onChange={setHint} />
+                <MarkdownEditor value={hint} onChange={setHint} textareaRef={hintRef} onInsertLabClick={() => { /* TODO */ }} />
               </TabsContent>
               <TabsContent value="fix">
-                <MarkdownEditor value={fixVulnerabilities} onChange={setFixVulnerabilities} />
+                <MarkdownEditor value={fixVulnerabilities} onChange={setFixVulnerabilities} textareaRef={fixRef} onInsertLabClick={() => { /* TODO */ }} />
               </TabsContent>
             </Tabs>
           </CardContent>

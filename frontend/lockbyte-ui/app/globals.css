@@ -383,20 +383,101 @@
     content: "";
 }
 
-.prose code {
-    border-radius: 0.375rem;
-    /* Increased from 0.25rem for better rounded corners */
-    background-color: hsl(var(--muted));
-    padding: 0.125rem 0.375rem;
-    font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
-    font-size: 0.875rem;
-    line-height: 1.25rem;
-    font-weight: 600;
-}
+@layer base {
+  /* Tùy chỉnh lớp .prose để hiển thị Markdown đẹp hơn */
+  .prose {
+    /* Đảm bảo màu chữ mặc định là màu trắng */
+    color: theme('colors.gray.300');
+  }
 
-.prose pre {
-    border-radius: 0.75rem;
-    /* Increased from 0.5rem to match admin theme */
-    background-color: hsl(var(--muted));
-    padding: 1rem;
+  /* === Headings - Tiêu đề === */
+  .prose h1,
+  .prose h2,
+  .prose h3,
+  .prose h4,
+  .prose h5,
+  .prose h6 {
+    /* Đặt màu cho tất cả tiêu đề */
+    color: theme('colors.white');
+    font-weight: 600; /* semi-bold */
+  }
+
+  .prose h1 {
+    font-size: 2.25rem; /* text-4xl */
+  }
+
+  .prose h2 {
+    font-size: 1.875rem; /* text-3xl */
+    margin-top: 2em;
+    margin-bottom: 1em;
+  }
+  
+  .prose h3 {
+    font-size: 1.5rem; /* text-2xl */
+    margin-top: 1.8em;
+    margin-bottom: 0.8em;
+  }
+
+  /* === Lists - Danh sách (vấn đề của bạn với dấu `-`) === */
+  .prose ul > li::before {
+    /* Đổi màu dấu • của danh sách */
+    background-color: theme('colors.purple.400');
+  }
+
+  .prose ol > li::before {
+    /* Đổi màu số của danh sách có thứ tự */
+    color: theme('colors.purple.400');
+  }
+
+  .prose li {
+    margin-top: 0.5em;
+    margin-bottom: 0.5em;
+  }
+
+  /* === Links - Đường dẫn === */
+  .prose a {
+    color: theme('colors.purple.400');
+    font-weight: 500;
+    text-decoration: none;
+    transition: color 0.2s ease-in-out;
+  }
+
+  .prose a:hover {
+    color: theme('colors.purple.300');
+    text-decoration: underline;
+  }
+
+  /* === Blockquotes - Trích dẫn === */
+  .prose blockquote {
+    color: theme('colors.gray.400');
+    border-left-color: theme('colors.purple.500');
+    font-style: italic;
+  }
+
+  /* === Code - Mã nguồn === */
+  /* Code inline (nằm trong dòng) */
+  .prose code {
+    color: theme('colors.pink.400');
+    background-color: rgba(151, 71, 255, 0.1); /* Màu tím nhạt, trong suốt */
+    padding: 0.2em 0.4em;
+    border-radius: 0.25rem;
+    font-weight: 600;
+  }
+
+  /* Code block (khối mã) */
+  .prose pre {
+    background-color: #1E1E1E; /* Màu nền tối cho khối code */
+    border: 1px solid theme('colors.white / 10%');
+    border-radius: 0.5rem;
+  }
+
+  .prose pre code {
+    background-color: transparent;
+    padding: 0;
+  }
+  
+  /* === Horizontal Rules - Đường kẻ ngang (---) === */
+  .prose hr {
+    border-color: theme('colors.white / 15%');
+  }
 }
