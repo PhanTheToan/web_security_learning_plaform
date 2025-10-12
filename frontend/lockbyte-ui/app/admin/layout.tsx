@@ -8,7 +8,7 @@ export default function AdminLayout({
   children: React.ReactNode
 }) {
   return (
-    <div className="admin-theme flex h-screen bg-[#252d47] text-foreground">
+    <div className="admin-theme flex h-screentext-foreground">
       <Sidebar />
       <div className="flex flex-col flex-1 overflow-y-auto">
         <AdminHeader />

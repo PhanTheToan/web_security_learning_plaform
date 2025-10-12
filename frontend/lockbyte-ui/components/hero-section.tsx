@@ -4,7 +4,7 @@ import Image from "next/image";
 
 export function HeroSection() {
   return (
-    <section className="bg-[#252d47] py-20 md:py-32 overflow-hidden"> {/* Thêm overflow-hidden nếu cần */}
+    <section className="py-20 md:py-32 overflow-hidden"> {/* Thêm overflow-hidden nếu cần */}
       <div className="container mx-auto px-6 relative z-10">
         <div className="grid md:grid-cols-2 gap-12 items-center">
           <div>

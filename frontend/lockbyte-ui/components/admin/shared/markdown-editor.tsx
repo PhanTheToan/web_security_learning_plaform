@@ -9,7 +9,6 @@ import { LinkIcon } from "lucide-react";
 interface MarkdownEditorProps {
   value: string;
   onChange: (value: string) => void;
-  onInsertLabClick: () => void;
   textareaRef: React.RefObject<HTMLTextAreaElement>;
   height?: string;
 }
@@ -17,21 +16,12 @@ interface MarkdownEditorProps {
 const MarkdownEditor = ({
   value,
   onChange,
-  onInsertLabClick,
   textareaRef,
   height = "h-96",
 }: MarkdownEditorProps) => {
   return (
     <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
       <div className="flex flex-col gap-2">
-        <Button
-          variant="outline"
-          onClick={onInsertLabClick}
-          className="bg-transparent hover:bg-white/10 border-white/20 hover:border-white/40 text-white rounded-xl w-fit"
-        >
-          <LinkIcon className="h-4 w-4 mr-2" />
-          Insert Lab Link
-        </Button>
         <textarea
           ref={textareaRef}
           value={value}
