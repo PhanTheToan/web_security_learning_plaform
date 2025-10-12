@@ -7,14 +7,15 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
+import web_security_plaform.backend.model.ENum.ERole;
 import web_security_plaform.backend.model.Lab;
+import web_security_plaform.backend.model.Topic;
 import web_security_plaform.backend.model.User;
-import web_security_plaform.backend.payload.dto.AuthorDTO;
-import web_security_plaform.backend.payload.dto.LabDetailDto;
-import web_security_plaform.backend.payload.dto.LabResponseDTO;
-import web_security_plaform.backend.payload.dto.TagDTO;
+import web_security_plaform.backend.payload.dto.*;
 import web_security_plaform.backend.payload.request.LabRequest;
+import web_security_plaform.backend.payload.request.TopicRequest;
 import web_security_plaform.backend.service.LabService;
+import web_security_plaform.backend.service.TopicService;
 import web_security_plaform.backend.service.UserService;
 
 import java.security.Principal;
@@ -29,6 +30,9 @@ public class AdminController {
     private LabService labService;
     @Autowired
     private UserService userService;
+
+    @Autowired
+    private TopicService topicService;
 
 
     @GetMapping("/labs")
@@ -99,4 +103,36 @@ public class AdminController {
 
         return dto;
     }
+
+    @PostMapping("/topics")
+    public ResponseEntity<?> createTopics(@RequestBody TopicRequest topicRequest, Principal principal){
+        User user = userService.findByUsername(principal.getName());
+        if(user==null){
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Author not found.");
+        }
+        Topic response = topicService.createTopic(topicRequest,user);
+        return ResponseEntity.ok("Create topics success fully !");
+    }
+
+    @PutMapping("/topics/{id}")
+    public ResponseEntity<?> updateTopics(@RequestBody TopicRequest topicRequest, @PathVariable long id,Principal principal){
+        User user = userService.findByUsername(principal.getName());
+        if(user==null){
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Author not found.");
+        }
+        Topic response = topicService.updateTopics(topicRequest,id,user);
+        return ResponseEntity.ok("Update topics success fully !");
+    }
+
+    @GetMapping("/topics")
+    public ResponseEntity<Page<TopicsResponse>> getAllTopics(@RequestParam(defaultValue = "0") int page,
+                                                             @RequestParam(defaultValue = "10") int size) {
+        return ResponseEntity.ok(topicService.getAllTopDetails(page, size));
+    }
+
+    @GetMapping("/topics/{id}")
+    public ResponseEntity<?> getInformation(@PathVariable long id){
+        return ResponseEntity.ok(topicService.getTopicDetailById(id));
+    }
+
 }

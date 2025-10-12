@@ -4,9 +4,10 @@ import lombok.Data;
 import web_security_plaform.backend.model.ENum.EStatus;
 
 @Data
-public class TopicsResponse {
-    private int id;
-    private String title;
-    private EStatus status;
-    private String authorName;
+public class LabInfoDetail {
+    private Integer id;
+
+    private String name;
+
+    private EStatus eStatus;
 }
