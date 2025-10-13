@@ -8,7 +8,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { User, Lock, ArrowRight } from "lucide-react";
 import Link from "next/link";
-
+import { Footer } from "@/components/footer"
 export default function LoginPage() {
   const { login } = useAuth();
   const [username, setUsername] = useState('');
@@ -30,7 +30,7 @@ export default function LoginPage() {
   };
 
   return (
-    <div className="min-h-screen bg-[#252d47] flex flex-col">
+    <div className="min-h-screen flex flex-col">
       <Header />
       <div className="flex-1 flex items-center justify-center px-6 py-12">
         <div className="w-full max-w-md">
@@ -99,6 +99,7 @@ export default function LoginPage() {
           </div>
         </div>
       </div>
+      <Footer />
     </div>
   );
 }

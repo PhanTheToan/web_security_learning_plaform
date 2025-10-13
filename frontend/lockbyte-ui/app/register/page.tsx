@@ -3,6 +3,7 @@
 import { useState, ChangeEvent, FormEvent } from 'react';
 import { useAuth } from '@/contexts/AuthContext';
 import { Header } from "@/components/header";
+import { Footer } from "@/components/footer";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -71,71 +72,111 @@ export default function RegisterPage() {
   ];
 
   return (
-    <div className="min-h-screen bg-[#252d47] flex flex-col">
+    <div className="min-h-screen flex flex-col">
       <Header />
       <div className="flex-1 flex items-center justify-center px-6 py-12">
         <div className="w-full max-w-md">
           <div className="bg-gradient-to-br from-[#ffffff]/8 via-[#9747ff]/5 to-[#5a5bed]/8 backdrop-blur-sm rounded-2xl p-8 border border-[#ffffff]/10 shadow-[0_0_40px_rgba(151,71,255,0.15)]">
             <div className="text-center mb-8">
-              <h1 className="text-[#ffffff] text-3xl font-bold mb-2">Create Account</h1>
-              <p className="text-[#ffffff]/70">Start protecting your business today</p>
+              <h1 className="text-white text-3xl font-bold mb-2">Create Account</h1>
+              <p className="text-white/70">Start protecting your business today</p>
             </div>
 
             <form className="space-y-5" onSubmit={handleSubmit}>
+              {/* Username */}
               <div className="space-y-2">
-                <Label htmlFor="username" className="text-[#ffffff] text-sm font-medium">Username</Label>
+                <Label htmlFor="username" className="text-white text-sm font-medium">Username</Label>
                 <div className="relative">
                   <User className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-[#9747ff]" />
-                  <Input id="username" type="text" placeholder="username" required onChange={handleChange} value={formData.username} className="pl-11 bg-[#ffffff]/5 border-[#ffffff]/10 text-[#ffffff] placeholder:text-[#ffffff]/40 focus:border-[#9747ff] focus:ring-[#9747ff]/20 rounded h-12" />
+                  <Input
+                    id="username"
+                    type="text"
+                    placeholder="username"
+                    required
+                    onChange={handleChange}
+                    value={formData.username}
+                    className="pl-11 bg-[#ffffff]/5 border-[#ffffff]/10 text-white placeholder:text-white/40 focus:border-[#9747ff] focus:ring-[#9747ff]/20 h-12 rounded"
+                  />
                 </div>
               </div>
 
+              {/* Full Name */}
               <div className="space-y-2">
-                <Label htmlFor="fullName" className="text-[#ffffff] text-sm font-medium">Full Name</Label>
+                <Label htmlFor="fullName" className="text-white text-sm font-medium">Full Name</Label>
                 <div className="relative">
                   <User className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-[#9747ff]" />
-                  <Input id="fullName" type="text" placeholder="Full name" required onChange={handleChange} value={formData.fullName} className="pl-11 bg-[#ffffff]/5 border-[#ffffff]/10 text-[#ffffff] placeholder:text-[#ffffff]/40 focus:border-[#9747ff] focus:ring-[#9747ff]/20 rounded h-12" />
+                  <Input
+                    id="fullName"
+                    type="text"
+                    placeholder="Full name"
+                    required
+                    onChange={handleChange}
+                    value={formData.fullName}
+                    className="pl-11 bg-[#ffffff]/5 border-[#ffffff]/10 text-white placeholder:text-white/40 focus:border-[#9747ff] focus:ring-[#9747ff]/20 h-12 rounded"
+                  />
                 </div>
               </div>
 
+              {/* Email */}
               <div className="space-y-2">
-                <Label htmlFor="email" className="text-[#ffffff] text-sm font-medium">Email Address</Label>
+                <Label htmlFor="email" className="text-white text-sm font-medium">Email</Label>
                 <div className="relative">
                   <Mail className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-[#9747ff]" />
-                  <Input id="email" type="email" placeholder="example@gmail.com" required onChange={handleChange} value={formData.email} className="pl-11 bg-[#ffffff]/5 border-[#ffffff]/10 text-[#ffffff] placeholder:text-[#ffffff]/40 focus:border-[#9747ff] focus:ring-[#9747ff]/20 rounded h-12" />
+                  <Input
+                    id="email"
+                    type="email"
+                    placeholder="example@gmail.com"
+                    required
+                    onChange={handleChange}
+                    value={formData.email}
+                    className="pl-11 bg-[#ffffff]/5 border-[#ffffff]/10 text-white placeholder:text-white/40 focus:border-[#9747ff] focus:ring-[#9747ff]/20 h-12 rounded"
+                  />
                 </div>
               </div>
 
+              {/* Password */}
               <div className="space-y-2">
-                <Label htmlFor="password" className="text-[#ffffff] text-sm font-medium">Password</Label>
+                <Label htmlFor="password" className="text-white text-sm font-medium">Password</Label>
                 <div className="relative">
                   <Lock className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-[#9747ff]" />
-                  <Input id="password" type="password" placeholder="••••••••" required onChange={handleChange} value={formData.password} className="pl-11 bg-[#ffffff]/5 border-[#ffffff]/10 text-[#ffffff] placeholder:text-[#ffffff]/40 focus:border-[#9747ff] focus:ring-[#9747ff]/20 rounded h-12" />
+                  <Input
+                    id="password"
+                    type="password"
+                    placeholder="••••••••"
+                    required
+                    onChange={handleChange}
+                    value={formData.password}
+                    className="pl-11 bg-[#ffffff]/5 border-[#ffffff]/10 text-white placeholder:text-white/40 focus:border-[#9747ff] focus:ring-[#9747ff]/20 h-12 rounded"
+                  />
                 </div>
               </div>
 
+              {/* Date + Gender */}
               <div className="grid grid-cols-2 gap-4">
+                {/* Date of Birth */}
                 <div className="space-y-2">
-                  <Label htmlFor="dateOfBirth" className="text-[#ffffff] text-sm font-medium">Date of Birth</Label>
+                  <Label htmlFor="dateOfBirth" className="text-white text-sm font-medium">Date of Birth</Label>
                   <Popover>
                     <PopoverTrigger asChild>
                       <Button
-                        variant={"outline"}
+                        type="button"
+                        variant="outline"
                         className={cn(
-                          "w-full justify-start text-left font-normal h-12 bg-[#ffffff]/5 border-[#ffffff]/10 hover:bg-[#ffffff]/10 text-white hover:text-white",
+                          "w-full justify-start text-left font-normal h-12 bg-[#ffffff]/5 border-[#ffffff]/10 hover:bg-[#ffffff]/10 text-white",
                           !formData.dateOfBirth && "text-white/40"
                         )}
                       >
                         <CalendarIcon className="mr-2 h-4 w-4" />
-                        {formData.dateOfBirth ? format(new Date(formData.dateOfBirth), "PPP") : <span>Pick a date</span>}
+                        {formData.dateOfBirth
+                          ? format(new Date(formData.dateOfBirth), "PPP")
+                          : "Pick a date"}
                       </Button>
                     </PopoverTrigger>
-                    <PopoverContent className="w-auto p-0 bg-[#2c3554] border-[#ffffff]/20 text-white" align="start">
+                    <PopoverContent sideOffset={8} className="z-50 w-auto p-0 bg-[#2c3554] border-[#ffffff]/20 text-white rounded-xl shadow-lg">
                       <Calendar
                         mode="single"
                         selected={formData.dateOfBirth ? new Date(formData.dateOfBirth) : undefined}
                         onSelect={handleDateChange}
-                        initialFocus
                         captionLayout="dropdown"
                         fromYear={1900}
                         toYear={new Date().getFullYear()}
@@ -143,23 +184,28 @@ export default function RegisterPage() {
                     </PopoverContent>
                   </Popover>
                 </div>
+
+                {/* Gender */}
                 <div className="space-y-2">
-                  <Label htmlFor="gender" className="text-[#ffffff] text-sm font-medium">Gender</Label>
+                  <Label htmlFor="gender" className="text-white text-sm font-medium">Gender</Label>
                   <Popover open={isGenderPopoverOpen} onOpenChange={setGenderPopoverOpen}>
                     <PopoverTrigger asChild>
                       <Button
+                        type="button"
                         variant="outline"
                         role="combobox"
                         aria-expanded={isGenderPopoverOpen}
-                        className="w-full justify-between h-12 bg-[#ffffff]/5 border-[#ffffff]/10 hover:bg-[#ffffff]/10 text-white hover:text-white"
+                        className="w-full justify-between h-12 bg-[#ffffff]/5 border-[#ffffff]/10 hover:bg-[#ffffff]/10 text-white"
                       >
-                        {formData.gender
-                          ? genderOptions.find((g) => g.value === formData.gender)?.label
-                          : "Select gender..."}
-                        <Users className="ml-2 h-4 w-4 shrink-0 opacity-50" />
+                        {genderOptions.find((g) => g.value === formData.gender)?.label || "Select gender..."}
+                        <Users className="ml-2 h-4 w-4 opacity-50" />
                       </Button>
                     </PopoverTrigger>
-                    <PopoverContent className="w-[--radix-popover-trigger-width] p-0 bg-[#2c3554] border-[#ffffff]/20 text-white">
+                    <PopoverContent
+                      sideOffset={6}
+                      onCloseAutoFocus={(e) => e.preventDefault()}
+                      className="z-50 w-[--radix-popover-trigger-width] p-0 bg-[#2c3554] border-[#ffffff]/20 text-white rounded-xl shadow-lg"
+                    >
                       <Command>
                         <CommandList>
                           <CommandEmpty>No gender found.</CommandEmpty>
@@ -167,8 +213,10 @@ export default function RegisterPage() {
                             {genderOptions.map((option) => (
                               <CommandItem
                                 key={option.value}
-                                onSelect={() => handleGenderChange(option.value as 'MALE' | 'FEMALE' | 'OTHER')}
-                                className="hover:bg-[#9747ff]/10 rounded-lg"
+                                value={option.value}
+                                onMouseDown={(e) => e.preventDefault()}
+                                onClick={() => handleGenderChange(option.value as 'MALE' | 'FEMALE' | 'OTHER')}
+                                className="hover:bg-[#9747ff]/10 rounded-lg cursor-pointer"
                               >
                                 <Check
                                   className={cn(
@@ -190,13 +238,16 @@ export default function RegisterPage() {
               {error && <p className="text-red-500 text-sm text-center">{error}</p>}
               {success && <p className="text-green-500 text-sm text-center">{success}</p>}
 
-              <Button type="submit" className="w-full bg-gradient-to-r from-[#9747ff] via-[#5a5bed] to-[#821db6] hover:from-[#821db6] hover:via-[#9747ff] hover:to-[#5a5bed] text-[#ffffff] h-12 text-base rounded-full transition-all duration-500 shadow-[0_0_30px_rgba(151,71,255,0.4)] hover:shadow-[0_0_40px_rgba(151,71,255,0.6)] hover:scale-[1.02]">
+              <Button
+                type="submit"
+                className="w-full bg-gradient-to-r from-[#9747ff] via-[#5a5bed] to-[#821db6] hover:from-[#821db6] hover:via-[#9747ff] hover:to-[#5a5bed] text-white h-12 text-base rounded-full transition-all duration-500 shadow-[0_0_30px_rgba(151,71,255,0.4)] hover:shadow-[0_0_40px_rgba(151,71,255,0.6)] hover:scale-[1.02]"
+              >
                 Create Account
                 <ArrowRight className="ml-2 w-4 h-4" />
               </Button>
             </form>
 
-            <p className="text-center text-[#ffffff]/70 text-sm mt-6">
+            <p className="text-center text-white/70 text-sm mt-6">
               Already have an account?{" "}
               <Link href="/login" className="text-[#9747ff] hover:text-[#5a5bed] font-medium transition-colors">
                 Sign in
@@ -205,6 +256,7 @@ export default function RegisterPage() {
           </div>
         </div>
       </div>
+      <Footer />
     </div>
   );
 }

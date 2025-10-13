@@ -80,13 +80,13 @@ const leadershipTeam = [
 
 export default function AboutPage() {
   return (
-    <div className="min-h-screen bg-[#252d47] text-white">
+    <div className="min-h-screen text-white">
       <Header />
 
       <main>
         {/* Part 1: Hero Section */}
         <section className="relative py-24 md:py-32 text-center overflow-hidden">
-          <div className="absolute inset-0 bg-gradient-to-b from-[#252d47] to-[#1a2035] z-0"></div>
+          <div className="absolute inset-0 z-0"></div>
           <div className="absolute inset-0 flex items-center justify-center z-0">
             <div className="w-[500px] h-[500px] bg-gradient-to-tr from-[#9747ff]/30 to-[#5a5bed]/30 rounded-full filter blur-3xl opacity-30"></div>
           </div>
@@ -129,7 +129,7 @@ export default function AboutPage() {
         </section>
 
         {/* Part 2: Meet Our Leadership */}
-        <section className="py-20 md:py-28 bg-[#1a2035]">
+        <section className="py-20 md:py-28">
           <div className="container mx-auto px-6">
             <div className="text-center mb-16">
               <h2 className="text-3xl md:text-4xl font-bold mb-4">Meet Our Leadership</h2>

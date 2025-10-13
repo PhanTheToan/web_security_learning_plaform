@@ -2,6 +2,7 @@ package web_security_plaform.backend.service;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
@@ -9,6 +10,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.server.ResponseStatusException;
+import web_security_plaform.backend.model.ENum.EStatus;
 import web_security_plaform.backend.model.Lab;
 import web_security_plaform.backend.model.Topic;
 import web_security_plaform.backend.model.User;
@@ -85,6 +87,32 @@ public class TopicService {
         dto.setStatus(topic.getStatus());
         return dto;
     }
+
+    @Transactional(readOnly = true)
+    public Page<TopicsResponse> getAllTopDetailsForUser(int page, int size) {
+        Pageable pageable = PageRequest.of(page, size);
+
+        Page<Topic> topicsPage = topicRepository.findTopicsWithAuthor(pageable);
+        List<TopicsResponse> publicTopics = topicsPage.getContent().stream()
+                .filter(topic -> topic.getStatus().equals(EStatus.Published))
+                .map(this::convertToDtoForUser)
+                .collect(Collectors.toList());
+
+        return new PageImpl<>(publicTopics, pageable, publicTopics.size());
+    }
+
+    private TopicsResponse convertToDtoForUser(Topic topic) {
+        User user = topic.getAuthor();
+
+        TopicsResponse dto = new TopicsResponse();
+        dto.setId(topic.getId());
+        dto.setTitle(topic.getTitle());
+        dto.setAuthorName(user.getFullName());
+        dto.setStatus(topic.getStatus());
+        return dto;
+    }
+
+
 
     @Transactional(readOnly = true)
     public TopicDetailDTO getTopicDetailById(long id) {
