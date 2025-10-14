@@ -148,9 +148,10 @@ export function LabForm({ mode = "create", initialData }: LabFormProps) {
         const errorData = await res.json()
         toast.error(`Failed to ${isEdit ? "update" : "create"} lab: ${errorData.message || "Unknown error"}`)
       }
-                } catch {
-                toast.error(`An error occurred while submitting the lab.`)
-              }  }
+    } catch {
+      toast.error(`An error occurred while submitting the lab.`)
+    }
+  }
 
   return (
     <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">

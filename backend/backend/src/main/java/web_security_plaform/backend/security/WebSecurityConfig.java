@@ -92,7 +92,7 @@ public class WebSecurityConfig { // extends WebSecurityConfigurerAdapter {
     public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
         http.cors(cors -> cors.configurationSource(request -> {
                     CorsConfiguration config = new CorsConfiguration();
-                    config.setAllowedOrigins(Arrays.asList("https://lockbyte.com","https://www.lockbyte.com","http://localhost:3000"));
+                    config.setAllowedOrigins(Arrays.asList("https://lockbyte.com","https://www.lockbyte.com","http://localhost:3000","https://web-security-learning-plaform.vercel.app"));
                     config.setAllowedMethods(Arrays.asList("GET", "POST", "PUT", "DELETE", "HEAD", "OPTIONS"));
                     config.setAllowedHeaders(Arrays.asList("Authorization", "Content-Type"));
                     config.setAllowCredentials(true);

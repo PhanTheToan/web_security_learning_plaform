@@ -60,14 +60,20 @@ const config: Config = {
                         'code, pre, kbd, samp': {
                             fontFamily: theme('fontFamily.mono').join(', '),
                         },
+                        'ul > li::marker': {
+                            color: theme('colors.purple.400'),
+                        },
+                        'ol > li::marker': {
+                            color: theme('colors.purple.400'),
+                        },
                     },
                 },
             }),
         },
     },
     plugins: [
-    require('@tailwindcss/typography'),
-  ],
+        require('@tailwindcss/typography'),
+    ],
 }
 
 export default config
