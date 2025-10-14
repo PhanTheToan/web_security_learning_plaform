@@ -30,8 +30,8 @@ export function Header() {
   return (
     <header
       className={`sticky top-0 z-50 transition-all duration-300 ${isScrolled
-          ? 'bg-[#252d47]/90 backdrop-blur-lg border-b border-[#ffffff]/10 shadow-lg'
-          : 'bg-[#252d47] border-b border-transparent'
+        ? 'bg-[#252d47]/90 backdrop-blur-lg border-b border-[#ffffff]/10 shadow-lg'
+        : 'bg-[#252d47] border-b border-transparent'
         }`}
     >
       <div className="container mx-auto px-6 py-4">
@@ -45,9 +45,9 @@ export function Header() {
             <Link href="/about" className="text-[#ffffff]/80 hover:text-[#ffffff] text-sm transition-colors">
               About
             </Link>
-            <a href="#services" className="text-[#ffffff]/80 hover:text-[#ffffff] text-sm transition-colors">
+            <Link href="/topics" className="text-[#ffffff]/80 hover:text-[#ffffff] text-sm transition-colors">
               Services
-            </a>
+            </Link>
             <a href="#team" className="text-[#ffffff]/80 hover:text-[#ffffff] text-sm transition-colors">
               Team
             </a>

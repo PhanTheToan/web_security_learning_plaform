@@ -147,7 +147,7 @@ export function PaginationComponent({
     const pageNumbers = [];
     const maxPagesToShow = 5;
     let startPage = Math.max(0, currentPage - Math.floor(maxPagesToShow / 2));
-    let endPage = Math.min(totalPages - 1, startPage + maxPagesToShow - 1);
+    const endPage = Math.min(totalPages - 1, startPage + maxPagesToShow - 1);
 
     // Adjust window if it's at the edge
     if (endPage - startPage + 1 < maxPagesToShow) {

@@ -5,7 +5,6 @@ import { useForm, Controller } from "react-hook-form";
 import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
 import {
   Select,
   SelectContent,
@@ -18,7 +17,6 @@ import { XIcon, SearchIcon, LinkIcon } from "lucide-react";
 import {
   Card,
   CardContent,
-  CardDescription,
   CardHeader,
   CardTitle,
   CardFooter,
@@ -32,7 +30,7 @@ import { Lab, Topic } from "@/types/topic";
 interface TopicFormData {
   title: string;
   content: string;
-  status: 'Draft' | 'Published';
+  status: 'Draft' | 'Published' | 'Archived';
   labs: Lab[];
 }
 
@@ -110,7 +108,7 @@ export function TopicForm({ initialData }: { initialData?: Topic | null }) {
     const payload = {
       title: data.title,
       content: data.content,
-      status: data.status,          // "Draft" | "Published"
+      status: data.status,
       labsId: data.labs.map(l => l.id),
     };
 
@@ -189,6 +187,7 @@ export function TopicForm({ initialData }: { initialData?: Topic | null }) {
                   <SelectContent className="bg-card/95 backdrop-blur-sm border-[#ffffff]/20 rounded-xl">
                     <SelectItem value="Draft">Draft</SelectItem>
                     <SelectItem value="Published">Published</SelectItem>
+                    <SelectItem value="Archived">Archived</SelectItem>
                   </SelectContent>
                 </Select>
               )}

@@ -1,6 +1,5 @@
-// app/topics/[id]/page.tsx
 "use client";
-
+import Link from "next/link";
 import { useEffect, useMemo, useState } from "react";
 import { useParams } from "next/navigation";
 import ReactMarkdown from "react-markdown";
@@ -47,10 +46,8 @@ function CodeBlock({ children }: { children: React.ReactNode }) {
 
   let text = "";
 
-  const child: any = Array.isArray(children) ? children[0] : children;
+  const child: React.ReactElement = Array.isArray(children) ? children[0] : children;
   if (child && child.props) {
-    const cls: string | undefined = child.props.className;
-    const match = /language-(\w+)/i.exec(cls ?? "");
     const raw = child.props.children;
     text = String(Array.isArray(raw) ? raw.join("") : raw ?? "").replace(/\n+$/, "");
   }
@@ -129,9 +126,9 @@ export default function TopicDetailPage() {
         <div className="container mx-auto px-4 py-10">
           {/* breadcrumb */}
           <nav className="text-sm text-white/60 mb-6">
-            <a href="/" className="hover:text-white">Home</a>
+            <Link href="/" className="hover:text-white">Home</Link>
             <span className="mx-2">/</span>
-            <a href="/topics" className="hover:text-white">Topics</a>
+            <Link href="/topics" className="hover:text-white">Topics</Link>
             <span className="mx-2">/</span>
             <span className="text-white">{topic.title}</span>
           </nav>
@@ -167,10 +164,13 @@ export default function TopicDetailPage() {
                     h4: (p) => <h4 {...p} className="text-lg sm:text-xl font-semibold mt-6 mb-2" />,
 
                     // INLINE CODE: pill tím nhạt (block sẽ do <pre> xử lý)
-                    code({ inline, children }) {
-                      if (inline) {
+                    code({ className, children, ...props }) {
+                      const match = /language-(\w+)/.exec(className || '');
+                      // This is for inline code. Fenced code blocks are handled by the `pre` component.
+                      if (!match) {
                         return (
                           <code
+                            {...props}
                             className="
                               rounded-md
                               bg-gradient-to-r from-purple-500/12 via-indigo-500/10 to-fuchsia-500/12
@@ -183,8 +183,12 @@ export default function TopicDetailPage() {
                           </code>
                         );
                       }
-                      // fallback nếu có code “lạc” ngoài <pre>
-                      return <code>{children}</code>;
+                      // This is for fenced code blocks. It will be a child of the `pre` component.
+                      return (
+                        <code {...props} className={className}>
+                          {children}
+                        </code>
+                      );
                     },
 
                     // CODE BLOCK — chỉ qua <pre> (nhường nền cho CSS .prose pre)
@@ -223,12 +227,12 @@ export default function TopicDetailPage() {
                         <div className="font-medium">{lab.name}</div>
                         <div className="text-xs text-white/60">{lab.estatus}</div>
                       </div>
-                      <a
+                      <Link
                         href={`/labs/${lab.id}`}
                         className="text-sm underline text-purple-300 hover:text-purple-200 shrink-0"
                       >
                         View
-                      </a>
+                      </Link>
                     </li>
                   ))}
                 </ul>

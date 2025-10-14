@@ -1,23 +1,13 @@
+'use client';
 
 import {
   ArrowRight,
   FileWarning,
-  ListFilter,
-  Search,
   ServerCrash,
 } from 'lucide-react';
 import Link from 'next/link';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardFooter,
-  CardHeader,
-  CardTitle,
-} from '@/components/ui/card';
-import { Input } from '@/components/ui/input';
 import {
   Select,
   SelectContent,
@@ -26,37 +16,16 @@ import {
   SelectValue,
 } from '@/components/ui/select';
 import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { TopicsApiResponse } from '@/types/topic';
-import { Suspense } from 'react';
+import { Topic, TopicsApiResponse } from '@/types/topic';
+import { useEffect, useState } from 'react';
 import { PaginationComponent } from '@/components/ui/pagination';
+import { Header } from '@/components/header';
+import { Footer } from '@/components/footer';
+import ParticlesComponent from '@/components/particles-background';
+import { useSearchParams } from 'next/navigation';
+import { Skeleton } from '@/components/ui/skeleton';
 
-export const dynamic = 'force-dynamic';
-
-async function fetchTopics(
-  page: number,
-  size: number,
-  status: string,
-): Promise<TopicsApiResponse | null> {
-  const statusParam =
-    status && status.toLowerCase() !== 'all' ? `&status=${status}` : '';
-  try {
-    const response = await fetch(
-      `http://localhost:8082/api/public/topics?page=${page}&size=${size}${statusParam}`,
-      {
-        cache: 'no-store', // Disable caching for dynamic content
-      },
-    );
-    if (!response.ok) {
-      throw new Error('Failed to fetch topics');
-    }
-    return await response.json();
-  } catch (error) {
-    console.error(error);
-    return null;
-  }
-}
-
-function TopicCard({ topic }: { topic: any }) {
+function TopicCard({ topic }: { topic: Topic }) {
   return (
     <Link
       href={`/topics/${topic.id}`}
@@ -130,27 +99,67 @@ function Toolbar({
   );
 }
 
-import { Header } from '@/components/header';
-import { Footer } from '@/components/footer';
-import ParticlesComponent from '@/components/particles-background';
+function TopicsLoading() {
+  return (
+    <>
+      <div className="bg-gradient-to-br from-white/5 via-purple-500/5 to-blue-500/5 backdrop-blur-sm p-4 rounded-xl border border-white/10 mb-8">
+        <Skeleton className="h-10 w-64" />
+      </div>
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+        {[...Array(6)].map((_, i) => (
+          <div key={i} className="bg-gradient-to-br from-white/8 via-purple-500/5 to-blue-500/8 p-6 rounded-xl border border-white/10">
+            <Skeleton className="h-6 w-3/4 mb-2" />
+            <Skeleton className="h-4 w-1/2 mb-4" />
+            <div className="flex justify-end">
+              <Skeleton className="h-5 w-5" />
+            </div>
+          </div>
+        ))}
+      </div>
+    </>
+  );
+}
 
-export default async function TopicsPage({
-  searchParams,
-}: {
-  searchParams?: {
-    page?: string;
-    size?: string;
-    status?: string;
-  };
-}) {
+export default function TopicsPage() {
+  const searchParams = useSearchParams();
+  const [data, setData] = useState<TopicsApiResponse | null>(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+
   const sizeOptions = [10, 20, 50];
-  const currentPage = Number(searchParams?.page) || 0;
-  const size = Number(searchParams?.size) || sizeOptions[0];
-  const status = searchParams?.status || 'all';
+  const currentPage = Number(searchParams.get('page')) || 0;
+  const size = Number(searchParams.get('size')) || sizeOptions[0];
+  const status = searchParams.get('status') || 'all';
 
-  const data = await fetchTopics(currentPage, size, status);
+  useEffect(() => {
+    async function fetchTopics() {
+      setLoading(true);
+      setError(null);
+      const statusParam =
+        status && status.toLowerCase() !== 'all' ? `&status=${status}` : '';
+      try {
+        const response = await fetch(
+          `http://localhost:8082/api/public/topics?page=${currentPage}&size=${size}${statusParam}`,
+          {
+            cache: 'no-store',
+          },
+        );
+        if (!response.ok) {
+          throw new Error('Failed to fetch topics');
+        }
+        const result = await response.json();
+        setData(result);
+      } catch (err) {
+        setError(err instanceof Error ? err.message : 'An unknown error occurred');
+      } finally {
+        setLoading(false);
+      }
+    }
 
-  if (!data) {
+    fetchTopics();
+  }, [currentPage, size, status]);
+
+  if (error) {
     return (
       <div className="flex flex-col items-center justify-center min-h-screen bg-gray-900 text-white">
         <ServerCrash className="h-16 w-16 text-red-500" />
@@ -181,50 +190,54 @@ export default async function TopicsPage({
             </p>
           </header>
 
-          <div className="bg-gradient-to-br from-white/5 via-purple-500/5 to-blue-500/5 backdrop-blur-sm p-4 rounded-xl border border-white/10 mb-8">
-            <Suspense fallback={<div>Loading toolbar...</div>}>
-              <Toolbar
-                size={size}
-                status={status}
-                totalElements={data.totalElements}
-                sizeOptions={sizeOptions}
-              />
-            </Suspense>
-          </div>
-
-          {data.empty ? (
-            <div className="bg-gradient-to-br from-white/5 via-purple-500/5 to-blue-500/5 backdrop-blur-sm p-12 rounded-xl border border-white/10 flex flex-col items-center justify-center min-h-[40vh]">
-              <FileWarning className="h-12 w-12 text-gray-500" />
-              <h3 className="mt-4 text-xl font-semibold">No Topics Found</h3>
-              <p className="mt-1 text-gray-400">
-                Try adjusting your filters or check back later.
-              </p>
-            </div>
+          {loading || !data ? (
+            <TopicsLoading />
           ) : (
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-              {data.content.map((topic) => (
-                <TopicCard key={topic.id} topic={topic} />
-              ))}
-            </div>
-          )}
-
-          {!data.empty && (
-            <div className="mt-12 flex items-center justify-between">
-              <div className="text-sm text-gray-400">
-                Showing{' '}
-                <strong>
-                  {data.pageable.offset + 1}–
-                  {data.pageable.offset + data.numberOfElements}
-                </strong>{' '}
-                of <strong>{data.totalElements}</strong> topics
+            <>
+              <div className="bg-gradient-to-br from-white/5 via-purple-500/5 to-blue-500/5 backdrop-blur-sm p-4 rounded-xl border border-white/10 mb-8">
+                <Toolbar
+                  size={size}
+                  status={status}
+                  totalElements={data.totalElements}
+                  sizeOptions={sizeOptions}
+                />
               </div>
-              <PaginationComponent
-                totalPages={data.totalPages}
-                currentPage={currentPage}
-                size={size}
-                status={status}
-              />
-            </div>
+
+              {data.empty ? (
+                <div className="bg-gradient-to-br from-white/5 via-purple-500/5 to-blue-500/5 backdrop-blur-sm p-12 rounded-xl border border-white/10 flex flex-col items-center justify-center min-h-[40vh]">
+                  <FileWarning className="h-12 w-12 text-gray-500" />
+                  <h3 className="mt-4 text-xl font-semibold">No Topics Found</h3>
+                  <p className="mt-1 text-gray-400">
+                    Try adjusting your filters or check back later.
+                  </p>
+                </div>
+              ) : (
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                  {data.content.map((topic) => (
+                    <TopicCard key={topic.id} topic={topic} />
+                  ))}
+                </div>
+              )}
+
+              {!data.empty && (
+                <div className="mt-12 flex items-center justify-between">
+                  <div className="text-sm text-gray-400">
+                    Showing{' '}
+                    <strong>
+                      {data.pageable.offset + 1}–
+                      {data.pageable.offset + data.numberOfElements}
+                    </strong>{' '}
+                    of <strong>{data.totalElements}</strong> topics
+                  </div>
+                  <PaginationComponent
+                    totalPages={data.totalPages}
+                    currentPage={currentPage}
+                    size={size}
+                    status={status}
+                  />
+                </div>
+              )}
+            </>
           )}
         </div>
       </main>

@@ -15,7 +15,7 @@ export interface Topic {
   id: number;
   title: string;
   status: 'Published' | 'Draft' | 'Archived';
-  authorName: string;
+  authorName?: string;
   content: string;
   labs: Lab[];
 }

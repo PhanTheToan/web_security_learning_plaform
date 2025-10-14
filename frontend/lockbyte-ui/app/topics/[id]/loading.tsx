@@ -11,7 +11,6 @@ import {
   CardHeader,
 } from '@/components/ui/card';
 import { Skeleton } from '@/components/ui/skeleton';
-import { Home } from 'lucide-react';
 
 export default function TopicDetailLoading() {
   return (

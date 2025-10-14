@@ -57,7 +57,11 @@ export function Calendar({
             {...props}
             className="bg-[#2c3554] border border-[#ffffff]/20 rounded-md py-1 px-2 text-white text-sm focus:ring-2 focus:ring-[#9747ff] focus:outline-none"
           >
-            {props.children}
+            {props.options?.map((option) => (
+              <option key={option.value} value={option.value}>
+                {option.label}
+              </option>
+            ))}
           </select>
         ),
         Chevron: ({ orientation }) =>

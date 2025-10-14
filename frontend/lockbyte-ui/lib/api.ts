@@ -77,7 +77,7 @@ export type TopicDetail = {
 export type UpsertTopicPayload = {
   title: string;
   content: string;
-  status: "Draft" | "Published";
+  status: "Draft" | "Published" | "Archived";
   labsId: number[];
 };
 

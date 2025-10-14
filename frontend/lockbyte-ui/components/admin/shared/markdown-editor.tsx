@@ -43,11 +43,8 @@ function CodeBlockPreview({ children }: { children: React.ReactNode }) {
 
   let text = "";
 
-  const child: any = Array.isArray(children) ? children[0] : children;
+  const child: React.ReactElement = Array.isArray(children) ? children[0] : children;
   if (child && child.props) {
-    const cls: string | undefined = child.props.className;
-    const match = /language-(\w+)/i.exec(cls ?? "");
-
     const raw = child.props.children;
     text = String(Array.isArray(raw) ? raw.join("") : raw ?? "").replace(/\n+$/, "");
   }
@@ -148,10 +145,12 @@ Example for image: ![Alt text](image_url)"
               </a>
             ),
 
-            code({ inline, children }) {
-              if (inline) {
+            code({ className, children, ...props }) {
+              const match = /language-(\w+)/.exec(className || '');
+              if (!match) {
                 return (
                   <code
+                    {...props}
                     className="
                       rounded-md
                       bg-gradient-to-r from-purple-500/12 via-indigo-500/10 to-fuchsia-500/12
@@ -164,7 +163,11 @@ Example for image: ![Alt text](image_url)"
                   </code>
                 );
               }
-              return <code>{children}</code>;
+              return (
+                <code {...props} className={className}>
+                  {children}
+                </code>
+              );
             },
 
             pre({ children }) {
