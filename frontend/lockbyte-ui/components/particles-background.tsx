@@ -27,10 +27,6 @@ const ParticlesComponent = (props: { id: string }) => {
       fpsLimit: 120,
       interactivity: {
         events: {
-          onClick: {
-            enable: true,
-            mode: "push",
-          },
           onHover: {
             enable: true,
             mode: "repulse",
@@ -38,10 +34,10 @@ const ParticlesComponent = (props: { id: string }) => {
         },
         modes: {
           push: {
-            quantity: 4,
+            quantity: 1,
           },
           repulse: {
-            distance: 200,
+            distance: 150,
             duration: 0.4,
           },
         },
@@ -71,7 +67,7 @@ const ParticlesComponent = (props: { id: string }) => {
           density: {
             enable: true,
           },
-          value: 80,
+          value: 125,
         },
         opacity: {
           value: 0.5,

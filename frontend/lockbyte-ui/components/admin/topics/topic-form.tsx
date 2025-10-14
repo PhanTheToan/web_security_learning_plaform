@@ -1,6 +1,8 @@
 "use client";
 
 import { useState, useRef, useEffect } from "react";
+import { useForm, Controller } from "react-hook-form";
+import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -24,260 +26,231 @@ import {
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { Command, CommandEmpty, CommandGroup, CommandItem, CommandList } from "@/components/ui/command";
 import MarkdownEditor from "@/components/admin/shared/markdown-editor";
+import { getAdminLabs, createAdminTopic, updateAdminTopic } from "@/lib/api";
+import { Lab, Topic } from "@/types/topic";
 
-interface Lab {
-  id: string;
-  name: string;
+interface TopicFormData {
+  title: string;
+  content: string;
+  status: 'Draft' | 'Published';
+  labs: Lab[];
 }
 
-// Mock data for labs and tags
-const mockLabs: Lab[] = [
-  { id: "LAB001", name: "SQL Injection Fundamentals" },
-  { id: "LAB002", name: "XSS Attack Vectors" },
-  { id: "LAB003", name: "CSRF Prevention Techniques" },
-  { id: "LAB004", name: "File Upload Vulnerabilities" },
-];
+export function TopicForm({ initialData }: { initialData?: Topic | null }) {
+  const router = useRouter();
+  // const { toast } = useToast();
+  const { register, handleSubmit, control, setValue, watch, formState: { errors, isSubmitting } } = useForm<TopicFormData>({
+    defaultValues: {
+      title: initialData?.title || "",
+      content: initialData?.content || "",
+      status: initialData?.status || "Draft",
+      labs: initialData?.labs || [],
+    },
+  });
 
-const mockTags = ["Web Basics", "Attack Vectors", "SQL", "XSS", "CSRF"];
-
-export function TopicForm() {
-  const [relatedLabs, setRelatedLabs] = useState<Lab[]>([]);
-  const [selectedTags, setSelectedTags] = useState([mockTags[0], mockTags[1]]);
-
-  // State for Markdown Editor and Link Insertion
-  const [content, setContent] = useState("");
+  const [allLabs, setAllLabs] = useState<Lab[]>([]);
+  const [searchQuery, setSearchQuery] = useState("");
+  const [isPopoverOpen, setIsPopoverOpen] = useState(false);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
 
-  // STATE MỚI
-  const [searchQuery, setSearchQuery] = useState(""); // Lưu trữ nội dung ô tìm kiếm
-  const [searchResults, setSearchResults] = useState<Lab[]>([]); // Lưu kết quả tìm kiếm từ API
-  const [isSearching, setIsSearching] = useState(false); // Hiển thị trạng thái loading
-  const [isPopoverOpen, setIsPopoverOpen] = useState(false);
+  const relatedLabs = watch('labs');
 
   useEffect(() => {
-    // Nếu không có query thì xóa kết quả
-    if (searchQuery.trim() === "") {
-      setSearchResults([]);
-      return;
-    }
-
-    const delayDebounceFn = setTimeout(async () => {
-      setIsSearching(true);
+    const fetchLabs = async () => {
       try {
-        // Giả lập gọi API, bạn sẽ thay bằng fetch thật
-        // API endpoint của bạn có thể là: /api/admin/labs?search=<searchQuery>
-        console.log(`Searching for: ${searchQuery}`);
-        const results = mockLabs.filter(lab =>
-          lab.name.toLowerCase().includes(searchQuery.toLowerCase())
-        );
-        setSearchResults(results);
+        const labsData = await getAdminLabs();
+        setAllLabs(labsData);
       } catch (error) {
-        console.error("Failed to search labs", error);
-      } finally {
-        setIsSearching(false);
+        console.error("Failed to fetch labs", error);
+        // toast({ title: "Error", description: "Could not fetch labs.", variant: "destructive" });
       }
-    }, 500); // Chờ 500ms sau khi người dùng ngừng gõ mới gọi API
+    };
+    fetchLabs();
+  }, []);
 
-    return () => clearTimeout(delayDebounceFn);
-  }, [searchQuery]);
-
-
-  // HÀM ĐỂ THÊM LAB VÀO DANH SÁCH relatedLabs
-  const handleAddLab = (labToAdd: Lab) => {
-    // Kiểm tra để không thêm lab đã có trong danh sách
-    if (!relatedLabs.some(lab => lab.id === labToAdd.id)) {
-      setRelatedLabs(prevLabs => [...prevLabs, labToAdd]);
+  useEffect(() => {
+    if (initialData) {
+      setValue('title', initialData.title);
+      setValue('content', initialData.content);
+      setValue('status', initialData.status);
+      setValue('labs', initialData.labs);
     }
-    // Xóa query và kết quả sau khi đã thêm
+  }, [initialData, setValue]);
+
+  const filteredLabs = searchQuery
+    ? allLabs.filter(lab => lab.name.toLowerCase().includes(searchQuery.toLowerCase()))
+    : [];
+
+  const handleAddLab = (labToAdd: Lab) => {
+    if (!relatedLabs.some(lab => lab.id === labToAdd.id)) {
+      setValue('labs', [...relatedLabs, labToAdd]);
+    }
     setSearchQuery("");
-    setIsPopoverOpen(false); // **Đóng Popover một cách chủ động**
+    setIsPopoverOpen(false);
   };
 
-  const removeLab = (lab: Lab) => {
-    setRelatedLabs(relatedLabs.filter((l) => l.id !== lab.id));
+  const removeLab = (labToRemove: Lab) => {
+    setValue('labs', relatedLabs.filter(lab => lab.id !== labToRemove.id));
   };
 
-  const removeTag = (tag: string) => {
-    setSelectedTags(selectedTags.filter((t) => t !== tag));
-  };
-
-  const handleInsertLabLink = (lab: { id: string; name: string }) => {
+  const handleInsertLabLink = (lab: { id: number; name: string }) => {
     if (!textareaRef.current) return;
-
+    const currentContent = watch('content');
     const cursorPosition = textareaRef.current.selectionStart;
-    const currentText = content;
     const markdownLink = `[${lab.name}](/labs/${lab.id})`;
-
     const newText =
-      currentText.substring(0, cursorPosition) +
+      currentContent.substring(0, cursorPosition) +
       markdownLink +
-      currentText.substring(cursorPosition);
-
-    setContent(newText);
-
-    // Focus back on the textarea after insertion
+      currentContent.substring(cursorPosition);
+    setValue('content', newText);
     setTimeout(() => textareaRef.current?.focus(), 0);
   };
 
+  const onSubmit = async (data: TopicFormData) => {
+    const payload = {
+      title: data.title,
+      content: data.content,
+      status: data.status,          // "Draft" | "Published"
+      labsId: data.labs.map(l => l.id),
+    };
+
+    try {
+      if (initialData) {
+        await updateAdminTopic(String(initialData.id), payload);
+        // toast({ title: "Success", description: "Topic updated successfully!" });
+      } else {
+        await createAdminTopic(payload);
+        // toast({ title: "Success", description: "Topic created successfully!" });
+      }
+      router.push('/admin/topics');
+      router.refresh(); // To reflect changes in the list
+    } catch (error) {
+      console.error("Failed to save topic", error);
+      // toast({ title: "Error", description: "Failed to save topic.", variant: "destructive" });
+    }
+  };
+
   return (
-    <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+    <form onSubmit={handleSubmit(onSubmit)} className="grid grid-cols-1 lg:grid-cols-3 gap-6">
       {/* Left Column: Main Content */}
       <div className="lg:col-span-2 space-y-6">
-        <Card className="bg-gradient-to-br from-[#ffffff]/8 via-[#9747ff]/5 to-[#5a5bed]/8 backdrop-blur-sm border border-[#ffffff]/10 hover:border-[#9747ff]/60 transition-all duration-300 rounded-xl shadow-[0_0_15px_rgba(151,71,255,0.15)]">
+        <Card className="bg-gradient-to-br from-[#ffffff]/8 via-[#9747ff]/5 to-[#5a5bed]/8 backdrop-blur-sm border border-[#ffffff]/10 rounded-xl">
           <CardHeader>
             <CardTitle className="text-white">Topic Title</CardTitle>
-            <CardDescription className="text-white/70">
-              This is the main title of the topic.
-            </CardDescription>
           </CardHeader>
           <CardContent>
             <Input
               id="title"
               placeholder="Enter topic title"
               className="border-[#ffffff]/20 focus-visible:border-[#9747ff]/60 focus-visible:ring-[#9747ff] rounded-xl bg-[#ffffff]/5 text-white placeholder:text-white/40"
+              {...register("title", { required: "Title is required" })}
             />
+            {errors.title && <p className="text-red-400 text-sm mt-2">{errors.title.message}</p>}
           </CardContent>
         </Card>
-        <Card className="bg-gradient-to-br from-[#ffffff]/8 via-[#9747ff]/5 to-[#5a5bed]/8 backdrop-blur-sm border border-[#ffffff]/10 hover:border-[#9747ff]/60 transition-all duration-300 rounded-xl shadow-[0_0_15px_rgba(151,71,255,0.15)]">
+        <Card className="bg-gradient-to-br from-[#ffffff]/8 via-[#9747ff]/5 to-[#5a5bed]/8 backdrop-blur-sm border border-[#ffffff]/10 rounded-xl">
           <CardHeader>
-            <div className="flex items-center justify-between">
-              <div>
-                <CardTitle className="text-white">Content</CardTitle>
-                <CardDescription className="text-white/70">
-                  Use the editor to write the topic content and insert lab links.
-                </CardDescription>
-              </div>
-            </div>
+            <CardTitle className="text-white">Content</CardTitle>
           </CardHeader>
           <CardContent>
-            <MarkdownEditor
-              value={content}
-              onChange={setContent}
-              textareaRef={textareaRef}
-              height="min-h-[400px]"
+            <Controller
+              name="content"
+              control={control}
+              rules={{ required: "Content is required" }}
+              render={({ field }) => (
+                <MarkdownEditor
+                  value={field.value}
+                  onChange={field.onChange}
+                  textareaRef={textareaRef}
+                  height="min-h-[400px]"
+                />
+              )}
             />
+            {errors.content && <p className="text-red-400 text-sm mt-2">{errors.content.message}</p>}
           </CardContent>
         </Card>
       </div>
 
       {/* Right Column: Metadata and Actions */}
       <div className="lg:col-span-1 space-y-6">
-        <Card className="bg-gradient-to-br from-[#ffffff]/8 via-[#9747ff]/5 to-[#5a5bed]/8 backdrop-blur-sm border border-[#ffffff]/10 hover:border-[#9747ff]/60 transition-all duration-300 rounded-xl shadow-[0_0_15px_rgba(151,71,255,0.15)]">
+        <Card className="bg-gradient-to-br from-[#ffffff]/8 via-[#9747ff]/5 to-[#5a5bed]/8 backdrop-blur-sm border border-[#ffffff]/10 rounded-xl">
           <CardHeader>
             <CardTitle className="text-white">Publish</CardTitle>
           </CardHeader>
           <CardContent>
-            <div className="space-y-2">
-              <Label htmlFor="status" className="text-white font-medium">Status</Label>
-              <Select defaultValue="Draft">
-                <SelectTrigger id="status" className="border-[#ffffff]/20 rounded-xl bg-[#ffffff]/5 text-white">
-                  <SelectValue placeholder="Select status" />
-                </SelectTrigger>
-                <SelectContent className="bg-card/95 backdrop-blur-sm border-[#ffffff]/20 rounded-xl">
-                  <SelectItem value="Draft" className="text-white hover:bg-[#9747ff]/10 focus:bg-[#9747ff]/10 focus:text-white">Draft</SelectItem>
-                  <SelectItem value="Published" className="text-white hover:bg-[#9747ff]/10 focus:bg-[#9747ff]/10 focus:text-white">Published</SelectItem>
-                </SelectContent>
-              </Select>
-            </div>
+            <Controller
+              name="status"
+              control={control}
+              render={({ field }) => (
+                <Select onValueChange={field.onChange} defaultValue={field.value}>
+                  <SelectTrigger id="status" className="border-[#ffffff]/20 rounded-xl bg-[#ffffff]/5 text-white">
+                    <SelectValue placeholder="Select status" />
+                  </SelectTrigger>
+                  <SelectContent className="bg-card/95 backdrop-blur-sm border-[#ffffff]/20 rounded-xl">
+                    <SelectItem value="Draft">Draft</SelectItem>
+                    <SelectItem value="Published">Published</SelectItem>
+                  </SelectContent>
+                </Select>
+              )}
+            />
           </CardContent>
-          <CardFooter className="flex items-center justify-between gap-4 border-t border-[#ffffff]/20 pt-6">
+          <CardFooter className="flex items-center justify-end gap-4 border-t border-[#ffffff]/20 pt-6">
             <Button
-              variant="outline"
-              className="bg-transparent hover:bg-white/10 border-white/20 hover:border-white/40 text-white rounded-xl"
+              type="submit"
+              disabled={isSubmitting}
+              className="bg-gradient-to-br from-[#9747ff]/20 to-[#5a5bed]/10 hover:from-[#9747ff]/30 hover:to-[#821db6]/20 text-white border border-[#9747ff]/40 hover:border-[#9747ff]/60 transition-all duration-300 hover:scale-105 rounded-xl"
             >
-              Save Draft
-            </Button>
-            <Button className="bg-gradient-to-br from-[#9747ff]/20 to-[#5a5bed]/10 hover:from-[#9747ff]/30 hover:to-[#821db6]/20 text-white border border-[#9747ff]/40 hover:border-[#9747ff]/60 transition-all duration-300 hover:scale-105 rounded-xl">
-              Publish
+              {isSubmitting ? 'Saving...' : (initialData ? 'Update Topic' : 'Create Topic')}
             </Button>
           </CardFooter>
         </Card>
 
-        <Card className="bg-gradient-to-br from-[#ffffff]/8 via-[#9747ff]/5 to-[#5a5bed]/8 backdrop-blur-sm border border-[#ffffff]/10 hover:border-[#9747ff]/60 transition-all duration-300 rounded-xl shadow-[0_0_15px_rgba(151,71,255,0.15)]">
+        <Card className="bg-gradient-to-br from-[#ffffff]/8 via-[#9747ff]/5 to-[#5a5bed]/8 backdrop-blur-sm border border-[#ffffff]/10 rounded-xl">
           <CardHeader>
             <CardTitle className="text-white">Link Related Labs</CardTitle>
           </CardHeader>
           <CardContent>
-    {/* Popover giờ đây được quản lý bởi isPopoverOpen */}
-    <Popover open={isPopoverOpen} onOpenChange={setIsPopoverOpen}>
-        <PopoverTrigger asChild>
-            <div className="relative mb-2">
-                <SearchIcon className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-white/50" />
-                <Input 
-                    placeholder="Search labs to add..." 
+            <Popover open={isPopoverOpen} onOpenChange={setIsPopoverOpen}>
+              <PopoverTrigger asChild>
+                <div className="relative mb-2">
+                  <SearchIcon className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-white/50" />
+                  <Input
+                    placeholder="Search labs to add..."
                     className="pl-9 border-[#ffffff]/20 rounded-xl bg-[#ffffff]/5 text-white placeholder:text-white/40"
                     value={searchQuery}
                     onChange={(e) => setSearchQuery(e.target.value)}
-                    // Không cần onFocus ở đây nữa, Popover sẽ tự xử lý
-                />
-            </div>
-        </PopoverTrigger>
-        <PopoverContent className="w-[--radix-popover-trigger-width] p-0 bg-card/95 backdrop-blur-sm border-[#ffffff]/20 rounded-xl">
-            <Command>
-                <CommandList>
-                    {isSearching && <CommandEmpty className="text-white/70 p-2">Searching...</CommandEmpty>}
-                    
-                    {/* Chỉ hiển thị "No labs found" khi không searching VÀ có query */}
-                    {!isSearching && searchResults.length === 0 && searchQuery.trim() !== '' && (
-                        <CommandEmpty className="text-white/70 p-2">No labs found.</CommandEmpty>
+                  />
+                </div>
+              </PopoverTrigger>
+              <PopoverContent className="w-[--radix-popover-trigger-width] p-0 bg-card/95 backdrop-blur-sm border-[#ffffff]/20 rounded-xl">
+                <Command>
+                  <CommandList>
+                    {filteredLabs.length === 0 && searchQuery.trim() !== '' && (
+                      <CommandEmpty className="text-white/70 p-2">No labs found.</CommandEmpty>
                     )}
-
                     <CommandGroup>
-                        {searchResults.map((lab) => (
-                            <CommandItem
-                                key={lab.id}
-                                // onSelect sẽ xử lý cả click và enter
-                                onSelect={() => handleAddLab(lab)}
-                                className="hover:bg-[#9747ff]/10 rounded-lg text-white cursor-pointer"
-                            >
-                                {lab.name}
-                            </CommandItem>
-                        ))}
+                      {filteredLabs.map((lab) => (
+                        <CommandItem
+                          key={lab.id}
+                          onSelect={() => handleAddLab(lab)}
+                          className="hover:bg-[#9747ff]/10 rounded-lg text-white cursor-pointer"
+                        >
+                          {lab.name}
+                        </CommandItem>
+                      ))}
                     </CommandGroup>
-                </CommandList>
-            </Command>
-        </PopoverContent>
-    </Popover>
-
-    {/* Phần hiển thị Badge không thay đổi */}
-    <div className="flex flex-wrap gap-2 mt-2">
+                  </CommandList>
+                </Command>
+              </PopoverContent>
+            </Popover>
+            <div className="flex flex-wrap gap-2 mt-2">
               {relatedLabs.map((lab) => (
                 <Badge key={lab.id} variant="secondary" className="flex items-center gap-2 pl-2 pr-1 bg-[#9747ff]/20 text-white border-[#9747ff]/30 rounded-lg">
                   {lab.name}
-                  <button
-                    onClick={() => handleInsertLabLink(lab)}
-                    className="p-1 rounded-full hover:bg-white/20 transition-colors"
-                    title={`Insert link for "${lab.name}"`}
-                  >
+                  <button type="button" onClick={() => handleInsertLabLink(lab)} className="p-1 rounded-full hover:bg-white/20" title={`Insert link`}>
                     <LinkIcon className="h-3 w-3" />
                   </button>
-                  <button
-                    onClick={() => removeLab(lab)}
-                    className="p-1 rounded-full hover:bg-white/20 transition-colors"
-                    title={`Remove "${lab.name}"`}
-                  >
-                    <XIcon className="h-3 w-3" />
-                  </button>
-                </Badge>
-              ))}
-            </div>
-          </CardContent>
-        </Card>
-
-        <Card className="bg-gradient-to-br from-[#ffffff]/8 via-[#9747ff]/5 to-[#5a5bed]/8 backdrop-blur-sm border border-[#ffffff]/10 hover:border-[#9747ff]/60 transition-all duration-300 rounded-xl shadow-[0_0_15px_rgba(151,71,255,0.15)]">
-          <CardHeader>
-            <CardTitle className="text-white">Tags</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="relative mb-2">
-              <SearchIcon className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-white/50" />
-              <Input placeholder="Search tags..." className="pl-9 border-[#ffffff]/20 rounded-xl bg-[#ffffff]/5 text-white placeholder:text-white/40" />
-            </div>
-            <div className="flex flex-wrap gap-2">
-              {selectedTags.map((tag) => (
-                <Badge key={tag} variant="secondary" className="flex items-center gap-1 bg-[#9747ff]/20 text-white border-[#9747ff]/30 rounded-lg">
-                  {tag}
-                  <button onClick={() => removeTag(tag)}>
+                  <button type="button" onClick={() => removeLab(lab)} className="p-1 rounded-full hover:bg-white/20" title={`Remove`}>
                     <XIcon className="h-3 w-3" />
                   </button>
                 </Badge>
@@ -286,6 +259,6 @@ export function TopicForm() {
           </CardContent>
         </Card>
       </div>
-    </div>
+    </form>
   );
 }

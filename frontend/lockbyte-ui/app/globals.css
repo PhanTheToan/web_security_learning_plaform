@@ -452,6 +452,8 @@
     color: theme('colors.gray.400');
     border-left-color: theme('colors.purple.500');
     font-style: italic;
+    border-left-width: 4px;
+    padding-left: 1rem;
   }
 
   /* === Code - Mã nguồn === */
@@ -479,5 +481,37 @@
   /* === Horizontal Rules - Đường kẻ ngang (---) === */
   .prose hr {
     border-color: theme('colors.white / 15%');
+  }
+
+  /* === Tables - Bảng === */
+  .prose table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-top: 1.5em;
+    margin-bottom: 1.5em;
+  }
+
+  .prose thead {
+    border-bottom: 2px solid theme('colors.gray.600');
+  }
+
+  .prose th {
+    color: theme('colors.white');
+    font-weight: 600;
+    padding: 0.75rem 1rem;
+    text-align: left;
+  }
+
+  .prose tbody tr {
+    border-bottom: 1px solid theme('colors.gray.700');
+  }
+
+  .prose tbody tr:last-child {
+    border-bottom: none;
+  }
+
+  .prose td {
+    padding: 0.75rem 1rem;
+    vertical-align: top;
   }
 }

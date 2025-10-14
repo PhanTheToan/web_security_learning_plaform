@@ -230,11 +230,11 @@ export default function LabsPage() {
                   <TableCell className="text-right">
                     <div className="flex gap-2 justify-end">
                       <Link href={`/admin/labs/edit/${lab.id}`} passHref>
-                        <Button variant="ghost" size="icon" className="text-white/80 hover:bg-white/10 hover:text-white rounded-lg" aria-label="Edit Lab">
+                        <Button variant="ghost" size="icon" className="text-white hover:bg-white/10 hover:text-white rounded-lg" aria-label="Edit Lab">
                           <Pencil className="h-4 w-4" />
                         </Button>
                       </Link>
-                      <Button variant="ghost" size="icon" className="text-white/80 hover:bg-red-500/20 hover:text-red-400 rounded-lg" aria-label="Delete Lab">
+                      <Button variant="ghost" size="icon" className="text-white hover:bg-red-500/20 hover:text-red-400 rounded-lg" aria-label="Delete Lab">
                         <Trash2 className="h-4 w-4" />
                       </Button>
                     </div>
