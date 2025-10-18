@@ -19,4 +19,7 @@ public interface LabRepository extends JpaRepository<Lab, Integer> {
 
     @Query("SELECT DISTINCT l FROM Lab l LEFT JOIN FETCH l.author a LEFT JOIN FETCH l.tags t WHERE l IN :labs")
     List<Lab> findWithTags(@Param("labs") List<Lab> labs);
+
+    List<Lab> findByNameIgnoreCase(String name);
+    List<Lab> findByNameContainingIgnoreCase(String name);
 }

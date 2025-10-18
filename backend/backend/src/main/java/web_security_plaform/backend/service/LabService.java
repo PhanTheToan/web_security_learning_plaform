@@ -11,16 +11,14 @@ import web_security_plaform.backend.model.Tag;
 import web_security_plaform.backend.model.User;
 import web_security_plaform.backend.payload.dto.CommunitySolutionsDTO;
 import web_security_plaform.backend.payload.dto.LabDetailDto;
+import web_security_plaform.backend.payload.dto.LabInfoDetail;
 import web_security_plaform.backend.payload.dto.TagDTO;
 import web_security_plaform.backend.payload.request.LabRequest;
 import web_security_plaform.backend.repository.CommunitySolutionRepository;
 import web_security_plaform.backend.repository.LabRepository;
 import web_security_plaform.backend.repository.TagRepository;
 
-import java.util.Collections;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
+import java.util.*;
 import java.util.stream.Collectors;
 
 @Service
@@ -169,5 +167,25 @@ public class LabService {
         }
 
         return labRepository.save(newLab);
+    }
+    private LabInfoDetail toLabInfoDetail(Lab lab) {
+        LabInfoDetail dto = new LabInfoDetail();
+        dto.setId(lab.getId());
+        dto.setName(lab.getName());
+        dto.setEStatus(lab.getStatus()); // map field status -> eStatus
+        return dto;
+    }
+
+    @Transactional(readOnly = true)
+    public Optional<LabInfoDetail> findLabInfoById(Integer id) {
+        return labRepository.findById(id).map(this::toLabInfoDetail);
+    }
+
+    @Transactional(readOnly = true)
+    public List<LabInfoDetail> findLabInfosByName(String name, boolean like) {
+        List<Lab> labs = like
+                ? labRepository.findByNameContainingIgnoreCase(name)
+                : labRepository.findByNameIgnoreCase(name);
+        return labs.stream().map(this::toLabInfoDetail).collect(Collectors.toList());
     }
 }
