@@ -46,7 +46,7 @@ export function Header() {
               About
             </Link>
             <Link href="/topics" className="text-[#ffffff]/80 hover:text-[#ffffff] text-sm transition-colors">
-              Services
+              Topics
             </Link>
             <a href="#team" className="text-[#ffffff]/80 hover:text-[#ffffff] text-sm transition-colors">
               Team

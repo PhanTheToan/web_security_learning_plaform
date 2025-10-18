@@ -15,6 +15,7 @@ import { MoveIcon as RemoveIcon, Check } from "lucide-react"
 import { cn } from "@/lib/utils"
 import { toast } from "sonner"
 import MarkdownEditor from "@/components/admin/shared/markdown-editor"
+import { FileUploader } from "@/components/admin/shared/file-uploader"
 
 // Type definitions
 interface Tag {
@@ -33,6 +34,7 @@ interface LabData {
   timeoutMinutes: number
   status: string
   tags: Tag[]
+  linkSource?: string
 }
 interface LabFormProps {
   mode?: "create" | "edit"
@@ -53,6 +55,7 @@ export function LabForm({ mode = "create", initialData }: LabFormProps) {
   const [difficulty, setDifficulty] = useState("Easy")
   const [timeoutMinutes, setTimeoutMinutes] = useState(60)
   const [status, setStatus] = useState("Draft")
+  const [linkSource, setLinkSource] = useState("")
 
   // Refs for markdown editors
   const descriptionRef = useRef<HTMLTextAreaElement>(null);
@@ -93,6 +96,7 @@ export function LabForm({ mode = "create", initialData }: LabFormProps) {
       setTimeoutMinutes(initialData.timeoutMinutes || 60)
       setStatus(initialData.status || "Draft")
       setSelectedTags(initialData.tags || [])
+      setLinkSource(initialData.linkSource || "")
     }
   }, [initialData])
 
@@ -125,6 +129,7 @@ export function LabForm({ mode = "create", initialData }: LabFormProps) {
       difficulty,
       timeoutMinutes,
       status,
+      linkSource,
       tagIds: selectedTags.map((t) => t.id),
     }
 
@@ -347,6 +352,21 @@ export function LabForm({ mode = "create", initialData }: LabFormProps) {
                 onChange={(e) => setDockerImage(e.target.value)}
                 className="border-[#ffffff]/20 focus-visible:border-[#9747ff]/60 focus-visible:ring-[#9747ff] rounded-xl bg-[#ffffff]/5 text-white placeholder:text-white/40"
               />
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="link-source" className="text-white font-medium">
+                Link Source
+              </Label>
+              <div className="flex items-center gap-2">
+                <Input
+                  id="link-source"
+                  placeholder="e.g., https://example.com/source.zip"
+                  value={linkSource}
+                  onChange={(e) => setLinkSource(e.target.value)}
+                  className="border-[#ffffff]/20 focus-visible:border-[#9747ff]/60 focus-visible:ring-[#9747ff] rounded-xl bg-[#ffffff]/5 text-white placeholder:text-white/40"
+                />
+              </div>
+                <FileUploader />
             </div>
             <div className="space-y-2">
               <Label htmlFor="timeout" className="text-white font-medium">

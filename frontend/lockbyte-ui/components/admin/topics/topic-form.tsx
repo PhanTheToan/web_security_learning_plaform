@@ -24,11 +24,13 @@ import {
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { Command, CommandEmpty, CommandGroup, CommandItem, CommandList } from "@/components/ui/command";
 import MarkdownEditor from "@/components/admin/shared/markdown-editor";
+import { FileUploader } from "@/components/admin/shared/file-uploader";
 import { getAdminLabs, createAdminTopic, updateAdminTopic } from "@/lib/api";
 import { Lab, Topic } from "@/types/topic";
 
 interface TopicFormData {
   title: string;
+
   content: string;
   status: 'Draft' | 'Published' | 'Archived';
   labs: Lab[];
@@ -202,6 +204,15 @@ export function TopicForm({ initialData }: { initialData?: Topic | null }) {
               {isSubmitting ? 'Saving...' : (initialData ? 'Update Topic' : 'Create Topic')}
             </Button>
           </CardFooter>
+        </Card>
+
+        <Card className="bg-gradient-to-br from-[#ffffff]/8 via-[#9747ff]/5 to-[#5a5bed]/8 backdrop-blur-sm border border-[#ffffff]/10 rounded-xl">
+          <CardHeader>
+            <CardTitle className="text-white">File Uploader</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <FileUploader />
+          </CardContent>
         </Card>
 
         <Card className="bg-gradient-to-br from-[#ffffff]/8 via-[#9747ff]/5 to-[#5a5bed]/8 backdrop-blur-sm border border-[#ffffff]/10 rounded-xl">
