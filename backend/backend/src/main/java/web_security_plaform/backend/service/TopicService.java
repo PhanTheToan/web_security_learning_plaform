@@ -12,11 +12,13 @@ import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.server.ResponseStatusException;
 import web_security_plaform.backend.model.ENum.EStatus;
 import web_security_plaform.backend.model.Lab;
+import web_security_plaform.backend.model.Tag;
 import web_security_plaform.backend.model.Topic;
 import web_security_plaform.backend.model.User;
 import web_security_plaform.backend.payload.dto.*;
 import web_security_plaform.backend.payload.request.TopicRequest;
 import web_security_plaform.backend.repository.LabRepository;
+import web_security_plaform.backend.repository.TagRepository;
 import web_security_plaform.backend.repository.TopicRepository;
 
 import java.security.Principal;
@@ -34,6 +36,9 @@ public class TopicService {
     @Autowired
     private LabRepository labRepository;
 
+    @Autowired
+    private TagRepository tagRepository;
+
     public Topic createTopic(TopicRequest topicRequest, User user){
         Topic topic = new Topic();
 
@@ -47,6 +52,10 @@ public class TopicService {
         if(topicRequest.getLabsId() != null && !topicRequest.getLabsId().isEmpty()){
             Set<Lab> labs = new HashSet<>(labRepository.findAllById(topicRequest.getLabsId()));
             topic.setLabs(labs);
+        }
+        if(topicRequest.getTagId() != null && !topicRequest.getTagId().isEmpty()){
+            Set<Tag> tags = new HashSet<>(tagRepository.findAllById(topicRequest.getTagId()));
+            topic.setTags(tags);
         }
         return topicRepository.save(topic);
     }
@@ -64,6 +73,10 @@ public class TopicService {
         if(topicRequest.getLabsId() != null && !topicRequest.getLabsId().isEmpty()){
             Set<Lab> labs = new HashSet<>(labRepository.findAllById(topicRequest.getLabsId()));
             topic.setLabs(labs);
+        }
+        if(topicRequest.getTagId() != null && !topicRequest.getTagId().isEmpty()){
+            Set<Tag> tags = new HashSet<>(tagRepository.findAllById(topicRequest.getTagId()));
+            topic.setTags(tags);
         }
         return topicRepository.save(topic);
     }
@@ -85,6 +98,12 @@ public class TopicService {
         dto.setTitle(topic.getTitle());
         dto.setAuthorName(user.getFullName());
         dto.setStatus(topic.getStatus());
+        Set<TagDTO> tagDTOs = topic.getTags() != null ?
+                topic.getTags().stream()
+                        .map(tag -> new TagDTO(tag.getId(), tag.getName()))
+                        .collect(Collectors.toSet()) :
+                Collections.emptySet();
+        dto.setTags(tagDTOs);
         return dto;
     }
 
@@ -109,6 +128,12 @@ public class TopicService {
         dto.setTitle(topic.getTitle());
         dto.setAuthorName(user.getFullName());
         dto.setStatus(topic.getStatus());
+        Set<TagDTO> tagDTOs = topic.getTags() != null ?
+                topic.getTags().stream()
+                        .map(tag -> new TagDTO(tag.getId(), tag.getName()))
+                        .collect(Collectors.toSet()) :
+                Collections.emptySet();
+        dto.setTags(tagDTOs);
         return dto;
     }
 
@@ -141,6 +166,12 @@ public class TopicService {
                 .collect(java.util.stream.Collectors.toCollection(java.util.LinkedHashSet::new));
 
         dto.setLabs(labDto);
+        Set<TagDTO> tagDTOs = t.getTags() != null ?
+                t.getTags().stream()
+                        .map(tag -> new TagDTO(tag.getId(), tag.getName()))
+                        .collect(Collectors.toSet()) :
+                Collections.emptySet();
+        dto.setTags(tagDTOs);
         return dto;
 
     }

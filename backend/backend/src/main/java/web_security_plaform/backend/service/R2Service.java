@@ -3,6 +3,7 @@ package web_security_plaform.backend.service;
 import org.springframework.stereotype.Service;
 import software.amazon.awssdk.core.ResponseBytes;
 
+import java.io.InputStream;
 import java.net.URI;
 import java.time.Duration;
 import java.util.List;
@@ -75,7 +76,6 @@ public class R2Service {
         return base + "/" + key;
     }
 
-    // === (Tuỳ chọn) CRUD server-side ===
     public void upload(String key, byte[] data, String contentType) {
         s3.putObject(PutObjectRequest.builder()
                         .bucket(props.bucket())
@@ -83,6 +83,17 @@ public class R2Service {
                         .contentType(contentType)
                         .build(),
                 RequestBody.fromBytes(data));
+    }
+    public String uploadStreaming(String key, InputStream in, long size, String contentType) {
+        PutObjectResponse res = s3.putObject(
+                PutObjectRequest.builder()
+                        .bucket(props.bucket())
+                        .key(key)
+                        .contentType(contentType)
+                        .build(),
+                RequestBody.fromInputStream(in, size)
+        );
+        return res.eTag();
     }
 
     public byte[] download(String key) {

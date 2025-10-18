@@ -21,6 +21,7 @@ public class LabDetailDto {
     private String solution;
     private String fixVulnerabilities;
     private Integer timeoutMinutes;
+    private String linkSource;
     private List<CommunitySolutionsDTO> communitySolutionDTOS;
 
 }

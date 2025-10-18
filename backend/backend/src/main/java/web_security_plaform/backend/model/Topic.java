@@ -56,4 +56,11 @@ public class Topic {
             inverseJoinColumns = @JoinColumn(name = "lab_id"))
     @Builder.Default
     private Set<Lab> labs = new HashSet<>();
+
+    @ManyToMany(fetch = FetchType.LAZY)
+    @JoinTable(name = "topic_tags",
+            joinColumns = @JoinColumn(name = "topic_id"),
+            inverseJoinColumns = @JoinColumn(name = "tag_id"))
+    @Builder.Default
+    private Set<Tag> tags = new HashSet<>();
 }

@@ -19,5 +19,7 @@ public class TopicRequest {
     @NotNull
     private EStatus status;
 
+    private Set<Integer> tagId;
+
     private Set<Integer> labsId;
 }

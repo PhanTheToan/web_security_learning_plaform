@@ -46,6 +46,7 @@ public class LabService {
         newLab.setDifficulty(labRequest.getDifficulty());
         newLab.setTimeoutMinutes(labRequest.getTimeoutMinutes());
         newLab.setStatus(labRequest.getStatus());
+        newLab.setLinkSource(labRequest.getLink_source());
 
         newLab.setAuthor(author);
 
@@ -90,6 +91,7 @@ public class LabService {
         dto.setStatus(lab.getStatus());
         dto.setAuthorName(authorName);
         dto.setTags(tagDTOs);
+        dto.setLinkSource(lab.getLinkSource());
 
         return dto;
     }
@@ -136,6 +138,7 @@ public class LabService {
         dto.setSolution(lab.getSolution());
         dto.setFixVulnerabilities(lab.getFixVulnerabilities());
         dto.setTimeoutMinutes(lab.getTimeoutMinutes());
+        dto.setLinkSource(lab.getLinkSource());
 
         dto.setCommunitySolutionDTOS(communitySolutions);
 
@@ -156,6 +159,7 @@ public class LabService {
         newLab.setDifficulty(labRequest.getDifficulty());
         newLab.setTimeoutMinutes(labRequest.getTimeoutMinutes());
         newLab.setStatus(labRequest.getStatus());
+        newLab.setLinkSource(labRequest.getLink_source());
 
         newLab.setAuthor(author);
 

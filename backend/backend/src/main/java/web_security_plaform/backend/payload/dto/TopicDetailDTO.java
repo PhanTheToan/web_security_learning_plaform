@@ -15,4 +15,5 @@ public class TopicDetailDTO {
     private String content;
     private EStatus status;
     private Set<LabInfoDetail> labs;
+    private Set<TagDTO> tags;
 }

@@ -18,7 +18,7 @@ public class LabResponseDTO {
     private Integer timeoutMinutes;
     private EStatus status;
     private LocalDateTime createdAt;
-
+    private String linkSource;
     private AuthorDTO author;
 
     private Set<TagDTO> tags;

@@ -56,6 +56,9 @@ public class Lab {
     @Column(nullable = false)
     private EDifficulty difficulty;
 
+    @Column(name = "link_source")
+    private String linkSource;
+
     @NotNull
     @Column(name = "timeout_minutes", nullable = false)
     private Integer timeoutMinutes;
