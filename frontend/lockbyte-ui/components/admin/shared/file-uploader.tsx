@@ -59,8 +59,9 @@ export function FileUploader() {
       const result = await response.json()
       toast.success("File uploaded successfully!")
       setResultUrl(result.publicUrl)
-    } catch (error: any) {
-      toast.error(error.message || "An error occurred during upload.")
+    } catch (error: unknown) {
+      const message = error instanceof Error ? error.message : "An error occurred during upload.";
+      toast.error(message);
     } finally {
       setIsLoading(false)
     }

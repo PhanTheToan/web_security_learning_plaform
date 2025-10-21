@@ -11,6 +11,7 @@ type TopicDetail = {
   content: string;
   status: "Draft" | "Published";
   labs: Lab[];
+  tags: { id: number; name: string }[];
 };
 
 export default function EditTopicPage() {

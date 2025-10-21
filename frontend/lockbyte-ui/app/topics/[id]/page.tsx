@@ -17,6 +17,7 @@ type TopicDetail = {
   content: string;
   status: "Draft" | "Published";
   labs: Lab[];
+  tags: { id: number; name: string }[];
 };
 
 /** ========= Utils: vá code fence hở (support ``` và ~~~) ========= */
@@ -135,8 +136,15 @@ export default function TopicDetailPage() {
 
           <h1 className="text-4xl sm:text-5xl font-bold tracking-tight">{topic.title}</h1>
 
-          <div className="mt-3 inline-flex rounded-md bg-white/10 px-2 py-1 text-xs">
-            {topic.status}
+          <div className="mt-4 flex flex-wrap items-center gap-2">
+            <div className="inline-flex rounded-md bg-white/10 px-2 py-1 text-xs">
+              {topic.status}
+            </div>
+            {topic.tags?.map(tag => (
+              <div key={tag.id} className="inline-flex rounded-md bg-blue-500/10 px-2 py-1 text-xs text-blue-300">
+                {tag.name}
+              </div>
+            ))}
           </div>
 
           {/* GRID: Content + Related Labs */}
@@ -163,10 +171,8 @@ export default function TopicDetailPage() {
                     h3: (p) => <h3 {...p} className="text-xl sm:text-2xl font-semibold mt-8 mb-2" />,
                     h4: (p) => <h4 {...p} className="text-lg sm:text-xl font-semibold mt-6 mb-2" />,
 
-                    // INLINE CODE: pill tím nhạt (block sẽ do <pre> xử lý)
                     code({ className, children, ...props }) {
                       const match = /language-(\w+)/.exec(className || '');
-                      // This is for inline code. Fenced code blocks are handled by the `pre` component.
                       if (!match) {
                         return (
                           <code
@@ -183,7 +189,6 @@ export default function TopicDetailPage() {
                           </code>
                         );
                       }
-                      // This is for fenced code blocks. It will be a child of the `pre` component.
                       return (
                         <code {...props} className={className}>
                           {children}

@@ -8,12 +8,29 @@ import { Badge } from "@/components/ui/badge"
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
 import { PlusCircle, Pencil, Trash2 } from "lucide-react"
 import { cn } from "@/lib/utils"
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogTrigger,
+} from "@/components/ui/alert-dialog"
+
+type Tag = {
+  id: number
+  name: string
+}
 
 type TopicListItem = {
   id: number
   title: string
   status: "Published" | "Draft" | "Archived"
   authorName: string
+  tags: Tag[]
 }
 
 type TopicsApiResponse = {
@@ -35,22 +52,41 @@ export default function TopicsListPage() {
   const [data, setData] = useState<TopicsApiResponse | null>(null)
   const [error, setError] = useState<string | null>(null)
   const [loading, setLoading] = useState(true)
+  const [isDeleting, setIsDeleting] = useState<number | null>(null)
+
+  const fetchTopics = async () => {
+    setLoading(true)
+    try {
+      const apiUrl = `${process.env.NEXT_PUBLIC_API_URL}/admin/topics`
+      const res = await fetch(apiUrl, { credentials: "include", cache: "no-store" })
+      if (!res.ok) throw new Error(`Failed with ${res.status}. Are you logged in?`)
+      const json = await res.json()
+      setData(json)
+    } catch (e) {
+      setError(e instanceof Error ? e.message : "Unknown error")
+    } finally {
+      setLoading(false)
+    }
+  }
 
   useEffect(() => {
-    const apiUrl = `${process.env.NEXT_PUBLIC_API_URL}/admin/topics`
-    ;(async () => {
-      try {
-        const res = await fetch(apiUrl, { credentials: "include", cache: "no-store" })
-        if (!res.ok) throw new Error(`Failed with ${res.status}. Are you logged in?`)
-        const json = await res.json()
-        setData(json)
-      } catch (e) {
-        setError(e instanceof Error ? e.message : "Unknown error")
-      } finally {
-        setLoading(false)
-      }
-    })()
+    fetchTopics()
   }, [])
+
+  const handleDeleteTopic = async (topicId: number) => {
+    setIsDeleting(topicId)
+    try {
+      const apiUrl = `${process.env.NEXT_PUBLIC_API_URL}/admin/topics/${topicId}`
+      const res = await fetch(apiUrl, { method: "DELETE", credentials: "include" })
+      if (!res.ok) throw new Error(`Failed to delete topic. Status: ${res.status}`)
+      // Refresh the list after successful deletion
+      await fetchTopics()
+    } catch (e) {
+      setError(e instanceof Error ? e.message : "Unknown error deleting topic")
+    } finally {
+      setIsDeleting(null)
+    }
+  }
 
   return (
     <div className="space-y-6">
@@ -78,6 +114,7 @@ export default function TopicsListPage() {
                 <TableHead className="text-white font-semibold">Title</TableHead>
                 <TableHead className="text-white font-semibold">Status</TableHead>
                 <TableHead className="text-white font-semibold">Author</TableHead>
+                <TableHead className="text-white font-semibold">Tags</TableHead>
                 <TableHead className="text-right text-white font-semibold">Actions</TableHead>
               </TableRow>
             </TableHeader>
@@ -89,6 +126,15 @@ export default function TopicsListPage() {
                     <StatusBadge status={topic.status} />
                   </TableCell>
                   <TableCell className="text-white/80">{topic.authorName}</TableCell>
+                  <TableCell>
+                    <div className="flex flex-wrap gap-1">
+                      {topic.tags?.map(tag => (
+                        <Badge key={tag.id} variant="secondary" className="bg-blue-500/20 text-blue-300 border-blue-500/30">
+                          {tag.name}
+                        </Badge>
+                      ))}
+                    </div>
+                  </TableCell>
                   <TableCell className="text-right">
                     <div className="flex gap-2 justify-end">
                       <Link href={`/admin/topics/edit/${topic.id}`} passHref>
@@ -96,9 +142,37 @@ export default function TopicsListPage() {
                           <Pencil className="h-4 w-4" />
                         </Button>
                       </Link>
-                      <Button variant="ghost" size="icon" className="text-white hover:bg-red-500/20 hover:text-red-400 rounded-lg" aria-label="Delete Topic">
-                        <Trash2 className="h-4 w-4" />
-                      </Button>
+                      <AlertDialog>
+                        <AlertDialogTrigger asChild>
+                          <Button
+                            variant="ghost"
+                            size="icon"
+                            className="text-white hover:bg-red-500/20 hover:text-red-400 rounded-lg"
+                            aria-label="Delete Topic"
+                            disabled={isDeleting === topic.id}
+                          >
+                            {isDeleting === topic.id ? (
+                              <span className="animate-spin h-4 w-4 border-b-2 border-white rounded-full" />
+                            ) : (
+                              <Trash2 className="h-4 w-4" />
+                            )}
+                          </Button>
+                        </AlertDialogTrigger>
+                        <AlertDialogContent>
+                          <AlertDialogHeader>
+                            <AlertDialogTitle>Are you absolutely sure?</AlertDialogTitle>
+                            <AlertDialogDescription>
+                              This action cannot be undone. This will permanently delete the topic.
+                            </AlertDialogDescription>
+                          </AlertDialogHeader>
+                          <AlertDialogFooter>
+                            <AlertDialogCancel>Cancel</AlertDialogCancel>
+                            <AlertDialogAction onClick={() => handleDeleteTopic(topic.id)}>
+                              Continue
+                            </AlertDialogAction>
+                          </AlertDialogFooter>
+                        </AlertDialogContent>
+                      </AlertDialog>
                     </div>
                   </TableCell>
                 </TableRow>

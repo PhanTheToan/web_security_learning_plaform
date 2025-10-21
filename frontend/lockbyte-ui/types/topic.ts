@@ -11,6 +11,11 @@ export interface Pageable {
   unpaged: boolean;
 }
 
+export interface Tag {
+  id: number;
+  name: string;
+}
+
 export interface Topic {
   id: number;
   title: string;
@@ -18,6 +23,7 @@ export interface Topic {
   authorName?: string;
   content: string;
   labs: Lab[];
+  tags: Tag[];
 }
 
 export interface Lab {

@@ -43,6 +43,13 @@ function TopicCard({ topic }: { topic: Topic }) {
         </Badge>
       </div>
       <p className="text-sm text-white/70 mt-2">By {topic.authorName}</p>
+      <div className="mt-4 flex flex-wrap gap-2">
+        {topic.tags?.map(tag => (
+          <Badge key={tag.id} variant="secondary" className="bg-blue-500/10 text-blue-300 border-blue-500/20 text-xs">
+            {tag.name}
+          </Badge>
+        ))}
+      </div>
       <div className="flex justify-end mt-4">
         <ArrowRight className="h-5 w-5 text-gray-500 group-hover:text-white transition-transform group-hover:translate-x-1" />
       </div>

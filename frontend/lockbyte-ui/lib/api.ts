@@ -42,68 +42,168 @@ async function fetchWithCredentials<T>(
   }
 }
 
+
+
 /** ================== Types ================== **/
+
 export type TopicListItem = {
+
   id: number;
+
   title: string;
+
   status: string;
+
   authorName: string;
+
 };
 
+
+
 export type TopicsApiResponse = {
+
   content: TopicListItem[];
+
   pageable: unknown;
+
   totalPages: number;
+
   totalElements: number;
+
   last: boolean;
+
   size: number;
+
   number: number;
+
   sort: unknown;
+
   numberOfElements: number;
+
   first: boolean;
+
   empty: boolean;
+
 };
+
+
 
 export type Lab = { id: number; name: string; estatus: string };
 
+export type Tag = { id: number; name: string };
+
+
+
 export type TopicDetail = {
+
   id: number;
+
   title: string;
+
   content: string;
+
   status: "Draft" | "Published";
+
   labs: Lab[];
+
+  tags: Tag[];
+
 };
+
+
 
 export type UpsertTopicPayload = {
+
   title: string;
+
   content: string;
+
   status: "Draft" | "Published" | "Archived";
+
   labsId: number[];
+
+  tagId: number[];
+
 };
 
+
+
 /** ================== APIs ================== **/
+
 export function getAdminTopics() {
+
   return fetchWithCredentials<TopicsApiResponse>("/admin/topics");
+
 }
+
+
 
 export function getAdminTopicById(id: string | number) {
+
   return fetchWithCredentials<TopicDetail>(`/admin/topics/${id}`);
+
 }
+
+
 
 export function getAdminLabs() {
+
   return fetchWithCredentials<Lab[]>("/admin/labs");
+
 }
+
+
 
 export function createAdminTopic(payload: UpsertTopicPayload) {
+
   return fetchWithCredentials<string>("/admin/topics", {
+
     method: "POST",
+
     body: JSON.stringify(payload),
+
   });
+
 }
 
+
+
 export function updateAdminTopic(id: string | number, payload: UpsertTopicPayload) {
+
   return fetchWithCredentials<string>(`/admin/topics/${id}`, {
+
     method: "PUT",
+
     body: JSON.stringify(payload),
+
   });
+
+}
+
+
+
+export function getPublicTags() {
+
+  return fetchWithCredentials<Tag[]>("/public/tags");
+
+}
+
+
+
+export function searchAdminTags(name: string) {
+
+  const params = new URLSearchParams({ type: "tag", name, like: "true" });
+
+  return fetchWithCredentials<{ items: Tag[] }>(`/admin/search?${params}`);
+
+}
+
+
+
+export function searchAdminLabs(name: string) {
+
+  const params = new URLSearchParams({ type: "lab", name, like: "true" });
+
+  return fetchWithCredentials<{ items: Lab[] }>(`/admin/search?${params}`);
+
 }

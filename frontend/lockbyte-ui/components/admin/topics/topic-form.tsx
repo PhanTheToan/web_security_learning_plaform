@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useRef, useEffect } from "react";
+import { useState, useRef, useEffect, useCallback } from "react";
 import { useForm, Controller } from "react-hook-form";
 import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/button";
@@ -24,73 +24,115 @@ import {
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { Command, CommandEmpty, CommandGroup, CommandItem, CommandList } from "@/components/ui/command";
 import MarkdownEditor from "@/components/admin/shared/markdown-editor";
-import { FileUploader } from "@/components/admin/shared/file-uploader";
-import { getAdminLabs, createAdminTopic, updateAdminTopic } from "@/lib/api";
-import { Lab, Topic } from "@/types/topic";
+import {
+  createAdminTopic,
+  updateAdminTopic,
+  searchAdminLabs,
+  searchAdminTags,
+} from "@/lib/api";
+import { Lab, Tag, Topic } from "@/types/topic";
+import { useDebounce } from "@/hooks/use-debounce";
 
 interface TopicFormData {
   title: string;
-
   content: string;
   status: 'Draft' | 'Published' | 'Archived';
   labs: Lab[];
+  tags: Tag[];
 }
 
 export function TopicForm({ initialData }: { initialData?: Topic | null }) {
   const router = useRouter();
-  // const { toast } = useToast();
   const { register, handleSubmit, control, setValue, watch, formState: { errors, isSubmitting } } = useForm<TopicFormData>({
     defaultValues: {
       title: initialData?.title || "",
       content: initialData?.content || "",
       status: initialData?.status || "Draft",
       labs: initialData?.labs || [],
+      tags: initialData?.tags || [],
     },
   });
 
-  const [allLabs, setAllLabs] = useState<Lab[]>([]);
-  const [searchQuery, setSearchQuery] = useState("");
-  const [isPopoverOpen, setIsPopoverOpen] = useState(false);
+  const [labSearchQuery, setLabSearchQuery] = useState("");
+  const [tagSearchQuery, setTagSearchQuery] = useState("");
+  const [isLabPopoverOpen, setIsLabPopoverOpen] = useState(false);
+  const [isTagPopoverOpen, setIsTagPopoverOpen] = useState(false);
+  const [searchedLabs, setSearchedLabs] = useState<Lab[]>([]);
+  const [searchedTags, setSearchedTags] = useState<Tag[]>([]);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
 
-  const relatedLabs = watch('labs');
+  const debouncedLabSearch = useDebounce(labSearchQuery, 300);
+  const debouncedTagSearch = useDebounce(tagSearchQuery, 300);
 
-  useEffect(() => {
-    const fetchLabs = async () => {
-      try {
-        const labsData = await getAdminLabs();
-        setAllLabs(labsData);
-      } catch (error) {
-        console.error("Failed to fetch labs", error);
-        // toast({ title: "Error", description: "Could not fetch labs.", variant: "destructive" });
-      }
-    };
-    fetchLabs();
-  }, []);
+  const relatedLabs = watch('labs');
+  const relatedTags = watch('tags');
 
   useEffect(() => {
     if (initialData) {
       setValue('title', initialData.title);
       setValue('content', initialData.content);
       setValue('status', initialData.status);
-      setValue('labs', initialData.labs);
+      setValue('labs', initialData.labs || []);
+      setValue('tags', initialData.tags || []);
     }
   }, [initialData, setValue]);
 
-  const filteredLabs = searchQuery
-    ? allLabs.filter(lab => lab.name.toLowerCase().includes(searchQuery.toLowerCase()))
-    : [];
+  const fetchSearchedLabs = useCallback(async (query: string) => {
+    if (!query) {
+      setSearchedLabs([]);
+      return;
+    }
+    try {
+      const { items } = await searchAdminLabs(query);
+      setSearchedLabs(items);
+    } catch (error) {
+      console.error("Failed to search labs", error);
+    }
+  }, []);
+
+  const fetchSearchedTags = useCallback(async (query: string) => {
+    if (!query) {
+      setSearchedTags([]);
+      return;
+    }
+    try {
+      const { items } = await searchAdminTags(query);
+      setSearchedTags(items);
+    } catch (error) {
+      console.error("Failed to search tags", error);
+    }
+  }, []);
+
+  useEffect(() => {
+    fetchSearchedLabs(debouncedLabSearch);
+  }, [debouncedLabSearch, fetchSearchedLabs]);
+
+  useEffect(() => {
+    fetchSearchedTags(debouncedTagSearch);
+  }, [debouncedTagSearch, fetchSearchedTags]);
 
   const handleAddLab = (labToAdd: Lab) => {
     if (!relatedLabs.some(lab => lab.id === labToAdd.id)) {
       setValue('labs', [...relatedLabs, labToAdd]);
     }
-    setSearchQuery("");
-    setIsPopoverOpen(false);
+    setLabSearchQuery("");
+    setIsLabPopoverOpen(false);
   };
 
   const removeLab = (labToRemove: Lab) => {
     setValue('labs', relatedLabs.filter(lab => lab.id !== labToRemove.id));
+  };
+
+  const handleAddTag = (tagToAdd: Tag) => {
+    if (!relatedTags.some(tag => tag.id === tagToAdd.id)) {
+      setValue('tags', [...relatedTags, tagToAdd]);
+    }
+    setTagSearchQuery("");
+    setIsTagPopoverOpen(false);
+  };
+
+  const removeTag = (tagToRemove: Tag) => {
+    setValue('tags', relatedTags.filter(tag => tag.id !== tagToRemove.id));
   };
 
   const handleInsertLabLink = (lab: { id: number; name: string }) => {
@@ -112,32 +154,27 @@ export function TopicForm({ initialData }: { initialData?: Topic | null }) {
       content: data.content,
       status: data.status,
       labsId: data.labs.map(l => l.id),
+      tagId: data.tags.map(t => t.id),
     };
 
     try {
       if (initialData) {
         await updateAdminTopic(String(initialData.id), payload);
-        // toast({ title: "Success", description: "Topic updated successfully!" });
       } else {
         await createAdminTopic(payload);
-        // toast({ title: "Success", description: "Topic created successfully!" });
       }
       router.push('/admin/topics');
-      router.refresh(); // To reflect changes in the list
+      router.refresh();
     } catch (error) {
       console.error("Failed to save topic", error);
-      // toast({ title: "Error", description: "Failed to save topic.", variant: "destructive" });
     }
   };
 
   return (
     <form onSubmit={handleSubmit(onSubmit)} className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-      {/* Left Column: Main Content */}
       <div className="lg:col-span-2 space-y-6">
         <Card className="bg-gradient-to-br from-[#ffffff]/8 via-[#9747ff]/5 to-[#5a5bed]/8 backdrop-blur-sm border border-[#ffffff]/10 rounded-xl">
-          <CardHeader>
-            <CardTitle className="text-white">Topic Title</CardTitle>
-          </CardHeader>
+          <CardHeader><CardTitle className="text-white">Topic Title</CardTitle></CardHeader>
           <CardContent>
             <Input
               id="title"
@@ -149,9 +186,7 @@ export function TopicForm({ initialData }: { initialData?: Topic | null }) {
           </CardContent>
         </Card>
         <Card className="bg-gradient-to-br from-[#ffffff]/8 via-[#9747ff]/5 to-[#5a5bed]/8 backdrop-blur-sm border border-[#ffffff]/10 rounded-xl">
-          <CardHeader>
-            <CardTitle className="text-white">Content</CardTitle>
-          </CardHeader>
+          <CardHeader><CardTitle className="text-white">Content</CardTitle></CardHeader>
           <CardContent>
             <Controller
               name="content"
@@ -171,12 +206,9 @@ export function TopicForm({ initialData }: { initialData?: Topic | null }) {
         </Card>
       </div>
 
-      {/* Right Column: Metadata and Actions */}
       <div className="lg:col-span-1 space-y-6">
         <Card className="bg-gradient-to-br from-[#ffffff]/8 via-[#9747ff]/5 to-[#5a5bed]/8 backdrop-blur-sm border border-[#ffffff]/10 rounded-xl">
-          <CardHeader>
-            <CardTitle className="text-white">Publish</CardTitle>
-          </CardHeader>
+          <CardHeader><CardTitle className="text-white">Publish</CardTitle></CardHeader>
           <CardContent>
             <Controller
               name="status"
@@ -207,39 +239,77 @@ export function TopicForm({ initialData }: { initialData?: Topic | null }) {
         </Card>
 
         <Card className="bg-gradient-to-br from-[#ffffff]/8 via-[#9747ff]/5 to-[#5a5bed]/8 backdrop-blur-sm border border-[#ffffff]/10 rounded-xl">
-          <CardHeader>
-            <CardTitle className="text-white">File Uploader</CardTitle>
-          </CardHeader>
+          <CardHeader><CardTitle className="text-white">Tags</CardTitle></CardHeader>
           <CardContent>
-            <FileUploader />
-          </CardContent>
-        </Card>
-
-        <Card className="bg-gradient-to-br from-[#ffffff]/8 via-[#9747ff]/5 to-[#5a5bed]/8 backdrop-blur-sm border border-[#ffffff]/10 rounded-xl">
-          <CardHeader>
-            <CardTitle className="text-white">Link Related Labs</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <Popover open={isPopoverOpen} onOpenChange={setIsPopoverOpen}>
+            <Popover open={isTagPopoverOpen} onOpenChange={setIsTagPopoverOpen}>
               <PopoverTrigger asChild>
                 <div className="relative mb-2">
                   <SearchIcon className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-white/50" />
                   <Input
-                    placeholder="Search labs to add..."
+                    placeholder="Search tags..."
                     className="pl-9 border-[#ffffff]/20 rounded-xl bg-[#ffffff]/5 text-white placeholder:text-white/40"
-                    value={searchQuery}
-                    onChange={(e) => setSearchQuery(e.target.value)}
+                    value={tagSearchQuery}
+                    onChange={(e) => setTagSearchQuery(e.target.value)}
                   />
                 </div>
               </PopoverTrigger>
               <PopoverContent className="w-[--radix-popover-trigger-width] p-0 bg-card/95 backdrop-blur-sm border-[#ffffff]/20 rounded-xl">
                 <Command>
                   <CommandList>
-                    {filteredLabs.length === 0 && searchQuery.trim() !== '' && (
+                    {searchedTags.length === 0 && tagSearchQuery.trim() !== '' && (
+                      <CommandEmpty className="text-white/70 p-2">No tags found.</CommandEmpty>
+                    )}
+                    <CommandGroup>
+                      {searchedTags.map((tag) => (
+                        <CommandItem
+                          key={tag.id}
+                          onSelect={() => handleAddTag(tag)}
+                          className="hover:bg-[#9747ff]/10 rounded-lg text-white cursor-pointer"
+                        >
+                          {tag.name}
+                        </CommandItem>
+                      ))}
+                    </CommandGroup>
+                  </CommandList>
+                </Command>
+              </PopoverContent>
+            </Popover>
+            <div className="flex flex-wrap gap-2 mt-2">
+              {relatedTags.map((tag) => (
+                <Badge key={tag.id} variant="secondary" className="flex items-center gap-1 pl-2 pr-1 bg-[#3b82f6]/20 text-white border-[#3b82f6]/30 rounded-lg">
+                  {tag.name}
+                  <button type="button" onClick={() => removeTag(tag)} className="p-1 rounded-full hover:bg-white/20" title={`Remove`}>
+                    <XIcon className="h-3 w-3" />
+                  </button>
+                </Badge>
+              ))}
+            </div>
+          </CardContent>
+        </Card>
+
+        <Card className="bg-gradient-to-br from-[#ffffff]/8 via-[#9747ff]/5 to-[#5a5bed]/8 backdrop-blur-sm border border-[#ffffff]/10 rounded-xl">
+          <CardHeader><CardTitle className="text-white">Link Related Labs</CardTitle></CardHeader>
+          <CardContent>
+            <Popover open={isLabPopoverOpen} onOpenChange={setIsLabPopoverOpen}>
+              <PopoverTrigger asChild>
+                <div className="relative mb-2">
+                  <SearchIcon className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-white/50" />
+                  <Input
+                    placeholder="Search labs to add..."
+                    className="pl-9 border-[#ffffff]/20 rounded-xl bg-[#ffffff]/5 text-white placeholder:text-white/40"
+                    value={labSearchQuery}
+                    onChange={(e) => setLabSearchQuery(e.target.value)}
+                  />
+                </div>
+              </PopoverTrigger>
+              <PopoverContent className="w-[--radix-popover-trigger-width] p-0 bg-card/95 backdrop-blur-sm border-[#ffffff]/20 rounded-xl">
+                <Command>
+                  <CommandList>
+                    {searchedLabs.length === 0 && labSearchQuery.trim() !== '' && (
                       <CommandEmpty className="text-white/70 p-2">No labs found.</CommandEmpty>
                     )}
                     <CommandGroup>
-                      {filteredLabs.map((lab) => (
+                      {searchedLabs.map((lab) => (
                         <CommandItem
                           key={lab.id}
                           onSelect={() => handleAddLab(lab)}
