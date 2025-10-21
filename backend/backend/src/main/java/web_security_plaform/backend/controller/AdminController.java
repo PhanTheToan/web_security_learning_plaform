@@ -1,5 +1,6 @@
 package web_security_plaform.backend.controller;
 
+import jakarta.transaction.Transactional;
 import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
@@ -10,12 +11,16 @@ import org.springframework.util.StringUtils;
 import org.springframework.web.bind.annotation.*;
 import web_security_plaform.backend.model.ENum.ERole;
 import web_security_plaform.backend.model.Lab;
+import web_security_plaform.backend.model.Role;
 import web_security_plaform.backend.model.Tag;
 import web_security_plaform.backend.model.Topic;
 import web_security_plaform.backend.model.User;
 import web_security_plaform.backend.payload.dto.*;
 import web_security_plaform.backend.payload.request.LabRequest;
+import web_security_plaform.backend.payload.request.SignupRequest;
 import web_security_plaform.backend.payload.request.TopicRequest;
+import web_security_plaform.backend.payload.request.UserUpdateRequest;
+import web_security_plaform.backend.payload.response.MessageResponse;
 import web_security_plaform.backend.repository.LabRepository;
 import web_security_plaform.backend.service.LabService;
 import web_security_plaform.backend.service.TagService;
@@ -24,6 +29,7 @@ import web_security_plaform.backend.service.UserService;
 
 import java.net.URI;
 import java.security.Principal;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
@@ -34,7 +40,6 @@ import java.util.stream.Collectors;
 @RequestMapping("/api/admin")
 @PreAuthorize("hasRole('ROLE_ADMIN')")
 public class AdminController {
-
 
     @Autowired
     private LabService labService;
@@ -47,10 +52,9 @@ public class AdminController {
     @Autowired
     private TagService tagService;
 
-
     @GetMapping("/labs")
     public ResponseEntity<Page<LabDetailDto>> getAllLabs(@RequestParam(defaultValue = "0") int page,
-                                                         @RequestParam(defaultValue = "10") int size) {
+            @RequestParam(defaultValue = "10") int size) {
         return ResponseEntity.ok(labService.getAllLabDetails(page, size));
     }
 
@@ -59,49 +63,43 @@ public class AdminController {
             @RequestParam String type,
             @RequestParam(required = false) Integer id,
             @RequestParam(required = false) String name,
-            @RequestParam(defaultValue = "false") boolean like
-    ) {
+            @RequestParam(defaultValue = "false") boolean like) {
         String kind = type.trim().toLowerCase(Locale.ROOT);
         if (!kind.equals("lab") && !kind.equals("tag")) {
             return ResponseEntity.badRequest().body(Map.of(
                     "success", false,
-                    "message", "type chỉ được phép là 'lab' hoặc 'tag'"
-            ));
+                    "message", "type chỉ được phép là 'lab' hoặc 'tag'"));
         }
 
         if (id == null && !StringUtils.hasText(name)) {
             return ResponseEntity.badRequest().body(Map.of(
                     "success", false,
-                    "message", "Cần truyền 'id' hoặc 'name'"
-            ));
+                    "message", "Cần truyền 'id' hoặc 'name'"));
         }
 
         if (kind.equals("lab")) {
             if (id != null) {
                 return ResponseEntity.ok(Map.of(
                         "type", "lab",
-                        "items", labService.findLabInfoById(id).map(List::of).orElseGet(List::of)
-                ));
+                        "items", labService.findLabInfoById(id).map(List::of).orElseGet(List::of)));
             } else {
                 return ResponseEntity.ok(Map.of(
                         "type", "lab",
-                        "items", labService.findLabInfosByName(name, like)
-                ));
+                        "items", labService.findLabInfosByName(name, like)));
             }
         } else { // tag
             if (id != null) {
                 return ResponseEntity.ok(Map.of(
                         "type", "tag",
-                        "items", tagService.findTagDTOById(id).map(List::of).orElseGet(List::of)
-                ));
+                        "items", tagService.findTagDTOById(id).map(List::of).orElseGet(List::of)));
             } else {
                 return ResponseEntity.ok(Map.of(
                         "type", "tag",
-                        "items", tagService.findTagDTOsByName(name, like)
-                ));
+                        "items", tagService.findTagDTOsByName(name, like)));
             }
         }
     }
+
     @PostMapping("/labs")
     public ResponseEntity<?> createLab(@Valid @RequestBody LabRequest labRequest, Principal principal) {
         User author = userService.findByUsername(principal.getName());
@@ -115,8 +113,10 @@ public class AdminController {
         return new ResponseEntity<>(responseDTO, HttpStatus.CREATED);
 
     }
+
     @PutMapping("/labs/{id}")
-    public ResponseEntity<?> updateLab(@Valid @RequestBody LabRequest labRequest, Principal principal, @PathVariable int id) {
+    public ResponseEntity<?> updateLab(@Valid @RequestBody LabRequest labRequest, Principal principal,
+            @PathVariable int id) {
         User author = userService.findByUsername(principal.getName());
         if (author == null) {
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Author not found.");
@@ -137,6 +137,7 @@ public class AdminController {
         }
         return ResponseEntity.ok(labDetail);
     }
+
     private LabResponseDTO mapToLabResponseDTO(Lab lab) {
         LabResponseDTO dto = new LabResponseDTO();
         dto.setId(lab.getId());
@@ -166,33 +167,34 @@ public class AdminController {
     }
 
     @PostMapping("/topics")
-    public ResponseEntity<?> createTopics(@RequestBody TopicRequest topicRequest, Principal principal){
+    public ResponseEntity<?> createTopics(@RequestBody TopicRequest topicRequest, Principal principal) {
         User user = userService.findByUsername(principal.getName());
-        if(user==null){
+        if (user == null) {
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Author not found.");
         }
-        Topic response = topicService.createTopic(topicRequest,user);
+        Topic response = topicService.createTopic(topicRequest, user);
         return ResponseEntity.ok("Create topics success fully !");
     }
 
     @PutMapping("/topics/{id}")
-    public ResponseEntity<?> updateTopics(@RequestBody TopicRequest topicRequest, @PathVariable long id,Principal principal){
+    public ResponseEntity<?> updateTopics(@RequestBody TopicRequest topicRequest, @PathVariable long id,
+            Principal principal) {
         User user = userService.findByUsername(principal.getName());
-        if(user==null){
+        if (user == null) {
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Author not found.");
         }
-        Topic response = topicService.updateTopics(topicRequest,id,user);
+        Topic response = topicService.updateTopics(topicRequest, id, user);
         return ResponseEntity.ok("Update topics success fully !");
     }
 
     @GetMapping("/topics")
     public ResponseEntity<Page<TopicsResponse>> getAllTopics(@RequestParam(defaultValue = "0") int page,
-                                                             @RequestParam(defaultValue = "10") int size) {
+            @RequestParam(defaultValue = "10") int size) {
         return ResponseEntity.ok(topicService.getAllTopDetails(page, size));
     }
 
     @GetMapping("/topics/{id}")
-    public ResponseEntity<?> getInformation(@PathVariable long id){
+    public ResponseEntity<?> getInformation(@PathVariable long id) {
         return ResponseEntity.ok(topicService.getTopicDetailById(id));
     }
 
@@ -204,11 +206,36 @@ public class AdminController {
                 .created(URI.create("/tags/" + saved.getId()))
                 .body(saved);
     }
+
     @DeleteMapping("/tags/{id}")
     public ResponseEntity<Void> deleteTag(@PathVariable int id,
-                                          @RequestParam(defaultValue = "false") boolean force) {
+            @RequestParam(defaultValue = "false") boolean force) {
         tagService.deleteTag(id, force);
         return ResponseEntity.noContent().build(); // 204
     }
 
+    @Transactional
+    @PostMapping("/users")
+    public ResponseEntity<?> createUser(@Valid @RequestBody SignupRequest signUpRequest, @RequestParam int roleId) {
+        return ResponseEntity.ok( userService.createUserByAdmin(signUpRequest, roleId) );
+    }
+    @Transactional
+    @PutMapping("/users/{id}")
+    public ResponseEntity<?> updateUserByAdmin(@Valid @RequestBody UserUpdateRequest userUpdateRequest, @PathVariable int id) {
+        return ResponseEntity.ok( userService.updateUserByAdmin(userUpdateRequest,id) );
+    }
+    @Transactional
+    @PutMapping("/users-status/{id}")
+    public ResponseEntity<?> updateStatus(@PathVariable int id) {
+        return ResponseEntity.ok( userService.updateStatusUserByAdmin(id) );
+    }
+    @GetMapping("/users")
+    public ResponseEntity<Page<UserInfoAdminResponse>> getAllUsers(@RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "10") int size) {
+        return ResponseEntity.ok(userService.getAllUserInfos(page, size));
+    }
+    @GetMapping("/users/{id}")
+    public ResponseEntity<?> getUserInfo(@PathVariable int id) {
+        return ResponseEntity.ok(userService.getUserInfoById(id));
+    }
 }

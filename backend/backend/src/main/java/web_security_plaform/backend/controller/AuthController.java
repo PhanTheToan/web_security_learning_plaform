@@ -17,6 +17,7 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.bind.annotation.*;
 import web_security_plaform.backend.model.ENum.ERole;
+import web_security_plaform.backend.model.ENum.EStatus;
 import web_security_plaform.backend.model.Role;
 import web_security_plaform.backend.model.User;
 import web_security_plaform.backend.payload.request.LoginRequest;
@@ -76,7 +77,9 @@ public class AuthController {
         List<String> roles = userDetails.getAuthorities().stream()
                 .map(item -> item.getAuthority())
                 .collect(Collectors.toList());
-
+        if(userDetails.getStatus() != EStatus.Active){
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Error: User account is not active.");
+        }
         return ResponseEntity.ok().header(HttpHeaders.SET_COOKIE, jwtCookie.toString())
                 .body(new UserInfoResponse(userDetails.getId(),
                         userDetails.getUsername(),
@@ -99,6 +102,7 @@ public class AuthController {
                 .dateOfBirth(signUpRequest.getDateOfBirth())
                 .gender(signUpRequest.getGender())
                 .email(signUpRequest.getEmail())
+                .status(EStatus.Active)
                 .build();
 
         // Assign USER role by default

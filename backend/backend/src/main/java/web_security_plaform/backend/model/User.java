@@ -9,6 +9,7 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 import web_security_plaform.backend.model.ENum.EGender;
+import web_security_plaform.backend.model.ENum.EStatus;
 
 
 import java.time.LocalDate;
@@ -41,6 +42,9 @@ public class User {
     @NotBlank
     @Size(max = 255)
     private String fullName;
+
+    @NotNull
+    private EStatus status;
 
     @NotNull(message = "Not null pls!!!")
     private EGender gender;

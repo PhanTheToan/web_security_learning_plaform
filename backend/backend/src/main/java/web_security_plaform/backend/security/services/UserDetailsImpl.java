@@ -2,9 +2,11 @@ package web_security_plaform.backend.security.services;
 
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
+import lombok.Getter;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
+import web_security_plaform.backend.model.ENum.EStatus;
 import web_security_plaform.backend.model.User;
 
 import java.util.Collection;
@@ -21,18 +23,22 @@ public class UserDetailsImpl implements UserDetails {
 
   private String email;
 
+  @Getter
+  private EStatus status;
+
   @JsonIgnore
   private String password;
 
   private Collection<? extends GrantedAuthority> authorities;
 
-  public UserDetailsImpl(Integer id, String username, String email, String password,
+  public UserDetailsImpl(Integer id, String username, String email, String password, EStatus status,
       Collection<? extends GrantedAuthority> authorities) {
     this.id = id;
     this.username = username;
     this.email = email;
     this.password = password;
     this.authorities = authorities;
+    this.status = status;
   }
 
   public static UserDetailsImpl build(User user) {
@@ -44,7 +50,7 @@ public class UserDetailsImpl implements UserDetails {
         user.getId(), 
         user.getUsername(), 
         user.getEmail(),
-        user.getPassword(), 
+        user.getPassword(),user.getStatus(),
         authorities);
   }
 
