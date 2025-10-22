@@ -19,7 +19,10 @@ public class UserUpdateRequest {
     private Set<String> role;
 
     @Size(min = 6, max = 40)
-    private String password;
+    private String newPassword;
+
+    @Size(min = 6, max = 40)
+    private String currentPassword;
 
     @Size(max = 50)
     private String fullName;
