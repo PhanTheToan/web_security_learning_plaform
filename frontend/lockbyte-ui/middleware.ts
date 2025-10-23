@@ -25,5 +25,5 @@ export function middleware(request: NextRequest) {
 
 export const config = {
   // Match all admin routes and the login page to handle both redirect cases
-  matcher: ['/admin/:path*', '/login'],
+  matcher: ['/admin/:path*', '/login', '/profile'],
 };

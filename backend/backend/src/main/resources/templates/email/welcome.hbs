@@ -1,0 +1,32 @@
+<!doctype html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <title>{{subject}}</title>
+    <style>
+        .btn {background:#4f46e5;color:#fff;padding:10px 16px;border-radius:8px;text-decoration:none}
+    </style>
+</head>
+<body>
+<h2>Xin chào {{user.fullName}},</h2>
+
+<p>Cảm ơn bạn đã đăng ký. Mã kích hoạt của bạn là <b>{{activationCode}}</b>.</p>
+
+{{#if items.length}}
+    <p>Danh sách đăng ký:</p>
+    <ul>
+        {{#each items}}
+            <li>{{this.name}} – số lượng: {{this.qty}}</li>
+        {{/each}}
+    </ul>
+{{/if}}
+
+<p>
+    <a class="btn" href="{{actionUrl}}">Kích hoạt ngay</a>
+</p>
+
+<img src="cid:logo" alt="Logo" width="120" />
+
+{{> footer year=year company=company}}
+</body>
+</html>

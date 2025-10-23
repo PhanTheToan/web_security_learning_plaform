@@ -1,50 +1,101 @@
 
+import { EmailTemplateSchema, SendReq } from "@/types/email";
+
+
+
 const API_BASE = process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:8082/api";
 
+
+
 async function buildHeaders(extra?: HeadersInit): Promise<Headers> {
+
+
+
   const h = new Headers(extra ?? {});
+
+
+
   if (!h.has("Content-Type")) h.set("Content-Type", "application/json");
 
-  // Khi chạy trên server (Next App Router), tự attach Cookie của user vào request backend.
-  if (typeof window === "undefined" && !h.has("Cookie")) {
-    const cookieHeader = cookieStore.toString(); // "a=b; c=d"
-    if (cookieHeader) h.set("Cookie", cookieHeader);
-  }
+
+
+
+
+
+
   return h;
+
+
+
 }
+
+
 
 async function fetchWithCredentials<T>(
+
   path: string,
+
   init?: RequestInit & { extraHeaders?: HeadersInit }
+
 ): Promise<T> {
+
   const url = `${API_BASE}${path}`;
+
   const headers = await buildHeaders(init?.extraHeaders);
+
   const isBrowser = typeof window !== "undefined";
 
+
+
   const resp = await fetch(url, {
+
     method: init?.method ?? "GET",
+
     headers,
+
     body: init?.body,
+
     cache: "no-store",
+
     credentials: isBrowser ? "include" : undefined, // client mới sử dụng được
+
   });
 
+
+
   const raw = await resp.text();
+
   if (!resp.ok) {
+
     console.error(`API Error: ${resp.status} ${resp.statusText}`, raw);
+
     throw new Error(`Request failed: ${resp.status}`);
+
   }
 
+
+
   try {
+
     return JSON.parse(raw) as T;
+
   } catch {
+
     return raw as unknown as T;
+
   }
+
 }
+
+
+
+
 
 
 
 /** ================== Types ================== **/
+
+
 
 export type TopicListItem = {
 
@@ -128,7 +179,31 @@ export type UpsertTopicPayload = {
 
 
 
+
+export function getUserProfile() {
+  return fetchWithCredentials<any>("/user/profile");
+}
+
+export function updateUserProfile(payload: any) {
+  // This function is now for personal info only
+  return fetchWithCredentials<any>("/user/profile", {
+    method: "PATCH", // Changed to PATCH for partial updates
+    body: JSON.stringify(payload),
+  });
+}
+
+export function changePassword(payload: any) {
+  // New function specifically for changing the password
+  return fetchWithCredentials<any>("/user/profile/change-password", {
+    method: "POST",
+    body: JSON.stringify(payload),
+  });
+}
+
 /** ================== APIs ================== **/
+
+
+
 
 export function getAdminTopics() {
 
@@ -207,3 +282,297 @@ export function searchAdminLabs(name: string) {
   return fetchWithCredentials<{ items: Lab[] }>(`/admin/search?${params}`);
 
 }
+
+
+
+// ================== Email Module APIs ==================
+
+
+
+// This is a mock function. In a real app, it would fetch a schema from a remote source.
+
+
+
+export async function getEmailTemplateSchema(
+
+
+
+  templateName: string
+
+
+
+): Promise<EmailTemplateSchema | null> {
+
+
+
+  const schemas: Record<string, EmailTemplateSchema> = {
+
+
+
+    welcome: {
+
+
+
+      fields: [
+
+
+
+        { key: "subject", label: "Email Subject", type: "string", required: true, default: "🎉 Welcome to Lockbyte" },
+
+
+
+        { key: "user.fullName", label: "Full Name", type: "string", required: true },
+
+
+
+        { key: "activationCode", label: "Activation Code", type: "string", required: true },
+
+
+
+        { key: "actionUrl", label: "Action URL", type: "url", required: true },
+
+
+
+        { key: "features", label: "Features", type: "array[string]" },
+
+
+
+        { key: "reportUrl", label: "Report URL (optional)", type: "url", required: false }
+
+
+
+      ]
+
+
+
+    },
+
+
+
+    digest: {
+
+
+
+      fields: [
+
+
+
+        { key: "subject", label: "Email Subject", type: "string", required: true, default: "Your Weekly Digest" },
+
+
+
+        { key: "user.firstName", label: "First Name", type: "string", required: true },
+
+
+
+        { key: "articles", label: "Articles", type: "array[object]", help: "Array of objects with title and url" },
+
+
+
+        { key: "unsubscribeUrl", label: "Unsubscribe URL", type: "url", required: true }
+
+
+
+      ]
+
+
+
+    },
+
+
+
+    report: {
+
+
+
+      fields: [
+
+
+
+        { key: "subject", label: "Email Subject", type: "string", required: true, default: "Your Monthly Report is Ready" },
+
+
+
+        { key: "user.fullName", label: "Full Name", type: "string", required: true },
+
+
+
+        { key: "report.name", label: "Report Name", type: "string", required: true },
+
+
+
+        { key: "report.period", label: "Report Period", type: "string", required: true },
+
+
+
+        { key: "report.downloadUrl", label: "Download URL", type: "url", required: true }
+
+
+
+      ]
+
+
+
+    },
+
+
+
+    "password-reset": {
+
+
+
+      fields: [
+
+
+
+        { key: "subject", label: "Email Subject", type: "string", required: true, default: "Reset Your Password" },
+
+
+
+        { key: "user.name", label: "Username", type: "string", required: true },
+
+
+
+        { key: "resetPasswordUrl", label: "Reset URL", type: "url", required: true }
+
+
+
+      ]
+
+
+
+    }
+
+
+
+  };
+
+
+
+
+
+
+
+  return Promise.resolve(schemas[templateName] || null);
+
+
+
+}
+
+
+
+export function previewAdminEmail(payload: Partial<SendReq>) {
+
+    return fetchWithCredentials<string>("/admin/email/preview", {
+
+        method: "POST",
+
+        body: JSON.stringify(payload),
+
+        extraHeaders: {
+
+            "Content-Type": "application/json",
+
+            "Accept": "text/html"
+
+        }
+
+    });
+
+}
+
+
+
+export function sendAdminEmail(payload: SendReq) {
+
+
+
+    return fetchWithCredentials<string>("/admin/email/send", {
+
+
+
+        method: "POST",
+
+
+
+        body: JSON.stringify(payload)
+
+
+
+    });
+
+
+
+}
+
+
+
+
+
+
+
+export function sendAdminEmailAsync(payload: SendReq) {
+
+
+
+    return fetchWithCredentials<string>("/admin/email/send-async", {
+
+
+
+        method: "POST",
+
+
+
+        body: JSON.stringify(payload)
+
+
+
+    });
+
+
+
+}
+
+
+
+export function getAdminEmailLogs(
+
+
+
+  params: { page?: number; size?: number; keyword?: string; status?: string }
+
+
+
+) {
+
+
+
+  const query = new URLSearchParams();
+
+
+
+  if (params.page) query.set("page", params.page.toString());
+
+
+
+  if (params.size) query.set("size", params.size.toString());
+
+
+
+  if (params.keyword) query.set("keyword", params.keyword);
+
+
+
+  if (params.status) query.set("status", params.status);
+
+
+
+  return fetchWithCredentials<PageResp<EmailLog>>(`/admin/email/logs?${query}`);
+
+
+
+}
+
+
+
+

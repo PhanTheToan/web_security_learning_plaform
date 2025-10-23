@@ -1,7 +1,7 @@
 "use client"
 import Link from "next/link"
 import { usePathname } from "next/navigation"
-import { LayoutDashboard, Users, BookOpen, Code, Settings } from "lucide-react"
+import { LayoutDashboard, Users, BookOpen, Code, Settings, Mail, User } from "lucide-react"
 import { LockIcon } from "@/components/icons/lock-icon"
 
 const Sidebar = () => {
@@ -9,9 +9,11 @@ const Sidebar = () => {
 
   const navItems = [
     { href: "/admin/dashboard", icon: <LayoutDashboard className="h-5 w-5" />, label: "Dashboard" },
+    { href: "/profile", icon: <User className="h-5 w-5" />, label: "Profile" },
     { href: "/admin/users", icon: <Users className="h-5 w-5" />, label: "Users" },
     { href: "/admin/labs", icon: <Code className="h-5 w-5" />, label: "Labs" },
     { href: "/admin/topics", icon: <BookOpen className="h-5 w-5" />, label: "Topics" },
+    { href: "/admin/email/send", icon: <Mail className="h-5 w-5" />, label: "Email" },
     { href: "/admin/settings", icon: <Settings className="h-5 w-5" />, label: "Settings" },
   ]
 
@@ -32,8 +34,8 @@ const Sidebar = () => {
                 <Link
                   href={item.href}
                   className={`flex items-center gap-4 p-3 rounded-xl transition-all duration-300 relative group ${isActive
-                      ? "bg-gradient-to-br from-[#9747ff]/10 via-[#5a5bed]/8 to-[#821db6]/10 text-foreground font-medium border border-[#9747ff]/60 shadow-[0_0_20px_rgba(151,71,255,0.2)]"
-                      : "text-[#ffffff]/70 hover:bg-gradient-to-br hover:from-[#ffffff]/5 hover:via-[#9747ff]/5 hover:to-[#5a5bed]/5 hover:text-foreground hover:border hover:border-[#ffffff]/20"
+                    ? "bg-gradient-to-br from-[#9747ff]/10 via-[#5a5bed]/8 to-[#821db6]/10 text-foreground font-medium border border-[#9747ff]/60 shadow-[0_0_20px_rgba(151,71,255,0.2)]"
+                    : "text-[#ffffff]/70 hover:bg-gradient-to-br hover:from-[#ffffff]/5 hover:via-[#9747ff]/5 hover:to-[#5a5bed]/5 hover:text-foreground hover:border hover:border-[#ffffff]/20"
                     }`}
                 >
                   {isActive && (
