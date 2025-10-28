@@ -5,12 +5,17 @@ import ReactMarkdown from "react-markdown";
 import rehypeRaw from "rehype-raw";
 import rehypeSanitize from "rehype-sanitize";
 import remarkGfm from "remark-gfm";
+import LabLinkWidget from "@/components/LabLinkWidget";
+
+import { LabInfo } from "@/components/LabLinkWidget";
+import MarkdownImage from "@/components/MarkdownImage";
 
 interface MarkdownEditorProps {
   value: string;
   onChange: (value: string) => void;
   textareaRef: React.RefObject<HTMLTextAreaElement>;
   height?: string;
+  labs?: LabInfo[];
 }
 
 /** ========= Utils: vá code fence hở (support ``` và ~~~) ========= */
@@ -86,6 +91,7 @@ const MarkdownEditor = ({
   onChange,
   textareaRef,
   height = "h-96",
+  labs = [],
 }: MarkdownEditorProps) => {
   const prepared = useMemo(() => fixUnclosedFences(value ?? ""), [value]);
 
@@ -135,15 +141,23 @@ Example for image: ![Alt text](image_url)"
               />
             ),
 
-            a: ({ href, children, ...props }) => (
-              <a
-                href={href}
-                {...props}
-                className="text-purple-300 hover:text-purple-200 underline underline-offset-2 decoration-purple-400/40"
-              >
-                {children}
-              </a>
-            ),
+            a: ({ href = "", children, ...props }) => {
+              if (/^\/labs\/\d+\/?$/.test(href)) {
+                const labId = Number(href.match(/\/labs\/(\d+)/)?.[1]);
+                const labData = labs.find(lab => lab.id === labId);
+                const text = Array.isArray(children) ? children.join("") : String(children ?? "");
+                return <LabLinkWidget href={href} fallbackText={text} labInfo={labData} />;
+              }
+              return (
+                <a
+                  href={href}
+                  {...props}
+                  className="text-purple-300 link-glow-effect"
+                >
+                  {children}
+                </a>
+              );
+            },
 
             code({ className, children, ...props }) {
               const match = /language-(\w+)/.exec(className || '');
@@ -173,6 +187,8 @@ Example for image: ![Alt text](image_url)"
             pre({ children }) {
               return <CodeBlockPreview>{children}</CodeBlockPreview>;
             },
+
+            img: (p) => <MarkdownImage {...p} />,
           }}
         >
           {prepared}

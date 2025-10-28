@@ -56,7 +56,7 @@ public class Lab {
     @Column(nullable = false)
     private EDifficulty difficulty;
 
-    @Column(name = "link_source")
+    @Column(name = "linkSource")
     private String linkSource;
 
     @NotNull
@@ -77,9 +77,7 @@ public class Lab {
     private LocalDateTime updatedAt;
 
     @ManyToMany(fetch = FetchType.LAZY)
-    @JoinTable(name = "lab_tags",
-            joinColumns = @JoinColumn(name = "lab_id"),
-            inverseJoinColumns = @JoinColumn(name = "tag_id"))
+    @JoinTable(name = "lab_tags", joinColumns = @JoinColumn(name = "lab_id"), inverseJoinColumns = @JoinColumn(name = "tag_id"))
     @Builder.Default
     private Set<Tag> tags = new HashSet<>();
 }

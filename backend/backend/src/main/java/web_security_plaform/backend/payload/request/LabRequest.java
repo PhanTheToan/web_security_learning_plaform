@@ -18,7 +18,7 @@ public class LabRequest {
     private String solution;
     private String hint;
     private String fixVulnerabilities;
-    private String link_source;
+    private String linkSource;
 
     @NotBlank
     private String dockerImage;

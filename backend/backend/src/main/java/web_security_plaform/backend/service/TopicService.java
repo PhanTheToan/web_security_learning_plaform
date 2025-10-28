@@ -39,7 +39,7 @@ public class TopicService {
     @Autowired
     private TagRepository tagRepository;
 
-    public Topic createTopic(TopicRequest topicRequest, User user){
+    public Topic createTopic(TopicRequest topicRequest, User user) {
         Topic topic = new Topic();
 
         topic.setAuthor(user);
@@ -49,18 +49,18 @@ public class TopicService {
 
         topic.setAuthor(user);
 
-        if(topicRequest.getLabsId() != null && !topicRequest.getLabsId().isEmpty()){
+        if (topicRequest.getLabsId() != null && !topicRequest.getLabsId().isEmpty()) {
             Set<Lab> labs = new HashSet<>(labRepository.findAllById(topicRequest.getLabsId()));
             topic.setLabs(labs);
         }
-        if(topicRequest.getTagId() != null && !topicRequest.getTagId().isEmpty()){
+        if (topicRequest.getTagId() != null && !topicRequest.getTagId().isEmpty()) {
             Set<Tag> tags = new HashSet<>(tagRepository.findAllById(topicRequest.getTagId()));
             topic.setTags(tags);
         }
         return topicRepository.save(topic);
     }
 
-    public Topic updateTopics(TopicRequest topicRequest, long id,User user){
+    public Topic updateTopics(TopicRequest topicRequest, long id, User user) {
         Topic topic = topicRepository.findById(id).orElseThrow();
 
         topic.setAuthor(user);
@@ -70,11 +70,11 @@ public class TopicService {
 
         topic.setAuthor(user);
 
-        if(topicRequest.getLabsId() != null && !topicRequest.getLabsId().isEmpty()){
+        if (topicRequest.getLabsId() != null && !topicRequest.getLabsId().isEmpty()) {
             Set<Lab> labs = new HashSet<>(labRepository.findAllById(topicRequest.getLabsId()));
             topic.setLabs(labs);
         }
-        if(topicRequest.getTagId() != null && !topicRequest.getTagId().isEmpty()){
+        if (topicRequest.getTagId() != null && !topicRequest.getTagId().isEmpty()) {
             Set<Tag> tags = new HashSet<>(tagRepository.findAllById(topicRequest.getTagId()));
             topic.setTags(tags);
         }
@@ -98,11 +98,9 @@ public class TopicService {
         dto.setTitle(topic.getTitle());
         dto.setAuthorName(user.getFullName());
         dto.setStatus(topic.getStatus());
-        Set<TagDTO> tagDTOs = topic.getTags() != null ?
-                topic.getTags().stream()
-                        .map(tag -> new TagDTO(tag.getId(), tag.getName()))
-                        .collect(Collectors.toSet()) :
-                Collections.emptySet();
+        Set<TagDTO> tagDTOs = topic.getTags() != null ? topic.getTags().stream()
+                .map(tag -> new TagDTO(tag.getId(), tag.getName()))
+                .collect(Collectors.toSet()) : Collections.emptySet();
         dto.setTags(tagDTOs);
         return dto;
     }
@@ -128,16 +126,12 @@ public class TopicService {
         dto.setTitle(topic.getTitle());
         dto.setAuthorName(user.getFullName());
         dto.setStatus(topic.getStatus());
-        Set<TagDTO> tagDTOs = topic.getTags() != null ?
-                topic.getTags().stream()
-                        .map(tag -> new TagDTO(tag.getId(), tag.getName()))
-                        .collect(Collectors.toSet()) :
-                Collections.emptySet();
+        Set<TagDTO> tagDTOs = topic.getTags() != null ? topic.getTags().stream()
+                .map(tag -> new TagDTO(tag.getId(), tag.getName()))
+                .collect(Collectors.toSet()) : Collections.emptySet();
         dto.setTags(tagDTOs);
         return dto;
     }
-
-
 
     @Transactional(readOnly = true)
     public TopicDetailDTO getTopicDetailById(long id) {
@@ -161,16 +155,15 @@ public class TopicService {
                     li.setId(l.getId());
                     li.setName(l.getName());
                     li.setEStatus(l.getStatus());
+                    li.setDifficulty(l.getDifficulty());
                     return li;
                 })
                 .collect(java.util.stream.Collectors.toCollection(java.util.LinkedHashSet::new));
 
         dto.setLabs(labDto);
-        Set<TagDTO> tagDTOs = t.getTags() != null ?
-                t.getTags().stream()
-                        .map(tag -> new TagDTO(tag.getId(), tag.getName()))
-                        .collect(Collectors.toSet()) :
-                Collections.emptySet();
+        Set<TagDTO> tagDTOs = t.getTags() != null ? t.getTags().stream()
+                .map(tag -> new TagDTO(tag.getId(), tag.getName()))
+                .collect(Collectors.toSet()) : Collections.emptySet();
         dto.setTags(tagDTOs);
         return dto;
 

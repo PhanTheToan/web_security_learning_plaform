@@ -46,7 +46,7 @@ public class LabService {
         newLab.setDifficulty(labRequest.getDifficulty());
         newLab.setTimeoutMinutes(labRequest.getTimeoutMinutes());
         newLab.setStatus(labRequest.getStatus());
-        newLab.setLinkSource(labRequest.getLink_source());
+        newLab.setLinkSource(labRequest.getLinkSource());
 
         newLab.setAuthor(author);
 
@@ -77,11 +77,9 @@ public class LabService {
         User author = lab.getAuthor();
         String authorName = author.getFullName();
 
-        Set<TagDTO> tagDTOs = lab.getTags() != null ?
-                lab.getTags().stream()
-                        .map(tag -> new TagDTO(tag.getId(), tag.getName()))
-                        .collect(Collectors.toSet()) :
-                Collections.emptySet();
+        Set<TagDTO> tagDTOs = lab.getTags() != null ? lab.getTags().stream()
+                .map(tag -> new TagDTO(tag.getId(), tag.getName()))
+                .collect(Collectors.toSet()) : Collections.emptySet();
 
         LabDetailDto dto = new LabDetailDto();
         dto.setId(lab.getId());
@@ -101,21 +99,21 @@ public class LabService {
                 .map(this::convertToDtoAllInformation)
                 .orElse(null);
     }
+
     public LabDetailDto getLabDetailByUser(int id) {
         return labRepository.findById(id)
-                .filter(lab -> lab.getStatus().equals(EStatus.Published) )
+                .filter(lab -> lab.getStatus().equals(EStatus.Published))
                 .map(this::convertToDtoAllInformationForUser)
                 .orElse(null);
     }
+
     private LabDetailDto convertToDtoAllInformation(Lab lab) {
         User author = lab.getAuthor();
         String authorName = author.getFullName();
 
-        Set<TagDTO> tagDTOs = lab.getTags() != null ?
-                lab.getTags().stream()
-                        .map(tag -> new TagDTO(tag.getId(), tag.getName()))
-                        .collect(Collectors.toSet()) :
-                Collections.emptySet();
+        Set<TagDTO> tagDTOs = lab.getTags() != null ? lab.getTags().stream()
+                .map(tag -> new TagDTO(tag.getId(), tag.getName()))
+                .collect(Collectors.toSet()) : Collections.emptySet();
 
         List<CommunitySolutionsDTO> communitySolutions = communitySolutionRepository.findByLabId(lab.getId())
                 .stream()
@@ -150,15 +148,14 @@ public class LabService {
 
         return dto;
     }
+
     private LabDetailDto convertToDtoAllInformationForUser(Lab lab) {
         User author = lab.getAuthor();
         String authorName = author.getFullName();
 
-        Set<TagDTO> tagDTOs = lab.getTags() != null ?
-                lab.getTags().stream()
-                        .map(tag -> new TagDTO(tag.getId(), tag.getName()))
-                        .collect(Collectors.toSet()) :
-                Collections.emptySet();
+        Set<TagDTO> tagDTOs = lab.getTags() != null ? lab.getTags().stream()
+                .map(tag -> new TagDTO(tag.getId(), tag.getName()))
+                .collect(Collectors.toSet()) : Collections.emptySet();
 
         List<CommunitySolutionsDTO> communitySolutions = communitySolutionRepository.findByLabId(lab.getId())
                 .stream()
@@ -193,8 +190,6 @@ public class LabService {
         return dto;
     }
 
-
-
     public Lab updateLabs(LabRequest labRequest, User author, int id) {
         Lab newLab = labRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("Lab not found with id: " + id));
@@ -208,7 +203,7 @@ public class LabService {
         newLab.setDifficulty(labRequest.getDifficulty());
         newLab.setTimeoutMinutes(labRequest.getTimeoutMinutes());
         newLab.setStatus(labRequest.getStatus());
-        newLab.setLinkSource(labRequest.getLink_source());
+        newLab.setLinkSource(labRequest.getLinkSource());
 
         newLab.setAuthor(author);
 
@@ -219,11 +214,13 @@ public class LabService {
 
         return labRepository.save(newLab);
     }
+
     private LabInfoDetail toLabInfoDetail(Lab lab) {
         LabInfoDetail dto = new LabInfoDetail();
         dto.setId(lab.getId());
         dto.setName(lab.getName());
         dto.setEStatus(lab.getStatus()); // map field status -> eStatus
+        dto.setDifficulty(lab.getDifficulty());
         return dto;
     }
 
@@ -240,7 +237,6 @@ public class LabService {
         return labs.stream().map(this::toLabInfoDetail).collect(Collectors.toList());
     }
 
-
     public ResponseEntity<?> getAllLabs() {
         List<Lab> labs = labRepository.findAllWithTags();
         List<LabInfoDetail> labInfoDetails = labs.stream()
@@ -255,11 +251,9 @@ public class LabService {
         dto.setId(lab.getId());
         dto.setName(lab.getName());
         dto.setEStatus(lab.getStatus());
-        Set<TagDTO> tagDTOs = lab.getTags() != null ?
-                lab.getTags().stream()
-                        .map(tag -> new TagDTO(tag.getId(), tag.getName()))
-                        .collect(Collectors.toSet()) :
-                Collections.emptySet();
+        Set<TagDTO> tagDTOs = lab.getTags() != null ? lab.getTags().stream()
+                .map(tag -> new TagDTO(tag.getId(), tag.getName()))
+                .collect(Collectors.toSet()) : Collections.emptySet();
         dto.setTags(tagDTOs);
         return dto;
     }

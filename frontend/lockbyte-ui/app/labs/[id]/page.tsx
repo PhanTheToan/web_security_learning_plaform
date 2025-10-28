@@ -25,6 +25,7 @@ import {
   ShieldCheck,
   Users,
 } from "lucide-react";
+import MarkdownImage from "@/components/MarkdownImage";
 
 // Reusing markdown rendering logic from Topic Detail Page
 function fixUnclosedFences(md: string) {
@@ -91,6 +92,7 @@ const MarkdownRenderer = ({ content }: { content: string }) => {
         remarkPlugins={[remarkGfm]}
         components={{
           pre: ({ children }) => <CodeBlock>{children}</CodeBlock>,
+          img: (p) => <MarkdownImage {...p} />,
         }}
       >
         {preparedContent}

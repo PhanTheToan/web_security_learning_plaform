@@ -9,6 +9,10 @@ import { Header } from "@/components/header";
 import { Footer } from "@/components/footer";
 import ParticlesComponent from "@/components/particles-background";
 
+import { ArrowRight } from "lucide-react";
+import LabLinkWidget from "@/components/LabLinkWidget";
+import MarkdownImage from "@/components/MarkdownImage";
+
 /** ========= Types ========= */
 type Lab = { id: number; name: string; estatus: string };
 type TopicDetail = {
@@ -201,16 +205,23 @@ export default function TopicDetailPage() {
                       return <CodeBlock>{children}</CodeBlock>;
                     },
 
+                    // Image Popup
+                    img: (p) => <MarkdownImage {...p} />,
+
                     // Links
-                    a: ({ href, children, ...props }) => (
-                      <a
-                        href={href}
-                        {...props}
-                        className="text-purple-300 hover:text-purple-200 underline underline-offset-2 decoration-purple-400/40"
-                      >
-                        {children}
-                      </a>
-                    ),
+                    a: ({ href = "", children, ...props }) => {
+                      if (/^\/labs\/\d+\/?$/.test(href)) {
+                        const labId = Number(href.match(/\/labs\/(\d+)/)?.[1]);
+                        const labData = topic.labs?.find(lab => lab.id === labId);
+                        const text = Array.isArray(children) ? children.join("") : String(children ?? "");
+                        return <LabLinkWidget href={href} fallbackText={text} labInfo={labData} />;
+                      }
+                      return (
+                        <a href={href} {...props} className="text-purple-300 link-glow-effect">
+                          {children}
+                        </a>
+                      );
+                    },
                   }}
                 >
                   {preparedContent}
@@ -234,9 +245,10 @@ export default function TopicDetailPage() {
                       </div>
                       <Link
                         href={`/labs/${lab.id}`}
-                        className="text-sm underline text-purple-300 hover:text-purple-200 shrink-0"
+                        className="text-purple-300 hover:text-purple-200 shrink-0"
+                        aria-label={`View lab: ${lab.name}`}
                       >
-                        View
+                        <ArrowRight className="w-5 h-5" />
                       </Link>
                     </li>
                   ))}

@@ -337,6 +337,15 @@
         background: linear-gradient(135deg, rgba(151, 71, 255, 0.1) 0%, rgba(90, 91, 237, 0.08) 50%, rgba(130, 29, 182, 0.1) 100%);
         border: 1px solid rgba(151, 71, 255, 0.6);
     }
+
+    .link-glow-effect {
+        @apply transition-all duration-200 ease-in-out;
+    }
+
+    .link-glow-effect:hover {
+        @apply text-purple-200 no-underline;
+        text-shadow: 0 0 8px theme('colors.purple.400');
+    }
 }
 
 @keyframes glow {
@@ -445,6 +454,8 @@
     display: block;
 
     box-shadow: 0 10px 20px rgba(0, 0, 0, 0.2), 0 6px 6px rgba(0, 0, 0, 0.2);
+    
+    cursor: zoom-in;
 
 }
 
@@ -473,3 +484,30 @@
     padding-right: 1.5rem;
     border-radius: 0.25rem;
 }
+
+.widgetcontainer-lab-link.is-solved .lab-status-icon::before {
+  content: "✓ ";
+}
+.widgetcontainer-lab-link:hover {
+    @apply border-purple-500/60 bg-purple-500/10;
+}
+
+/* Badges theo level */
+.label-level-easy {
+  @apply text-xs px-2 py-0.5 rounded bg-emerald-500/15 text-emerald-300 border border-emerald-400/20;
+}
+.label-level-medium {
+  @apply text-xs px-2 py-0.5 rounded bg-sky-500/15 text-sky-300 border border-sky-400/20;
+}
+.label-level-hard {
+  @apply text-xs px-2 py-0.5 rounded bg-rose-500/15 text-rose-300 border border-rose-400/20;
+}
+.label-level-insane {
+    @apply text-xs px-2 py-0.5 rounded bg-purple-500/20 text-purple-300 border border-purple-400/30;
+}
+.label-level-unknown {
+  @apply text-xs px-2 py-0.5 rounded bg-white/10 text-white/70 border border-white/10;
+}
+
+/* Flex columns alias để hợp với HTML mẫu bạn đưa */
+.flex-columns { @apply flex items-center gap-2 min-w-0; }

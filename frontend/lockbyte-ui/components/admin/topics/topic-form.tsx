@@ -204,6 +204,7 @@ export function TopicForm({ initialData }: { initialData?: Topic | null }) {
                   onChange={field.onChange}
                   textareaRef={textareaRef}
                   height="min-h-[400px]"
+                  labs={relatedLabs}
                 />
               )}
             />
