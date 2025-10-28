@@ -26,7 +26,7 @@ enum ActionType {
   DISMISS_TOAST,
   REMOVE_TOAST,
 }
-
+2
 type Action =
   | {
       type: ActionType.ADD_TOAST

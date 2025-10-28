@@ -36,7 +36,7 @@ export type EmailTemplateSchema = {
   fields: Array<{
     key: string;
     label?: string;
-    type?: 'string'|'number'|'boolean'|'url'|'array[string]'|'array[number]'|'object';
+    type?: 'string'|'number'|'boolean'|'url'|'array[string]'|'array[number]'|'object'|'array[object]';
     required?: boolean;
     default?: any;
     help?: string;

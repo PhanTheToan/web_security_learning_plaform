@@ -4,8 +4,10 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
+import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import web_security_plaform.backend.model.ENum.EStatus;
 import web_security_plaform.backend.model.Lab;
 import web_security_plaform.backend.model.Tag;
 import web_security_plaform.backend.model.User;
@@ -99,6 +101,12 @@ public class LabService {
                 .map(this::convertToDtoAllInformation)
                 .orElse(null);
     }
+    public LabDetailDto getLabDetailByUser(int id) {
+        return labRepository.findById(id)
+                .filter(lab -> lab.getStatus().equals(EStatus.Published) )
+                .map(this::convertToDtoAllInformationForUser)
+                .orElse(null);
+    }
     private LabDetailDto convertToDtoAllInformation(Lab lab) {
         User author = lab.getAuthor();
         String authorName = author.getFullName();
@@ -142,6 +150,49 @@ public class LabService {
 
         return dto;
     }
+    private LabDetailDto convertToDtoAllInformationForUser(Lab lab) {
+        User author = lab.getAuthor();
+        String authorName = author.getFullName();
+
+        Set<TagDTO> tagDTOs = lab.getTags() != null ?
+                lab.getTags().stream()
+                        .map(tag -> new TagDTO(tag.getId(), tag.getName()))
+                        .collect(Collectors.toSet()) :
+                Collections.emptySet();
+
+        List<CommunitySolutionsDTO> communitySolutions = communitySolutionRepository.findByLabId(lab.getId())
+                .stream()
+                .map(solution -> {
+                    CommunitySolutionsDTO dto = new CommunitySolutionsDTO();
+                    dto.setId(solution.getId());
+                    dto.setStatus(solution.getStatus());
+                    dto.setWriteup(solution.getWriteUpUrl());
+                    dto.setYoutubeUrl(solution.getYoutubeUrl());
+                    dto.setLabId(solution.getLab().getId());
+                    dto.setUserId(solution.getUser().getId());
+                    return dto;
+                })
+                .collect(Collectors.toList());
+
+        LabDetailDto dto = new LabDetailDto();
+        dto.setId(lab.getId());
+        dto.setName(lab.getName());
+        dto.setDifficulty(lab.getDifficulty());
+        dto.setStatus(lab.getStatus());
+        dto.setAuthorName(authorName);
+        dto.setTags(tagDTOs);
+        dto.setDescription(lab.getDescription());
+        dto.setHint(lab.getHint());
+        dto.setSolution(lab.getSolution());
+        dto.setFixVulnerabilities(lab.getFixVulnerabilities());
+        dto.setTimeoutMinutes(lab.getTimeoutMinutes());
+        dto.setLinkSource(lab.getLinkSource());
+
+        dto.setCommunitySolutionDTOS(communitySolutions);
+
+        return dto;
+    }
+
 
 
     public Lab updateLabs(LabRequest labRequest, User author, int id) {
@@ -188,4 +239,51 @@ public class LabService {
                 : labRepository.findByNameIgnoreCase(name);
         return labs.stream().map(this::toLabInfoDetail).collect(Collectors.toList());
     }
+
+
+    public ResponseEntity<?> getAllLabs() {
+        List<Lab> labs = labRepository.findAllWithTags();
+        List<LabInfoDetail> labInfoDetails = labs.stream()
+                .filter(lab -> lab.getStatus().equals(EStatus.Published))
+                .map(this::toLabInfoDetailByLab)
+                .collect(Collectors.toList());
+        return ResponseEntity.ok(labInfoDetails);
+    }
+
+    public LabInfoDetail toLabInfoDetailByLab(Lab lab) {
+        LabInfoDetail dto = new LabInfoDetail();
+        dto.setId(lab.getId());
+        dto.setName(lab.getName());
+        dto.setEStatus(lab.getStatus());
+        Set<TagDTO> tagDTOs = lab.getTags() != null ?
+                lab.getTags().stream()
+                        .map(tag -> new TagDTO(tag.getId(), tag.getName()))
+                        .collect(Collectors.toSet()) :
+                Collections.emptySet();
+        dto.setTags(tagDTOs);
+        return dto;
+    }
+
+    public List<LabInfoDetail> filterByNameAndTags(String name, Set<Integer> tagIds) {
+
+        String nameQuery = "%" + (name == null ? "" : name) + "%";
+
+        List<Lab> labs;
+
+        if (tagIds == null || tagIds.isEmpty()) {
+            labs = labRepository.findByNameContainingWithTags(nameQuery);
+        } else {
+            Set<Tag> tagEntities = new HashSet<>(tagRepository.findAllById(tagIds));
+
+            Long tagCount = (long) tagEntities.size();
+
+            labs = labRepository.findByNameContainingAndAllTags(nameQuery, tagEntities, tagCount);
+        }
+
+        return labs.stream()
+                .filter(lab -> lab.getStatus().equals(EStatus.Published))
+                .map(this::toLabInfoDetailByLab)
+                .collect(Collectors.toList());
+    }
+
 }

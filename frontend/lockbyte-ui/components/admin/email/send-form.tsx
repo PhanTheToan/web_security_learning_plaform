@@ -165,7 +165,7 @@ export function SendForm({ setPreviewContent }: SendFormProps) {
       case "array[string]":
         return (
           <ArrayInput
-            value={value || []}
+            value={Array.isArray(value) ? value : []}
             onChange={(val) => handleModelChange(field.key, val)}
             placeholder={`Enter a ${field.label}`}
           />
@@ -175,7 +175,7 @@ export function SendForm({ setPreviewContent }: SendFormProps) {
           <Input
             {...commonProps}
             type="url"
-            value={value || ""}
+            value={typeof value === 'string' ? value : ""}
             onChange={(e) => handleModelChange(field.key, e.target.value)}
           />
         )
@@ -184,7 +184,7 @@ export function SendForm({ setPreviewContent }: SendFormProps) {
         return (
           <Input
             {...commonProps}
-            value={value || ""}
+            value={typeof value === 'string' ? value : ""}
             onChange={(e) => handleModelChange(field.key, e.target.value)}
           />
         )

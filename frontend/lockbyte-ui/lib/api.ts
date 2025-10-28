@@ -1,5 +1,5 @@
 
-import { EmailTemplateSchema, SendReq } from "@/types/email";
+import { EmailTemplateSchema, SendReq, PageResp, EmailLog } from "@/types/email";
 
 
 
@@ -163,41 +163,288 @@ export type TopicDetail = {
 
 
 
-export type UpsertTopicPayload = {
+export type LabListItem = {
 
-  title: string;
+  id: number;
 
-  content: string;
+  name: string;
 
-  status: "Draft" | "Published" | "Archived";
+  tags: Tag[];
 
-  labsId: number[];
+  estatus: "Published" | "Draft";
 
-  tagId: number[];
+};
+
+
+
+export type LabsApiResponse = {
+
+  headers: object;
+
+  body: LabListItem[];
+
+  statusCode: string;
+
+  statusCodeValue: number;
+
+};
+
+
+
+export type LabDetail = {
+
+  id: number;
+
+  name: string;
+
+  difficulty: "Beginner" | "Intermediate" | "Advanced" | "Expert";
+
+  dockerImage: string | null;
+
+  status: "Published" | "Draft";
+
+  authorName: string;
+
+  tags: Tag[];
+
+  description: string;
+
+  hint: string;
+
+  solution: string;
+
+  fixVulnerabilities: string;
+
+  timeoutMinutes: number;
+
+  linkSource: string | null;
+
+  communitySolutionDTOS: unknown[];
+
+};
+
+
+
+export type UserProfile = {
+
+
+
+  username: string;
+
+
+
+  email: string;
+
+
+
+  fullName: string;
+
+
+
+  role: string;
+
+
+
+  dateOfBirth?: string;
+
+
+
+  gender?: 'MALE' | 'FEMALE' | 'OTHER';
+
+
 
 };
 
 
 
 
+
+
+
+export type ChangePasswordPayload = {
+
+
+
+  oldPassword?: string;
+
+
+
+  newPassword?: string;
+
+
+
+};
+
+
+
+
+
+
+
+export type UpsertTopicPayload = {
+
+
+
+  title: string;
+
+
+
+  content: string;
+
+
+
+  status: "Draft" | "Published" | "Archived";
+
+
+
+  labsId: number[];
+
+
+
+  tagId: number[];
+
+
+
+};
+
+
+
+
+
+
+
+export function getPublicLabs() {
+
+
+
+  return fetchWithCredentials<LabsApiResponse>("/lab");
+
+
+
+}
+
+
+
+
+
+
+
+export function filterPublicLabs(name?: string, tagIds?: number[]) {
+
+
+
+  const params = new URLSearchParams();
+
+
+
+  if (name) params.set("name", name);
+
+
+
+  if (tagIds?.length) params.set("tagIds", tagIds.join(","));
+
+
+
+  return fetchWithCredentials<LabListItem[]>(`/lab/filter?${params}`);
+
+
+
+}
+
+
+
+
+
+
+
+export function getPublicLabById(id: string | number) {
+
+
+
+  return fetchWithCredentials<LabDetail>(`/lab/${id}`);
+
+
+
+}
+
+
+
+
+
+
+
 export function getUserProfile() {
-  return fetchWithCredentials<any>("/user/profile");
+
+
+
+  return fetchWithCredentials<UserProfile>("/user/profile");
+
+
+
 }
 
-export function updateUserProfile(payload: any) {
+
+
+
+
+
+
+export function updateUserProfile(payload: Partial<UserProfile>) {
+
+
+
   // This function is now for personal info only
-  return fetchWithCredentials<any>("/user/profile", {
+
+
+
+  return fetchWithCredentials<UserProfile>("/user/profile", {
+
+
+
     method: "PATCH", // Changed to PATCH for partial updates
+
+
+
     body: JSON.stringify(payload),
+
+
+
   });
+
+
+
 }
 
-export function changePassword(payload: any) {
+
+
+
+
+
+
+export function changePassword(payload: ChangePasswordPayload) {
+
+
+
   // New function specifically for changing the password
-  return fetchWithCredentials<any>("/user/profile/change-password", {
+
+
+
+  return fetchWithCredentials<string>("/user/profile/change-password", {
+
+
+
     method: "POST",
+
+
+
     body: JSON.stringify(payload),
+
+
+
   });
+
+
+
 }
 
 /** ================== APIs ================== **/
@@ -463,21 +710,21 @@ export async function getEmailTemplateSchema(
 
 export function previewAdminEmail(payload: Partial<SendReq>) {
 
-    return fetchWithCredentials<string>("/admin/email/preview", {
+  return fetchWithCredentials<string>("/admin/email/preview", {
 
-        method: "POST",
+    method: "POST",
 
-        body: JSON.stringify(payload),
+    body: JSON.stringify(payload),
 
-        extraHeaders: {
+    extraHeaders: {
 
-            "Content-Type": "application/json",
+      "Content-Type": "application/json",
 
-            "Accept": "text/html"
+      "Accept": "text/html"
 
-        }
+    }
 
-    });
+  });
 
 }
 
@@ -487,19 +734,19 @@ export function sendAdminEmail(payload: SendReq) {
 
 
 
-    return fetchWithCredentials<string>("/admin/email/send", {
+  return fetchWithCredentials<string>("/admin/email/send", {
 
 
 
-        method: "POST",
+    method: "POST",
 
 
 
-        body: JSON.stringify(payload)
+    body: JSON.stringify(payload)
 
 
 
-    });
+  });
 
 
 
@@ -515,19 +762,19 @@ export function sendAdminEmailAsync(payload: SendReq) {
 
 
 
-    return fetchWithCredentials<string>("/admin/email/send-async", {
+  return fetchWithCredentials<string>("/admin/email/send-async", {
 
 
 
-        method: "POST",
+    method: "POST",
 
 
 
-        body: JSON.stringify(payload)
+    body: JSON.stringify(payload)
 
 
 
-    });
+  });
 
 
 

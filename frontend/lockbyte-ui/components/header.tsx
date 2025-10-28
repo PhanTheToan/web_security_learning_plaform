@@ -46,10 +46,10 @@ export function Header() {
               About
             </Link>
             <Link href="/topics" className="text-[#ffffff]/80 hover:text-[#ffffff] text-sm transition-colors">
-              Topics
+              Topic
             </Link>
-            <a href="#team" className="text-[#ffffff]/80 hover:text-[#ffffff] text-sm transition-colors">
-              Team
+            <a href="/labs" className="text-[#ffffff]/80 hover:text-[#ffffff] text-sm transition-colors">
+              Lab
             </a>
             <a href="#pricing" className="text-[#ffffff]/80 hover:text-[#ffffff] text-sm transition-colors">
               Pricing

@@ -79,10 +79,6 @@ const profileSchema = z.object({
 
 type ProfileFormValues = z.infer<typeof profileSchema>;
 
-async function safeJson(res: Response) {
-  try { return await res.json(); } catch { return null; }
-}
-
 export default function ProfilePage() {
   const { user, isLoading: isAuthLoading } = useAuth();
   const router = useRouter();
@@ -177,11 +173,11 @@ export default function ProfilePage() {
     if (hasProfileChanges) {
       try {
         const res = await updateUserProfile(profilePayload);
-        toast({ title: 'Success', description: res.message || 'Profile updated successfully!' });
+        toast({ title: 'Success', description: (res as { message?: string }).message || 'Profile updated successfully!' });
         profileSuccess = true;
-      } catch (err: any) {
-        const errorData = await safeJson(err) ?? {};
-        toast({ title: 'Profile Update Error', description: errorData.message || 'Failed to update profile.', variant: 'destructive' });
+      } catch (err) {
+        const errorMessage = err instanceof Error ? err.message : 'Failed to update profile.';
+        toast({ title: 'Profile Update Error', description: errorMessage, variant: 'destructive' });
       }
     }
 
@@ -191,12 +187,12 @@ export default function ProfilePage() {
       passwordPayload.confirmPassword = data.confirmPassword;
       try {
         const res = await changePassword(passwordPayload);
-        toast({ title: 'Success', description: res.message || 'Password changed successfully!' });
+        toast({ title: 'Success', description: res || 'Password changed successfully!' });
         passwordSuccess = true;
         setShowPasswordFields(false);
-      } catch (err: any) {
-        const errorData = await safeJson(err) ?? {};
-        toast({ title: 'Password Change Error', description: errorData.message || 'Failed to change password.', variant: 'destructive' });
+      } catch (err) {
+        const errorMessage = err instanceof Error ? err.message : 'Failed to change password.';
+        toast({ title: 'Password Change Error', description: errorMessage, variant: 'destructive' });
       }
     }
 
