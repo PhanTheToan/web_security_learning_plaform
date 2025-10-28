@@ -63,7 +63,7 @@ function CodeBlock({ children }: { children: React.ReactNode }) {
       await navigator.clipboard.writeText(text);
       setCopied(true);
       setTimeout(() => setCopied(false), 1200);
-    } catch {}
+    } catch { }
   }
 
   return (
@@ -100,14 +100,14 @@ const MarkdownRenderer = ({ content }: { content: string }) => {
 };
 
 const DifficultyBadge = ({ difficulty }: { difficulty: string }) => {
-    const styles = {
-        Beginner: "bg-green-500/10 text-green-300 border-green-500/20",
-        Intermediate: "bg-yellow-500/10 text-yellow-300 border-yellow-500/20",
-        Advanced: "bg-red-500/10 text-red-300 border-red-500/20",
-        Expert: "bg-purple-500/10 text-purple-300 border-purple-500/20",
-    };
-    const className = styles[difficulty as keyof typeof styles] || "bg-gray-500/10 text-gray-300";
-    return <Badge className={className}>{difficulty}</Badge>
+  const styles = {
+    Beginner: "bg-green-500/10 text-green-300 border-green-500/20",
+    Intermediate: "bg-yellow-500/10 text-yellow-300 border-yellow-500/20",
+    Advanced: "bg-red-500/10 text-red-300 border-red-500/20",
+    Expert: "bg-purple-500/10 text-purple-300 border-purple-500/20",
+  };
+  const className = styles[difficulty as keyof typeof styles] || "bg-gray-500/10 text-gray-300";
+  return <Badge className={className}>{difficulty}</Badge>
 }
 
 export default function LabDetailPage() {
@@ -144,80 +144,82 @@ export default function LabDetailPage() {
       <Header />
       <main className="relative z-10">
         <div className="container mx-auto max-w-4xl px-4 py-10">
-          <header className="mb-8">
-            <div className="flex justify-between items-start">
+          <div className="bg-slate-900/50 border border-white/10 rounded-2xl p-6 sm:p-8">
+            <header className="mb-8">
+              <div className="flex justify-between items-start">
                 <div>
-                    <h1 className="text-4xl sm:text-5xl font-bold tracking-tight">{lab.name}</h1>
-                    <div className="mt-4 flex flex-wrap items-center gap-2">
-                        <DifficultyBadge difficulty={lab.difficulty} />
-                        {lab.tags?.map(tag => (
-                        <Badge key={tag.id} variant="secondary" className="bg-blue-500/10 text-blue-300 border-blue-500/20">
-                            {tag.name}
-                        </Badge>
-                        ))}
-                    </div>
+                  <h1 className="text-4xl sm:text-5xl font-bold tracking-tight">{lab.name}</h1>
+                  <div className="mt-4 flex flex-wrap items-center gap-2">
+                    <DifficultyBadge difficulty={lab.difficulty} />
+                    {lab.tags?.map(tag => (
+                      <Badge key={tag.id} variant="secondary" className="bg-blue-500/10 text-blue-300 border-blue-500/20">
+                        {tag.name}
+                      </Badge>
+                    ))}
+                  </div>
                 </div>
                 <Button variant="ghost" size="icon" className="text-white/70 hover:text-white">
-                    <Share2 className="h-5 w-5" />
+                  <Share2 className="h-5 w-5" />
                 </Button>
-            </div>
-          </header>
+              </div>
+            </header>
 
-          <div className="space-y-6">
-            <article className="rounded-xl border border-white/10 bg-gradient-to-br from-white/5 via-purple-500/5 to-blue-500/8 p-6">
-              <h2 className="text-2xl font-semibold mb-4 flex items-center"><BookOpen className="mr-3 h-6 w-6 text-purple-400"/>Description</h2>
-              <MarkdownRenderer content={lab.description} />
-            </article>
+            <div className="space-y-6">
+              <article className="rounded-xl border border-white/10 bg-gradient-to-br from-white/5 via-purple-500/5 to-blue-500/8 p-6">
+                <h2 className="text-2xl font-semibold mb-4 flex items-center"><BookOpen className="mr-3 h-6 w-6 text-purple-400" />Description</h2>
+                <MarkdownRenderer content={lab.description} />
+              </article>
 
-            {lab.linkSource && (
+              {lab.linkSource && (
                 <a href={lab.linkSource} download target="_blank" rel="noopener noreferrer" className="block">
-                    <Button className="w-full bg-green-600 hover:bg-green-700 text-white font-bold text-lg py-6">
-                        <FileDown className="mr-3 h-6 w-6"/>
-                        Download Lab Files
-                    </Button>
+                  <Button className="w-full bg-green-600 hover:bg-green-700 text-white font-bold text-lg py-6">
+                    <FileDown className="mr-3 h-6 w-6" />
+                    Download Lab Files
+                  </Button>
                 </a>
-            )}
+              )}
 
-            <Button className="w-full bg-purple-600 hover:bg-purple-700 text-white font-bold text-lg py-6">
-                <Flag className="mr-3 h-6 w-6"/>
+              <Button className="w-full bg-purple-600 hover:bg-purple-700 text-white font-bold text-lg py-6">
+                <Flag className="mr-3 h-6 w-6" />
                 ACCESS THE LAB
-            </Button>
+              </Button>
 
-            <Accordion type="single" collapsible className="w-full rounded-xl border border-white/10 bg-gradient-to-br from-white/5 via-purple-500/5 to-blue-500/8 px-6">
-              {lab.hint && (
-                <AccordionItem value="hint">
-                  <AccordionTrigger><HelpCircle className="mr-3 h-5 w-5 text-yellow-400"/>Hint</AccordionTrigger>
-                  <AccordionContent>
-                    <MarkdownRenderer content={lab.hint} />
-                  </AccordionContent>
-                </AccordionItem>
-              )}
-              {lab.solution && (
-                <AccordionItem value="solution">
-                  <AccordionTrigger><BookOpen className="mr-3 h-5 w-5 text-green-400"/>Solution</AccordionTrigger>
-                  <AccordionContent>
-                    <MarkdownRenderer content={lab.solution} />
-                  </AccordionContent>
-                </AccordionItem>
-              )}
-              {lab.fixVulnerabilities && (
-                <AccordionItem value="fixVulnerabilities">
-                  <AccordionTrigger><ShieldCheck className="mr-3 h-5 w-5 text-blue-400"/>Vulnerability Fix</AccordionTrigger>
-                  <AccordionContent>
-                    <MarkdownRenderer content={lab.fixVulnerabilities} />
-                  </AccordionContent>
-                </AccordionItem>
-              )}
-              {lab.communitySolutionDTOS?.length > 0 && (
-                <AccordionItem value="community">
-                  <AccordionTrigger><Users className="mr-3 h-5 w-5 text-teal-400"/>Community Solutions</AccordionTrigger>
-                  <AccordionContent>
-                    {/* Render community solutions here */}
-                    <p>Community solutions will be displayed here.</p>
-                  </AccordionContent>
-                </AccordionItem>
-              )}
-            </Accordion>
+              <Accordion type="single" collapsible className="w-full rounded-xl border border-white/10 bg-gradient-to-br from-white/5 via-purple-500/5 to-blue-500/8 px-6">
+                {lab.hint && (
+                  <AccordionItem value="hint">
+                    <AccordionTrigger><HelpCircle className="mr-3 h-5 w-5 text-yellow-400" />Hint</AccordionTrigger>
+                    <AccordionContent>
+                      <MarkdownRenderer content={lab.hint} />
+                    </AccordionContent>
+                  </AccordionItem>
+                )}
+                {lab.solution && (
+                  <AccordionItem value="solution">
+                    <AccordionTrigger><BookOpen className="mr-3 h-5 w-5 text-green-400" />Solution</AccordionTrigger>
+                    <AccordionContent>
+                      <MarkdownRenderer content={lab.solution} />
+                    </AccordionContent>
+                  </AccordionItem>
+                )}
+                {lab.fixVulnerabilities && (
+                  <AccordionItem value="fixVulnerabilities">
+                    <AccordionTrigger><ShieldCheck className="mr-3 h-5 w-5 text-blue-400" />Vulnerability Fix</AccordionTrigger>
+                    <AccordionContent>
+                      <MarkdownRenderer content={lab.fixVulnerabilities} />
+                    </AccordionContent>
+                  </AccordionItem>
+                )}
+                {lab.communitySolutionDTOS?.length > 0 && (
+                  <AccordionItem value="community">
+                    <AccordionTrigger><Users className="mr-3 h-5 w-5 text-teal-400" />Community Solutions</AccordionTrigger>
+                    <AccordionContent>
+                      {/* Render community solutions here */}
+                      <p>Community solutions will be displayed here.</p>
+                    </AccordionContent>
+                  </AccordionItem>
+                )}
+              </Accordion>
+            </div>
           </div>
         </div>
       </main>
