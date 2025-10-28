@@ -24,6 +24,7 @@ export interface Topic {
   content: string;
   labs: Lab[];
   tags: Tag[];
+  coverImage?: string;
 }
 
 export interface Lab {

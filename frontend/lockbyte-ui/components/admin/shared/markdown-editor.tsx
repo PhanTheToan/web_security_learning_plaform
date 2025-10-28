@@ -104,7 +104,7 @@ Example for image: ![Alt text](image_url)"
       </div>
 
       <div
-        className={`prose prose-invert max-w-none p-4 border-2 border-primary/40 rounded-xl bg-card/50 backdrop-blur-sm overflow-auto ${height} shadow-[0_0_15px_rgba(99,102,241,0.1)] text-white`}
+        className={`prose prose-invert max-w-none font-sans prose-code:font-mono prose-pre:font-mono p-4 border-2 border-primary/40 rounded-xl bg-card/50 backdrop-blur-sm overflow-auto ${height} shadow-[0_0_15px_rgba(99,102,241,0.1)] text-white`}
       >
         <ReactMarkdown
           remarkPlugins={[remarkGfm]}
@@ -113,7 +113,7 @@ Example for image: ![Alt text](image_url)"
             h1: (p) => (
               <h1
                 {...p}
-                className="text-4xl sm:text-5xl font-bold tracking-tight mt-8 mb-4"
+                className="text-4xl sm:text-5xl font-bold tracking-normal mt-8 mb-4"
               />
             ),
             h2: (p) => (

@@ -134,7 +134,7 @@ export default function TopicDetailPage() {
             <span className="text-white">{topic.title}</span>
           </nav>
 
-          <h1 className="text-4xl sm:text-5xl font-bold tracking-tight">{topic.title}</h1>
+          <h1 className="text-4xl sm:text-5xl font-bold tracking-normal">{topic.title}</h1>
 
           <div className="mt-4 flex flex-wrap items-center gap-2">
             <div className="inline-flex rounded-md bg-white/10 px-2 py-1 text-xs">
@@ -153,7 +153,7 @@ export default function TopicDetailPage() {
             <article className="lg:col-span-2 rounded-xl border border-white/10 bg-gradient-to-br from-white/8 via-purple-500/5 to-blue-500/8 backdrop-blur-sm p-6">
               <div
                 className="
-                  prose prose-invert max-w-none
+                  prose prose-invert max-w-none font-sans prose-code:font-mono prose-pre:font-mono
                   prose-headings:font-semibold
                   /* link tím */
                   prose-a:text-purple-300 hover:prose-a:text-purple-200 prose-a:underline underline-offset-2 decoration-purple-400/40
@@ -166,7 +166,7 @@ export default function TopicDetailPage() {
                 <ReactMarkdown
                   remarkPlugins={[remarkGfm]}
                   components={{
-                    h1: (p) => <h1 {...p} className="text-4xl sm:text-5xl font-bold tracking-tight mt-8 mb-4" />,
+                    h1: (p) => <h1 {...p} className="text-4xl sm:text-5xl font-bold tracking-normal mt-8 mb-4" />,
                     h2: (p) => <h2 {...p} className="text-2xl sm:text-3xl font-semibold mt-10 pt-6 mb-3 border-t border-white/10" />,
                     h3: (p) => <h3 {...p} className="text-xl sm:text-2xl font-semibold mt-8 mb-2" />,
                     h4: (p) => <h4 {...p} className="text-lg sm:text-xl font-semibold mt-6 mb-2" />,

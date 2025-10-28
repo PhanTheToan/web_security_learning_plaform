@@ -14,6 +14,8 @@ import {
 } from "@/components/ui/select";
 import { Badge } from "@/components/ui/badge";
 import { XIcon, SearchIcon, LinkIcon } from "lucide-react";
+import { Label } from "@/components/ui/label";
+import { FileUploader } from "@/components/admin/shared/file-uploader";
 import {
   Card,
   CardContent,
@@ -39,6 +41,7 @@ interface TopicFormData {
   status: 'Draft' | 'Published' | 'Archived';
   labs: Lab[];
   tags: Tag[];
+  coverImage?: string;
 }
 
 export function TopicForm({ initialData }: { initialData?: Topic | null }) {
@@ -50,6 +53,7 @@ export function TopicForm({ initialData }: { initialData?: Topic | null }) {
       status: initialData?.status || "Draft",
       labs: initialData?.labs || [],
       tags: initialData?.tags || [],
+      coverImage: initialData?.coverImage || "",
     },
   });
 
@@ -74,6 +78,7 @@ export function TopicForm({ initialData }: { initialData?: Topic | null }) {
       setValue('status', initialData.status);
       setValue('labs', initialData.labs || []);
       setValue('tags', initialData.tags || []);
+      setValue('coverImage', initialData.coverImage || "");
     }
   }, [initialData, setValue]);
 
@@ -155,6 +160,7 @@ export function TopicForm({ initialData }: { initialData?: Topic | null }) {
       status: data.status,
       labsId: data.labs.map(l => l.id),
       tagId: data.tags.map(t => t.id),
+      coverImage: data.coverImage,
     };
 
     try {
@@ -236,6 +242,22 @@ export function TopicForm({ initialData }: { initialData?: Topic | null }) {
               {isSubmitting ? 'Saving...' : (initialData ? 'Update Topic' : 'Create Topic')}
             </Button>
           </CardFooter>
+        </Card>
+
+        <Card className="bg-gradient-to-br from-[#ffffff]/8 via-[#9747ff]/5 to-[#5a5bed]/8 backdrop-blur-sm border border-[#ffffff]/10 rounded-xl">
+          <CardHeader><CardTitle className="text-white">Cover Image</CardTitle></CardHeader>
+          <CardContent className="space-y-4">
+            <div>
+              <Label htmlFor="coverImage" className="text-white/80 mb-2 block">Image URL</Label>
+              <Input
+                id="coverImage"
+                placeholder="Paste URL from uploader"
+                className="border-[#ffffff]/20 focus-visible:border-[#9747ff]/60 focus-visible:ring-[#9747ff] rounded-xl bg-[#ffffff]/5 text-white placeholder:text-white/40"
+                {...register("coverImage")}
+              />
+            </div>
+            <FileUploader />
+          </CardContent>
         </Card>
 
         <Card className="bg-gradient-to-br from-[#ffffff]/8 via-[#9747ff]/5 to-[#5a5bed]/8 backdrop-blur-sm border border-[#ffffff]/10 rounded-xl">

@@ -285,7 +285,15 @@ export type UpsertTopicPayload = {
 
 
 
+
+
+
+
   title: string;
+
+
+
+
 
 
 
@@ -293,7 +301,15 @@ export type UpsertTopicPayload = {
 
 
 
+
+
+
+
   status: "Draft" | "Published" | "Archived";
+
+
+
+
 
 
 
@@ -301,7 +317,23 @@ export type UpsertTopicPayload = {
 
 
 
+
+
+
+
   tagId: number[];
+
+
+
+
+
+
+
+  coverImage?: string;
+
+
+
+
 
 
 

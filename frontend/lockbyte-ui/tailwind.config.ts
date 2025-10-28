@@ -9,6 +9,10 @@ const config: Config = {
     ],
     theme: {
         extend: {
+            fontFamily: {
+              sans: ["var(--font-inter)", "system-ui", "sans-serif"],
+              mono: ["var(--font-mono)", "ui-monospace", "SFMono-Regular", "Menlo", "Consolas", "monospace"],
+            },
             colors: {
                 'status-success-fg': 'hsl(var(--status-success-fg))',
                 'status-success-bg': 'hsl(var(--status-success-bg))',
