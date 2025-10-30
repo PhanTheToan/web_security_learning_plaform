@@ -1,9 +1,6 @@
 package web_security_plaform.backend.controller;
 
-import jakarta.persistence.criteria.CriteriaBuilder;
-import lombok.Data;
 import lombok.RequiredArgsConstructor;
-import org.apache.catalina.core.ApplicationPushBuilder;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.http.ResponseEntity;
@@ -29,8 +26,7 @@ import java.time.format.DateTimeFormatter;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
-import java.util.Optional;
-import java.util.concurrent.ScheduledFuture;
+import java.util.concurrent.atomic.AtomicReference;
 
 @RestController
 @RequiredArgsConstructor
@@ -56,6 +52,40 @@ public class LabSessionController {
 
 
 
+    @PreAuthorize("hasRole('ROLE_USER') or hasRole('ROLE_ADMIN')")
+    @GetMapping("/user-sessions")
+    public ResponseEntity<?> getLabSessionsForUser(Principal principal, @RequestParam Integer labId) {
+        User user = userService.findByUsername(principal.getName());
+        List<LabSession> labSessions = labSessionService.findLabSessionsByUserIdAndLabId(user.getId(), labId);
+
+        if (labSessions == null || labSessions.isEmpty()) {
+            return ResponseEntity.ok(ESessionStatus.EXPIRED);
+        }
+
+        boolean hasRunning = labSessions.stream()
+                .anyMatch(s -> s.getStatus() == ESessionStatus.RUNNING);
+
+        if (hasRunning) {
+            return labSessions.stream()
+                    .filter(s -> s.getStatus() == ESessionStatus.RUNNING)
+                    .findFirst()
+                    .map(s -> ResponseEntity.ok(
+                            ESessionStatus.RUNNING +
+                                    " - ID: " + s.getId() +
+                                    " - URL: " + s.getUrl()
+                    ))
+                    .orElse(ResponseEntity.ok("Không có session đang RUNNING"));
+        }
+
+        boolean hasSolved = labSessions.stream()
+                .anyMatch(s -> s.getStatus() == ESessionStatus.SOLVED);
+
+        if (hasSolved) {
+            return ResponseEntity.ok(ESessionStatus.SOLVED);
+        }
+
+        return ResponseEntity.ok(ESessionStatus.EXPIRED);
+    }
 
     @PreAuthorize("hasRole('ROLE_USER') or hasRole('ROLE_ADMIN')")
     @PostMapping("/active")

@@ -1,4 +1,3 @@
-// FileUploadController.java
 package web_security_plaform.backend.controller;
 
 import org.springframework.http.HttpStatus;
