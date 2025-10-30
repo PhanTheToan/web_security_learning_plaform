@@ -1,11 +1,16 @@
 package web_security_plaform.backend.controller;
 
 import jakarta.persistence.criteria.CriteriaBuilder;
+import lombok.Data;
+import lombok.RequiredArgsConstructor;
+import org.apache.catalina.core.ApplicationPushBuilder;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 import web_security_plaform.backend.model.ENum.ESessionStatus;
+import web_security_plaform.backend.model.EmailEvent;
 import web_security_plaform.backend.model.Lab;
 import web_security_plaform.backend.model.LabSession;
 import web_security_plaform.backend.model.User;
@@ -19,12 +24,16 @@ import web_security_plaform.backend.service.UserService;
 import java.security.Principal;
 import java.time.Duration;
 import java.time.Instant;
+import java.time.ZoneId;
+import java.time.format.DateTimeFormatter;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Optional;
 import java.util.concurrent.ScheduledFuture;
 
 @RestController
+@RequiredArgsConstructor
 @RequestMapping("/api/lab-session")
 public class LabSessionController {
     @Autowired
@@ -43,17 +52,21 @@ public class LabSessionController {
     private LabSessionRepository labSessionRepository;
 
 
+    private final ApplicationEventPublisher publisher;
+
+
+
 
     @PreAuthorize("hasRole('ROLE_USER') or hasRole('ROLE_ADMIN')")
     @PostMapping("/active")
-    public ResponseEntity<?> activateLabSessionForUser(@PathVariable  Integer labId, Principal principal) {
+    public ResponseEntity<?> activateLabSessionForUser(@RequestParam  Integer labId, Principal principal) {
         User user = userService.findByUsername(principal.getName());
         Lab lab = labService.getLabById(labId);
         List<LabSession> labSessionServiceListForUser = labSessionService.findLabSessionsByUserIdAndLabId(user.getId(), labId);
         if(labSessionServiceListForUser != null && !labSessionServiceListForUser.isEmpty()){
             for(LabSession labSession : labSessionServiceListForUser){
                 if(labSession.getStatus().equals(ESessionStatus.RUNNING)){
-                    return ResponseEntity.ok(new LabSessionDTO("Lab is already active",labSession.getContainerId(), labSession.getUrl(), labSession.getPort(), labSession.getExpiresAt()));
+                    return ResponseEntity.ok(new LabSessionDTO(labSession.getId(),"Lab is already active",labSession.getContainerId(), labSession.getUrl(), labSession.getPort(), labSession.getExpiresAt()));
                 }
             }
         }
@@ -62,16 +75,60 @@ public class LabSessionController {
 
     @PreAuthorize("hasRole('ROLE_USER') or hasRole('ROLE_ADMIN')")
     @PostMapping("/submit")
-    public ResponseEntity<?> submitFlag(Principal principal, @RequestParam String flag, @RequestParam Integer labId, @RequestParam Integer labSessionId){
+    public ResponseEntity<?> submitFlag(Principal principal, @RequestBody String flag, @RequestParam Integer labId, @RequestParam Integer labSessionId){
         User user = userService.findByUsername(principal.getName());
         Lab lab = labService.getLabById(labId);
         LabSession labSession = labSessionRepository.findById(labSessionId).orElse(null);
         if(labSession != null && labSession.getUser().getId().equals(user.getId()) && labSession.getLab().getId().equals(labId)
                 && labSession.getStatus().equals(ESessionStatus.RUNNING)){
-            if(lab.getFlag().equals(flag)){
-                labRunnerService.stopAfter(labSession, Duration.ofSeconds(300),true);
+            if(Objects.equals(lab.getFlag(), flag)){
+                labSession.setStatus(ESessionStatus.SOLVED);
+                labSession.setCompletedAt(Instant.now());
+                labSession.setFlagSubmitted(flag);
+                labSessionRepository.save(labSession);
+                labRunnerService.stopAfter(labSession, Duration.ofSeconds(180),true);
+                Instant completedAt = Instant.now();
+
+                ZoneId tz = ZoneId.of("Asia/Bangkok");
+                DateTimeFormatter fmt = DateTimeFormatter.ofPattern("dd/MM/yyyy HH:mm:ss").withZone(tz);
+                String startedAtStr = fmt.format(labSession.getStartedAt());
+                String completedAtStr = fmt.format(completedAt);
+                Map<String, Object> model = Map.of(
+                        "subject", "Bạn đã hoàn thành lab " + lab.getName(),
+                        "user", Map.of(
+                                "fullName", user.getFullName(),
+                                "username", user.getUsername(),
+                                "email", user.getEmail()
+                        ),
+                        "lab", Map.of(
+                                "id", lab.getId(),
+                                "name", lab.getName()
+
+                        ),
+                        "session", Map.of(
+                                "id", labSession.getId(),
+                                "startedAt", startedAtStr,
+                                "completedAt", completedAtStr,
+                                "url", labSession.getUrl()
+                        )
+                );
+
+                publisher.publishEvent(EmailEvent.builder()
+                        .to(user.getEmail())
+                        .subject("🎉 Hoàn thành lab: " + lab.getName())
+                        .templateName("lab-solved")
+                        .model(model)
+                        .partials(List.of(
+                        ))
+                        .attachmentUrls(List.of(
+                        ))
+                        .generateReport(false)
+                        .build());
                 return ResponseEntity.ok("Flag is correct! Lab completed.");
             }else{
+                int counterErrorFlag = labSession.getCounterErrorFlag() != null ? labSession.getCounterErrorFlag() : 0;
+                labSession.setCounterErrorFlag(counterErrorFlag + 1);
+                labSessionRepository.save(labSession);
                 return ResponseEntity.badRequest().body("Incorrect flag. Please try again.");
             }
         }
@@ -101,8 +158,6 @@ public class LabSessionController {
 
         labSessionRepository.save(labSession);
 
-        return ResponseEntity.ok(new LabSessionDTO("Lab started successfully",res.containerId(), res.url(),res.port(),res.expiresAt()));
+        return ResponseEntity.ok(new LabSessionDTO(labSession.getId(),"Lab started successfully",res.containerId(), res.url(),res.port(),res.expiresAt()));
     }
-
-
 }

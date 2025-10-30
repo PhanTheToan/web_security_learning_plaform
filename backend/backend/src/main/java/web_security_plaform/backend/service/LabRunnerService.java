@@ -106,16 +106,16 @@ public class LabRunnerService {
 
     public void stopAndCleanup(LabSession labSession, boolean flag) {
         if (labSession.getContainerId() == null || labSession.getContainerId().isBlank()) return;
-        Optional.ofNullable(timers.remove(labSession.getContainerId())).ifPresent(t -> t.cancel(false));
-        containerExpires.remove(labSession.getContainerId());
-        if (flag){
-            labSession.setCompletedAt(Instant.now());
-            labSession.setStatus(ESessionStatus.SOLVED);
-            labSessionRepository.save(labSession);
-        }else{
+        if (flag) {
+            if (labSession.getStatus() != ESessionStatus.SOLVED) {
+                labSession.setStatus(ESessionStatus.SOLVED);
+                labSession.setCompletedAt(Instant.now());
+                labSession.setFlagSubmitted(labSession.getFlagSubmitted());
+            }
+        } else {
             labSession.setStatus(ESessionStatus.EXPIRED);
-            labSessionRepository.save(labSession);
         }
+        labSessionRepository.save(labSession);
         try {
             dockerClient.stopContainerCmd(labSession.getContainerId()).withTimeout(5).exec();
         } catch (Exception ignored) {}
@@ -230,6 +230,25 @@ public class LabRunnerService {
         out.sort(Comparator.comparing((LabInstanceDTO d) -> d.createdAt()).reversed());
         return out;
     }
+    public List<String> findContainersUsingImage(String imageIdOrName) {
+        return dockerClient.listContainersCmd()
+                .withShowAll(true)
+                .exec()
+                .stream()
+                .filter(c -> c.getImage().equals(imageIdOrName) || c.getImageId().equals(imageIdOrName))
+                .map(Container::getId)
+                .collect(Collectors.toList());
+    }
+
+    public void deleteImage(String imageNameOrId) {
+        try {
+            dockerClient.removeImageCmd(imageNameOrId)
+                    .exec();
+        } catch (Exception e) {
+            throw new RuntimeException("Cannot delete image " + imageNameOrId + ": " + e.getMessage(), e);
+        }
+    }
+
 
     // DTO cho status
     public record LabInstanceDTO(

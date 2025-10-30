@@ -98,8 +98,49 @@ public class LabController {
             @RequestParam(name = "dangling", required = false) Boolean dangling,
             @RequestParam(name = "inUse", required = false) Boolean inUse
     ) {
-        var list = labRunnerService.listImages(dangling, inUse);
-        return ResponseEntity.ok(list);
+        List<LabRunnerService.ImageInfoDTO> images = labRunnerService.listImages(dangling, inUse);
+        return ResponseEntity.ok(images);
     }
 
+    @PreAuthorize("hasRole('ADMIN')")
+    @PostMapping("/containers/cleanup")
+    public ResponseEntity<?> cleanupContainers(
+           @RequestParam String containerIds
+    ) {
+        labRunnerService.stopAndCleanupFirst(containerIds);
+        return ResponseEntity.ok("Stop and cleanup initiated for specified containers.");
+    }
+
+    @DeleteMapping("/images")
+    public ResponseEntity<?> deleteImage(
+            @RequestParam String image
+    ) {
+        try {
+            if (!labRunnerService.findContainersUsingImage(image).isEmpty())
+                throw new RuntimeException("Image is in use by running containers. Use force=true to delete.");
+
+            labRunnerService.deleteImage(image);
+            return ResponseEntity.ok(Map.of(
+                    "message", "Image deleted successfully",
+                    "image", image
+            ));
+        } catch (Exception e) {
+            return ResponseEntity.badRequest().body(Map.of(
+                    "error", e.getMessage(),
+                    "image", image
+            ));
+        }
+    }
+
+//    @PreAuthorize("hasRole('ADMIN')")
+//    @PostMapping("/images/cleanup")
+//    public ResponseEntity<?> cleanupImages(
+//            @RequestParam(name = "dangling", required = false) Boolean dangling,
+//            @RequestParam(name = "inUse", required = false) Boolean inUse
+//    ) {
+//        var cleaned = labRunnerService.cleanupImages(dangling, inUse);
+//        return ResponseEntity.ok(Map.of(
+//                "removedImageIds", cleaned
+//        ));
+//    }
 }

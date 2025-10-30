@@ -13,13 +13,15 @@ public class LabSessionDTO {
 //        "expiresAt", res.expiresAt().toString()
 
         private String message;
+        private Integer id;
         private String containerId;
         private String url;
         private Integer port;
         private String expiresAt;
 
 
-    public LabSessionDTO(String message, String containerId, String url, Integer port, Instant expiresAt) {
+    public LabSessionDTO(Integer id,String message, String containerId, String url, Integer port, Instant expiresAt) {
+        this.id = id;
         this.message = message;
         this.containerId = containerId;
         this.url = url;
