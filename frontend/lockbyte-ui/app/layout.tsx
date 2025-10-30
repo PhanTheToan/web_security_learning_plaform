@@ -4,6 +4,7 @@ import "./globals.css";
 import { Analytics } from "@vercel/analytics/react"
 import ParticlesComponent from "@/components/particles-background";
 import { AuthProvider } from "@/contexts/AuthContext";
+import { Toaster } from "@/components/ui/toaster";
 
 export const metadata: Metadata = {
   title: "CyberLock Academy",
@@ -21,6 +22,7 @@ export default function RootLayout({
         <AuthProvider>
           <ParticlesComponent id="particles" />
           <div className="relative z-10">{children}</div>
+          <Toaster />
           <Analytics />
         </AuthProvider>
       </body>

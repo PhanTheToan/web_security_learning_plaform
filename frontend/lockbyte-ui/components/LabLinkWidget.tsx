@@ -2,16 +2,28 @@
 import Link from "next/link";
 import { useEffect, useMemo, useState } from "react";
 import { FlaskConical } from "lucide-react";
+import { getLabSessionStatus } from "@/lib/api";
+import { Badge } from "@/components/ui/badge";
 
 type LabDifficulty = "Easy" | "Medium" | "Hard" | "Insane";
 
-// This type should match the structure of lab objects from your APIs
 export type LabInfo = {
   id: number;
   name: string;
-  difficulty?: LabDifficulty | string; // Allow string for flexibility
-  solved?: boolean;
+  difficulty?: LabDifficulty | string;
 };
+
+const StatusBadge = ({ status }: { status: string | null }) => {
+  if (!status || status === "EXPIRED") return null;
+
+  const styles: { [key: string]: string } = {
+    RUNNING: "bg-blue-500/10 text-blue-300 border-blue-500/20",
+    SOLVED: "bg-green-500/10 text-green-300 border-green-500/20",
+  };
+  const className = styles[status] || "bg-gray-500/10 text-gray-300";
+  return <Badge className={className}>{status}</Badge>;
+};
+
 
 function levelBadgeClass(level?: string) {
   switch (level?.toLowerCase()) {
@@ -31,7 +43,7 @@ function levelBadgeClass(level?: string) {
 export default function LabLinkWidget({
   href,
   fallbackText,
-  labInfo, // Accept pre-fetched lab info
+  labInfo,
 }: {
   href: string;
   fallbackText?: string;
@@ -42,6 +54,7 @@ export default function LabLinkWidget({
 
   const [lab, setLab] = useState<LabInfo | null>(labInfo ?? null);
   const [loading, setLoading] = useState(!labInfo);
+  const [status, setStatus] = useState<string | null>(null);
 
   const widgetId = useMemo(
     () => (labId ? `labs-${labId}` : `labs-${Math.random().toString(36).slice(2)}`),
@@ -49,37 +62,46 @@ export default function LabLinkWidget({
   );
 
   useEffect(() => {
-    // Only fetch if labId exists AND labInfo was not provided
-    if (!labId || labInfo) {
-      return;
+    if (labId) {
+      getLabSessionStatus(labId)
+        .then(statusResult => {
+          if (statusResult.startsWith("RUNNING")) {
+            setStatus("RUNNING");
+          } else {
+            setStatus(statusResult);
+          }
+        })
+        .catch(() => setStatus("EXPIRED"));
     }
 
-    const apiBase = process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:8082/api";
-    const url = `${apiBase}/public/labs/${labId}`;
-    
-    (async () => {
-      try {
-        setLoading(true);
-        const res = await fetch(url, { cache: "no-store" });
-        if (!res.ok) throw new Error(`Failed ${res.status}`);
-        const data = await res.json();
-        setLab({
-          id: data.id,
-          name: data.name ?? data.title,
-          difficulty: data.difficulty ?? data.level ?? "Easy",
-          solved: data.solved ?? false,
+    if (!labInfo && labId) {
+      const apiBase = process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:8082/api";
+      const url = `${apiBase}/public/labs/${labId}`;
+      
+      setLoading(true);
+      fetch(url, { cache: "no-store" })
+        .then(res => {
+          if (!res.ok) throw new Error(`Failed ${res.status}`);
+          return res.json();
+        })
+        .then(data => {
+          setLab({
+            id: data.id,
+            name: data.name ?? data.title,
+            difficulty: data.difficulty ?? data.level ?? "Easy",
+          });
+        })
+        .catch(() => {
+          setLab({
+            id: labId,
+            name: fallbackText ?? `Lab #${labId}`,
+            difficulty: "Easy",
+          });
+        })
+        .finally(() => {
+          setLoading(false);
         });
-      } catch {
-        setLab({
-          id: labId,
-          name: fallbackText ?? `Lab #${labId}`,
-          difficulty: "Easy",
-          solved: false,
-        });
-      } finally {
-        setLoading(false);
-      }
-    })();
+    }
   }, [labId, fallbackText, labInfo]);
 
   if (loading || !lab) {
@@ -98,12 +120,7 @@ export default function LabLinkWidget({
   return (
     <div
       id={widgetId}
-      className={[
-        "widgetcontainer-lab-link",
-        "rounded-lg border border-white/10 bg-white/5 p-3 my-2",
-        "flex items-center justify-between gap-3 transition-colors duration-300 font-mono",
-        lab.solved ? "is-solved" : "",
-      ].join(" ")}
+      className="widgetcontainer-lab-link rounded-lg border border-white/10 bg-white/5 p-3 my-2 flex items-center justify-between gap-3 transition-colors duration-300 font-mono"
     >
       <FlaskConical className="w-5 h-5 text-purple-400" />
 
@@ -114,9 +131,7 @@ export default function LabLinkWidget({
         </Link>
       </div>
 
-      <span className="lab-status-icon text-xs text-emerald-300 font-semibold">
-        {lab.solved ? "Solved" : ""}
-      </span>
+      <StatusBadge status={status} />
     </div>
   );
 }

@@ -12,7 +12,7 @@ import {
 import { Header } from "@/components/header";
 import { Footer } from "@/components/footer";
 import ParticlesComponent from "@/components/particles-background";
-import { getPublicLabById, LabDetail } from "@/lib/api";
+import { getPublicLabById, LabDetail, getLabSessionStatus, startLabSession, submitLabFlag } from "@/lib/api";
 import LabDetailLoading from "./loading";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -24,8 +24,13 @@ import {
   Share2,
   ShieldCheck,
   Users,
+  CheckCircle,
+  XCircle,
+  Loader2,
 } from "lucide-react";
 import MarkdownImage from "@/components/MarkdownImage";
+import { useToast } from "@/hooks/use-toast";
+import { Input } from "@/components/ui/input";
 
 // Reusing markdown rendering logic from Topic Detail Page
 function fixUnclosedFences(md: string) {
@@ -112,21 +117,65 @@ const DifficultyBadge = ({ difficulty }: { difficulty: string }) => {
   return <Badge className={className}>{difficulty}</Badge>
 }
 
+const StatusBadge = ({ status }: { status: string }) => {
+  const styles = {
+    RUNNING: "bg-blue-500/10 text-blue-300 border-blue-500/20",
+    SOLVED: "bg-green-500/10 text-green-300 border-green-500/20",
+    EXPIRED: "bg-gray-500/10 text-gray-300 border-gray-500/20",
+  };
+  const className = styles[status as keyof typeof styles] || "bg-gray-500/10 text-gray-300";
+  return <Badge className={className}>{status}</Badge>
+}
+
 export default function LabDetailPage() {
   const params = useParams();
   const id = params?.id as string | undefined;
+  const { toast } = useToast();
 
   const [lab, setLab] = useState<LabDetail | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [labStatus, setLabStatus] = useState("EXPIRED");
+  const [labSessionId, setLabSessionId] = useState<number | null>(null);
+  const [runningLabUrl, setRunningLabUrl] = useState<string | null>(null);
+  const [isStartingLab, setIsStartingLab] = useState(false);
+  const [isSubmittingFlag, setIsSubmittingFlag] = useState(false);
+  const [flag, setFlag] = useState("");
+
+  const fetchStatus = async () => {
+    if (!id) return;
+    try {
+      const statusResult = await getLabSessionStatus(id);
+      if (statusResult.startsWith("RUNNING")) {
+        const match = statusResult.match(/RUNNING - ID: (\d+) - URL: (.*)/);
+        if (match) {
+          const [, sessionId, url] = match;
+          setLabSessionId(parseInt(sessionId, 10));
+          setRunningLabUrl(url);
+        } else {
+          // Fallback for the old format
+          const sessionId = parseInt(statusResult.split(": ")[1], 10);
+          setLabSessionId(sessionId);
+          setRunningLabUrl(null); // No URL available in old format
+        }
+        setLabStatus("RUNNING");
+      } else {
+        setLabStatus(statusResult);
+        setRunningLabUrl(null);
+      }
+    } catch (err) {
+      setLabStatus("EXPIRED"); // Default to EXPIRED on error
+      setRunningLabUrl(null);
+    }
+  };
 
   useEffect(() => {
     if (!id) return;
     async function fetchLab() {
-      if (!id) return; // Type guard
       try {
         const data = await getPublicLabById(id);
         setLab(data);
+        await fetchStatus();
       } catch (e) {
         setError(e instanceof Error ? e.message : "Unknown error");
       } finally {
@@ -136,9 +185,119 @@ export default function LabDetailPage() {
     fetchLab();
   }, [id]);
 
+  const handleAccessLab = async () => {
+    if (!id) return;
+    setIsStartingLab(true);
+    try {
+      const result = await startLabSession(id);
+      toast({
+        title: (
+          <div className="flex items-center">
+            <CheckCircle className="mr-2 h-5 w-5 text-green-500" />
+            <span className="font-bold">Lab Started Successfully!</span>
+          </div>
+        ),
+        description: "Redirecting to your lab environment...",
+      });
+      setTimeout(() => {
+        window.open(result.url, '_blank');
+        fetchStatus(); // Re-fetch status after starting
+      }, 3000);
+    } catch (err) {
+      toast({
+        variant: "destructive",
+        title: (
+          <div className="flex items-center">
+            <XCircle className="mr-2 h-5 w-5" />
+            <span className="font-bold">Failed to Start Lab</span>
+          </div>
+        ),
+        description: "Tạo labs không thành công. Vui lòng tạo lại!",
+      });
+    } finally {
+      setIsStartingLab(false);
+    }
+  };
+
+  const handleSubmitFlag = async () => {
+    if (!id || !labSessionId || !flag) return;
+    setIsSubmittingFlag(true);
+    try {
+      const result = await submitLabFlag(id, labSessionId, flag);
+      if (result === "Flag is correct! Lab completed.") {
+        toast({
+          title: (
+            <div className="flex items-center">
+              <CheckCircle className="mr-2 h-5 w-5 text-green-500" />
+              <span className="font-bold">Success!</span>
+            </div>
+          ),
+          description: result,
+        });
+        fetchStatus(); // Re-fetch to update status to SOLVED
+      } else {
+        toast({
+          variant: "destructive",
+          title: (
+            <div className="flex items-center">
+              <XCircle className="mr-2 h-5 w-5" />
+              <span className="font-bold">Submission Failed</span>
+            </div>
+          ),
+          description: result,
+        });
+      }
+    } catch (err) {
+      toast({
+        variant: "destructive",
+        title: (
+          <div className="flex items-center">
+            <XCircle className="mr-2 h-5 w-5" />
+            <span className="font-bold">Error</span>
+          </div>
+        ),
+        description: err instanceof Error ? err.message : "An unexpected error occurred.",
+      });
+    } finally {
+      setIsSubmittingFlag(false);
+    }
+  };
+
+
   if (loading) return <LabDetailLoading />;
   if (error) return <div className="p-6 text-center text-red-400">Error: {error}</div>;
   if (!lab) return <div className="p-6 text-center text-white/80">Lab not found.</div>;
+
+  const renderAccessButton = () => {
+    if (labStatus === 'RUNNING') {
+      if (runningLabUrl) {
+        return (
+          <a href={runningLabUrl} target="_blank" rel="noopener noreferrer" className="block">
+            <Button className="w-full bg-blue-600 hover:bg-blue-700 text-white font-bold text-lg py-6">
+              LAB IS RUNNING
+            </Button>
+          </a>
+        );
+      }
+      // Fallback if URL is not available
+      return (
+        <Button className="w-full bg-blue-600 hover:bg-blue-700 text-white font-bold text-lg py-6" disabled>
+          LAB IS RUNNING
+        </Button>
+      );
+    }
+
+    return (
+      <Button
+        className="w-full bg-purple-600 hover:bg-purple-700 text-white font-bold text-lg py-6"
+        onClick={handleAccessLab}
+        disabled={isStartingLab}
+      >
+        {isStartingLab && <Loader2 className="mr-3 h-6 w-6 animate-spin" />}
+        {labStatus === 'SOLVED' ? 'REACTIVE' : 'ACCESS THE LAB'}
+      </Button>
+    );
+  };
 
   return (
     <div className="min-h-screen bg-gray-900 text-white">
@@ -153,6 +312,7 @@ export default function LabDetailPage() {
                   <h1 className="text-4xl sm:text-5xl font-bold tracking-tight">{lab.name}</h1>
                   <div className="mt-4 flex flex-wrap items-center gap-2">
                     <DifficultyBadge difficulty={lab.difficulty} />
+                    <StatusBadge status={labStatus} />
                     {lab.tags?.map(tag => (
                       <Badge key={tag.id} variant="secondary" className="bg-blue-500/10 text-blue-300 border-blue-500/20">
                         {tag.name}
@@ -181,10 +341,31 @@ export default function LabDetailPage() {
                 </a>
               )}
 
-              <Button className="w-full bg-purple-600 hover:bg-purple-700 text-white font-bold text-lg py-6">
-                <Flag className="mr-3 h-6 w-6" />
-                ACCESS THE LAB
-              </Button>
+              {renderAccessButton()}
+
+              {labStatus === 'RUNNING' && (
+                <div className="space-y-4 rounded-xl border border-white/10 bg-gradient-to-br from-white/5 to-blue-500/8 p-6">
+                  <h2 className="text-2xl font-semibold flex items-center"><Flag className="mr-3 h-6 w-6 text-green-400" />Submit Flag</h2>
+                  <div className="flex items-center gap-4">
+                    <Input
+                      type="text"
+                      placeholder="CyLock{...}"
+                      value={flag}
+                      onChange={(e) => setFlag(e.target.value)}
+                      className="flex-grow bg-slate-800/60 border-slate-700"
+                    />
+                    <Button
+                      onClick={handleSubmitFlag}
+                      disabled={isSubmittingFlag}
+                      className="bg-green-600 hover:bg-green-700"
+                    >
+                      {isSubmittingFlag && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+                      Submit
+                    </Button>
+                  </div>
+                </div>
+              )}
+
 
               <Accordion type="single" collapsible className="w-full rounded-xl border border-white/10 bg-gradient-to-br from-white/5 via-purple-500/5 to-blue-500/8 px-6">
                 {lab.hint && (

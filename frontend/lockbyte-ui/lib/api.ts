@@ -67,9 +67,9 @@ async function fetchWithCredentials<T>(
 
   if (!resp.ok) {
 
-    console.error(`API Error: ${resp.status} ${resp.statusText}`, raw);
+        console.error(`API Error: ${resp.status} ${resp.statusText}`, raw);
 
-    throw new Error(`Request failed: ${resp.status}`);
+        throw new Error(raw || `Request failed: ${resp.status}`);
 
   }
 
@@ -852,6 +852,34 @@ export function getAdminEmailLogs(
 
 }
 
+export function getLabSessionStatus(labId: string | number) {
+  return fetchWithCredentials<string>(`/lab-session/user-sessions?labId=${labId}`);
+}
 
+export type StartLabSessionResponse = {
+  id: number;
+  message: string;
+  containerId: string;
+  url: string;
+  port: number;
+  expiresAt: string;
+};
+
+
+export function startLabSession(labId: string | number) {
+  return fetchWithCredentials<StartLabSessionResponse>(`/lab-session/active?labId=${labId}`, {
+    method: "POST",
+  });
+}
+
+export function submitLabFlag(labId: string | number, labSessionId: number, flag: string) {
+  return fetchWithCredentials<string>(`/lab-session/submit?labId=${labId}&labSessionId=${labSessionId}`, {
+    method: "POST",
+    body: flag,
+    extraHeaders: {
+      "Content-Type": "text/plain",
+    },
+  });
+}
 
 
