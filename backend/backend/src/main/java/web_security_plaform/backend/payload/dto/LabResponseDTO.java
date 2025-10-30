@@ -20,6 +20,7 @@ public class LabResponseDTO {
     private LocalDateTime createdAt;
     private String linkSource;
     private AuthorDTO author;
+    private String flag;
 
     private Set<TagDTO> tags;
 }

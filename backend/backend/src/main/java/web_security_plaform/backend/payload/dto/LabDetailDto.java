@@ -23,5 +23,5 @@ public class LabDetailDto {
     private Integer timeoutMinutes;
     private String linkSource;
     private List<CommunitySolutionsDTO> communitySolutionDTOS;
-
+    private String flag;
 }

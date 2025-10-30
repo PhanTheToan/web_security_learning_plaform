@@ -47,6 +47,7 @@ public class LabService {
         newLab.setTimeoutMinutes(labRequest.getTimeoutMinutes());
         newLab.setStatus(labRequest.getStatus());
         newLab.setLinkSource(labRequest.getLinkSource());
+        newLab.setFlag(labRequest.getFlag());
 
         newLab.setAuthor(author);
 
@@ -143,6 +144,7 @@ public class LabService {
         dto.setFixVulnerabilities(lab.getFixVulnerabilities());
         dto.setTimeoutMinutes(lab.getTimeoutMinutes());
         dto.setLinkSource(lab.getLinkSource());
+        dto.setFlag(lab.getFlag());
 
         dto.setCommunitySolutionDTOS(communitySolutions);
 
@@ -204,10 +206,10 @@ public class LabService {
         newLab.setTimeoutMinutes(labRequest.getTimeoutMinutes());
         newLab.setStatus(labRequest.getStatus());
         newLab.setLinkSource(labRequest.getLinkSource());
-
+        newLab.setFlag(labRequest.getFlag());
         newLab.setAuthor(author);
 
-        if (labRequest.getTagIds() != null && !labRequest.getTagIds().isEmpty()) {
+        if (labRequest.getTagIds() != null) {
             Set<Tag> foundTags = new HashSet<>(tagRepository.findAllById(labRequest.getTagIds()));
             newLab.setTags(foundTags);
         }
@@ -280,4 +282,8 @@ public class LabService {
                 .collect(Collectors.toList());
     }
 
+    public Lab getLabById(Integer labId) {
+        return labRepository.findById(labId)
+                .orElseThrow(() -> new RuntimeException("Lab not found with id: " + labId));
+    }
 }

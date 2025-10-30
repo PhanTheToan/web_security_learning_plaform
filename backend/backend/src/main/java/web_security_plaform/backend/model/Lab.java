@@ -38,6 +38,10 @@ public class Lab {
     @Column(columnDefinition = "TEXT")
     private String description;
 
+    @NotBlank
+    @Column(nullable = false, unique = true, length = 255)
+    private String flag;
+
     @Column(columnDefinition = "TEXT")
     private String solution;
 

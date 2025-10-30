@@ -23,6 +23,9 @@ public class LabRequest {
     @NotBlank
     private String dockerImage;
 
+    @NotBlank
+    private String flag;
+
     @NotNull
     private EDifficulty difficulty;
 

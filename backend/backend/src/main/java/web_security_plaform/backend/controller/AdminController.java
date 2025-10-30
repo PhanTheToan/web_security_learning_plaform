@@ -149,6 +149,7 @@ public class AdminController {
         dto.setTimeoutMinutes(lab.getTimeoutMinutes());
         dto.setStatus(lab.getStatus());
         dto.setCreatedAt(lab.getCreatedAt());
+        dto.setFlag(lab.getFlag());
 
         AuthorDTO authorDTO = new AuthorDTO();
         authorDTO.setId(lab.getAuthor().getId());
