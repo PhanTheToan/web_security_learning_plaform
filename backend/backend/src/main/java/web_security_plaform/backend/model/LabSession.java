@@ -9,6 +9,7 @@ import lombok.NoArgsConstructor;
 import org.hibernate.annotations.CreationTimestamp;
 import web_security_plaform.backend.model.ENum.ESessionStatus;
 
+import java.time.Instant;
 import java.time.LocalDateTime;
 
 @Data
@@ -33,6 +34,8 @@ public class LabSession {
     @Column(name = "container_id", length = 255)
     private String containerId;
 
+    private String url;
+
     private Integer port;
 
     @Column(name = "flag_submitted", length = 255)
@@ -45,11 +48,11 @@ public class LabSession {
 
     @CreationTimestamp
     @Column(name = "started_at", updatable = false)
-    private LocalDateTime startedAt;
+    private Instant startedAt;
 
     @Column(name = "expires_at")
-    private LocalDateTime expiresAt;
+    private Instant expiresAt;
 
     @Column(name = "completed_at")
-    private LocalDateTime completedAt;
+    private Instant completedAt;
 }

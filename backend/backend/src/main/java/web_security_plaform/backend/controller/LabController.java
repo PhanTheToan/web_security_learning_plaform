@@ -54,32 +54,32 @@ public class LabController {
         return ResponseEntity.ok(labService.getLabDetailByUser(id));
     }
 
-    @PostMapping("/active")
-    public ResponseEntity<?> activateLabForUser(Principal principal, @RequestParam Integer labId) {
-        User user = userService.findByUsername(principal.getName());
-        Lab lab = labService.getLabById(labId);
-
-        LabRunnerService.StartLabResult res = labRunnerService.startLab(
-                lab.getDockerImage(),
-                lab.getName(),
-                user.getId().toString(),
-                lab.getTimeoutMinutes()
-        );
-
-        return ResponseEntity.ok(Map.of(
-                "message", "Lab activated successfully",
-                "containerId", res.containerId(),
-                "url", res.url(),
-                "port", res.port(),
-                "expiresAt", res.expiresAt().toString()
-        ));
-    }
-
-    @PostMapping("/stop")
-    public ResponseEntity<?> inActivateLabForUser(@RequestParam String contrainerId){
-        labRunnerService.stopAndCleanup(contrainerId);
-        return ResponseEntity.ok("Lab stop successfully");
-    }
+//    @PostMapping("/active")
+//    public ResponseEntity<?> activateLabForUser(Principal principal, @RequestParam Integer labId) {
+//        User user = userService.findByUsername(principal.getName());
+//        Lab lab = labService.getLabById(labId);
+//
+//        LabRunnerService.StartLabResult res = labRunnerService.startLab(
+//                lab.getDockerImage(),
+//                lab.getName(),
+//                user.getId().toString(),
+//                lab.getTimeoutMinutes()
+//        );
+//
+//        return ResponseEntity.ok(Map.of(
+//                "message", "Lab activated successfully",
+//                "containerId", res.containerId(),
+//                "url", res.url(),
+//                "port", res.port(),
+//                "expiresAt", res.expiresAt().toString()
+//        ));
+//    }
+//
+//    @PostMapping("/stop")
+//    public ResponseEntity<?> inActivateLabForUser(@RequestParam String contrainerId){
+//        labRunnerService.stopAndCleanup(contrainerId);
+//        return ResponseEntity.ok("Lab stop successfully");
+//    }
     @PreAuthorize("hasRole('ADMIN')")
     @GetMapping("/status")
     public ResponseEntity<?> listStatus(Principal principal, @RequestParam(name = "mine", required = false) Boolean mine) {

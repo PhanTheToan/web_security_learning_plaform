@@ -9,8 +9,14 @@ import com.github.dockerjava.api.command.PullImageResultCallback;
 import com.github.dockerjava.api.model.*;
 import com.github.dockerjava.core.DockerClientConfig;
 import jakarta.annotation.Nullable;
+import jakarta.annotation.PreDestroy;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
+import web_security_plaform.backend.model.ENum.ESessionStatus;
+import web_security_plaform.backend.model.Lab;
+import web_security_plaform.backend.model.LabSession;
+import web_security_plaform.backend.repository.LabSessionRepository;
 
 import java.time.Duration;
 import java.time.Instant;
@@ -21,6 +27,9 @@ import java.util.stream.Collectors;
 @Service
 public class LabRunnerService {
     private final DockerClient dockerClient;
+
+    @Autowired
+    private LabSessionRepository labSessionRepository;
 
     private final ScheduledExecutorService scheduler = Executors.newScheduledThreadPool(1);
     private final Map<String, ScheduledFuture<?>> timers = new ConcurrentHashMap<>();
@@ -61,7 +70,7 @@ public class LabRunnerService {
         InspectContainerResponse insp = dockerClient.inspectContainerCmd(containerId).exec();
         Ports.Binding[] b = insp.getNetworkSettings().getPorts().getBindings().get(p80);
         if (b == null || b.length == 0 || b[0] == null) {
-            stopAndCleanup(containerId);
+            stopAndCleanupFirst(containerId);
             throw new RuntimeException("No host port bound for container " + containerId);
         }
         int hostPort = Integer.parseInt(b[0].getHostPortSpec());
@@ -72,19 +81,87 @@ public class LabRunnerService {
         int safeMinutes = Math.max(1, Math.min(timeoutMinutes, 240));
         Instant expiresAt = Instant.now().plus(Duration.ofMinutes(safeMinutes));
         ScheduledFuture<?> f = scheduler.schedule(() -> {
-            try { stopAndCleanup(containerId); } catch (Exception ignored) {}
+            try { stopAndCleanupFirstByContainerIdHaveLabSessionId(containerId,false); } catch (Exception ignored) {}
         }, safeMinutes, TimeUnit.MINUTES);
         timers.put(containerId, f);
         containerExpires.put(containerId, expiresAt);
 
         return new StartLabResult(containerId, hostPort, url, expiresAt);
     }
+    public void stopAfter(LabSession labSession, Duration delay, boolean flag) {
+        if (labSession.getContainerId() == null || labSession.getContainerId().isBlank()) return;
 
-    public void stopAndCleanup(String containerId) {
+        Optional.ofNullable(timers.remove(labSession.getContainerId())).ifPresent(t -> t.cancel(false));
+
+        Instant expiresAt = Instant.now().plus(delay);
+        containerExpires.put(labSession.getContainerId(), expiresAt);
+
+        ScheduledFuture<?> f = scheduler.schedule(() -> {
+            try { stopAndCleanup(labSession,flag); } catch (Exception ignored) {}
+        }, delay.toSeconds(), TimeUnit.SECONDS);
+
+        timers.put(labSession.getContainerId(), f);
+    }
+
+
+    public void stopAndCleanup(LabSession labSession, boolean flag) {
+        if (labSession.getContainerId() == null || labSession.getContainerId().isBlank()) return;
+        Optional.ofNullable(timers.remove(labSession.getContainerId())).ifPresent(t -> t.cancel(false));
+        containerExpires.remove(labSession.getContainerId());
+        if (flag){
+            labSession.setCompletedAt(Instant.now());
+            labSession.setStatus(ESessionStatus.SOLVED);
+            labSessionRepository.save(labSession);
+        }else{
+            labSession.setStatus(ESessionStatus.EXPIRED);
+            labSessionRepository.save(labSession);
+        }
+        try {
+            dockerClient.stopContainerCmd(labSession.getContainerId()).withTimeout(5).exec();
+        } catch (Exception ignored) {}
+
+        if (removeImageOnStop) {
+            String image = containerToImage.remove(labSession.getContainerId());
+            if (image != null && !image.isBlank()) {
+                try { dockerClient.removeImageCmd(image).withForce(true).exec(); } catch (Exception ignored) {}
+            }
+        } else {
+            containerToImage.remove(labSession.getContainerId());
+        }
+    }
+
+    public void stopAndCleanupFirst(String containerId) {
         if (containerId == null || containerId.isBlank()) return;
         Optional.ofNullable(timers.remove(containerId)).ifPresent(t -> t.cancel(false));
         containerExpires.remove(containerId);
+        try {
+            dockerClient.stopContainerCmd(containerId).withTimeout(5).exec();
+        } catch (Exception ignored) {}
 
+        if (removeImageOnStop) {
+            String image = containerToImage.remove(containerId);
+            if (image != null && !image.isBlank()) {
+                try { dockerClient.removeImageCmd(image).withForce(true).exec(); } catch (Exception ignored) {}
+            }
+        } else {
+            containerToImage.remove(containerId);
+        }
+    }
+    public void stopAndCleanupFirstByContainerIdHaveLabSessionId(String containerId, boolean flag) {
+        if (containerId == null || containerId.isBlank()) return;
+        Optional.ofNullable(timers.remove(containerId)).ifPresent(t -> t.cancel(false));
+        containerExpires.remove(containerId);
+        LabSession labSession = labSessionRepository.findByContainerIdWithStatusRunning(containerId);
+        if (labSession != null) {
+            if (flag){
+                labSession.setCompletedAt(Instant.now());
+                labSession.setStatus(ESessionStatus.SOLVED);
+                labSessionRepository.save(labSession);
+            }else{
+                labSession.setStatus(ESessionStatus.EXPIRED);
+                labSessionRepository.save(labSession);
+            }
+        }
         try {
             dockerClient.stopContainerCmd(containerId).withTimeout(5).exec();
         } catch (Exception ignored) {}
@@ -99,6 +176,10 @@ public class LabRunnerService {
         }
     }
 
+    @PreDestroy
+    public void onShutdown() {
+        scheduler.shutdownNow();
+    }
     private void pullIfMissing(String image) {
         try { dockerClient.inspectImageCmd(image).exec(); }
         catch (Exception notFound) {
