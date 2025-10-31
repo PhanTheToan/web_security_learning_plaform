@@ -1,5 +1,5 @@
 "use client";
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useState, useCallback } from "react";
 import { useParams } from "next/navigation";
 import ReactMarkdown from "react-markdown";
 import remarkGfm from "remark-gfm";
@@ -24,8 +24,6 @@ import {
   Share2,
   ShieldCheck,
   Users,
-  CheckCircle,
-  XCircle,
   Loader2,
 } from "lucide-react";
 import MarkdownImage from "@/components/MarkdownImage";
@@ -142,7 +140,7 @@ export default function LabDetailPage() {
   const [isSubmittingFlag, setIsSubmittingFlag] = useState(false);
   const [flag, setFlag] = useState("");
 
-  const fetchStatus = async () => {
+  const fetchStatus = useCallback(async () => {
     if (!id) return;
     try {
       const statusResult = await getLabSessionStatus(id);
@@ -163,15 +161,15 @@ export default function LabDetailPage() {
         setLabStatus(statusResult);
         setRunningLabUrl(null);
       }
-    } catch (err) {
+    } catch {
       setLabStatus("EXPIRED"); // Default to EXPIRED on error
       setRunningLabUrl(null);
     }
-  };
+  }, [id]);
 
   useEffect(() => {
-    if (!id) return;
     async function fetchLab() {
+      if (!id) return;
       try {
         const data = await getPublicLabById(id);
         setLab(data);
@@ -183,7 +181,7 @@ export default function LabDetailPage() {
       }
     }
     fetchLab();
-  }, [id]);
+  }, [id, fetchStatus]);
 
   const handleAccessLab = async () => {
     if (!id) return;
@@ -191,27 +189,17 @@ export default function LabDetailPage() {
     try {
       const result = await startLabSession(id);
       toast({
-        title: (
-          <div className="flex items-center">
-            <CheckCircle className="mr-2 h-5 w-5 text-green-500" />
-            <span className="font-bold">Lab Started Successfully!</span>
-          </div>
-        ),
+        title: "Lab Started Successfully!",
         description: "Redirecting to your lab environment...",
       });
       setTimeout(() => {
         window.open(result.url, '_blank');
         fetchStatus(); // Re-fetch status after starting
       }, 3000);
-    } catch (err) {
+    } catch {
       toast({
         variant: "destructive",
-        title: (
-          <div className="flex items-center">
-            <XCircle className="mr-2 h-5 w-5" />
-            <span className="font-bold">Failed to Start Lab</span>
-          </div>
-        ),
+        title: "Failed to Start Lab",
         description: "Tạo labs không thành công. Vui lòng tạo lại!",
       });
     } finally {
@@ -226,39 +214,23 @@ export default function LabDetailPage() {
       const result = await submitLabFlag(id, labSessionId, flag);
       if (result === "Flag is correct! Lab completed.") {
         toast({
-          title: (
-            <div className="flex items-center">
-              <CheckCircle className="mr-2 h-5 w-5 text-green-500" />
-              <span className="font-bold">Success!</span>
-            </div>
-          ),
+          title: "Success!",
           description: result,
         });
         fetchStatus(); // Re-fetch to update status to SOLVED
       } else {
         toast({
           variant: "destructive",
-          title: (
-            <div className="flex items-center">
-              <XCircle className="mr-2 h-5 w-5" />
-              <span className="font-bold">Submission Failed</span>
-            </div>
-          ),
+          title: "Submission Failed",
           description: result,
         });
       }
-    } catch (err) {
+    } catch (e) {
       toast({
         variant: "destructive",
-        title: (
-          <div className="flex items-center">
-            <XCircle className="mr-2 h-5 w-5" />
-            <span className="font-bold">Error</span>
-          </div>
-        ),
-        description: err instanceof Error ? err.message : "An unexpected error occurred.",
-      });
-    } finally {
+        title: "Error",
+        description: e instanceof Error ? e.message : "An unexpected error occurred.",
+      });    } finally {
       setIsSubmittingFlag(false);
     }
   };
@@ -349,7 +321,7 @@ export default function LabDetailPage() {
                   <div className="flex items-center gap-4">
                     <Input
                       type="text"
-                      placeholder="CyLock{...}"
+                      placeholder="CYLOCK{...}"
                       value={flag}
                       onChange={(e) => setFlag(e.target.value)}
                       className="flex-grow bg-slate-800/60 border-slate-700"

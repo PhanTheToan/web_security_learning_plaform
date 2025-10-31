@@ -35,6 +35,7 @@ interface LabData {
   status: string
   tags: Tag[]
   linkSource?: string
+  flag?: string
 }
 interface LabFormProps {
   mode?: "create" | "edit"
@@ -56,6 +57,7 @@ export function LabForm({ mode = "create", initialData }: LabFormProps) {
   const [timeoutMinutes, setTimeoutMinutes] = useState(60)
   const [status, setStatus] = useState("Draft")
   const [linkSource, setLinkSource] = useState("")
+  const [flag, setFlag] = useState("")
 
   // Refs for markdown editors
   const descriptionRef = useRef<HTMLTextAreaElement>(null);
@@ -97,6 +99,7 @@ export function LabForm({ mode = "create", initialData }: LabFormProps) {
       setStatus(initialData.status || "Draft")
       setSelectedTags(initialData.tags || [])
       setLinkSource(initialData.linkSource || "")
+      setFlag(initialData.flag || "")
     }
   }, [initialData])
 
@@ -130,6 +133,7 @@ export function LabForm({ mode = "create", initialData }: LabFormProps) {
       timeoutMinutes,
       status,
       linkSource,
+      flag,
       tagIds: selectedTags.map((t) => t.id),
     }
 
@@ -366,7 +370,7 @@ export function LabForm({ mode = "create", initialData }: LabFormProps) {
                   className="border-[#ffffff]/20 focus-visible:border-[#9747ff]/60 focus-visible:ring-[#9747ff] rounded-xl bg-[#ffffff]/5 text-white placeholder:text-white/40"
                 />
               </div>
-                <FileUploader />
+              <FileUploader />
             </div>
             <div className="space-y-2">
               <Label htmlFor="timeout" className="text-white font-medium">
@@ -378,6 +382,18 @@ export function LabForm({ mode = "create", initialData }: LabFormProps) {
                 placeholder="e.g., 30"
                 value={timeoutMinutes}
                 onChange={(e) => setTimeoutMinutes(Number.parseInt(e.target.value, 10) || 0)}
+                className="border-[#ffffff]/20 focus-visible:border-[#9747ff]/60 focus-visible:ring-[#9747ff] rounded-xl bg-[#ffffff]/5 text-white placeholder:text-white/40"
+              />
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="flag" className="text-white font-medium">
+                Flag
+              </Label>
+              <Input
+                id="flag"
+                placeholder="e.g., CYLOCK{FAKE_FLAG_FAKE_FLAG}"
+                value={flag}
+                onChange={(e) => setFlag(e.target.value)}
                 className="border-[#ffffff]/20 focus-visible:border-[#9747ff]/60 focus-visible:ring-[#9747ff] rounded-xl bg-[#ffffff]/5 text-white placeholder:text-white/40"
               />
             </div>
