@@ -213,6 +213,12 @@ public class LabController {
 
         return ResponseEntity.ok(labRunnerService.getUserLabCountStatistics(labId));
     }
+    @PreAuthorize("hasRole('ROLE_ADMIN')")
+    @GetMapping("/solved-statistics/{labId}")
+    public ResponseEntity<?> getLabStatusStatistics(@PathVariable Long labId) {
+
+        return ResponseEntity.ok(labRunnerService.getLabStatusStatistics(labId));
+    }
 
 
 

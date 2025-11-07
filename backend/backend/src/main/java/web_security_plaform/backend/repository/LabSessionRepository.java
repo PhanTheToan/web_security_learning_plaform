@@ -21,6 +21,12 @@ public interface LabSessionRepository extends JpaRepository<LabSession, Integer>
     @Query("SELECT ls FROM LabSession ls WHERE ls.status = 'EXPIRED'")
     List<LabSession> findAllLabSessionExpired();
 
+    @Query("SELECT ls FROM LabSession ls WHERE ls.status = 'SOLVED' AND ls.lab.id = ?1")
+    List<LabSession> findAllLabSessionSolved(Long labId);
+
+    @Query("SELECT ls FROM LabSession ls WHERE ls.status = 'EXPIRED' AND ls.lab.id = ?1")
+    List<LabSession> findAllLabSessionExpired(Long labId);
+
     @Query("SELECT COUNT(ls) FROM LabSession ls WHERE ls.status = ?1")
     Integer countByStatus(ESessionStatus eSessionStatus);
 

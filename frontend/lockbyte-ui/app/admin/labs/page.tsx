@@ -10,7 +10,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover"
 import { Command, CommandEmpty, CommandGroup, CommandInput, CommandItem, CommandList } from "@/components/ui/command"
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
-import { PlusCircle, Pencil, Trash2, Search, X, Check } from "lucide-react"
+import { PlusCircle, Pencil, Trash2, Search, X, Check, BarChart } from "lucide-react"
 import { cn } from "@/lib/utils"
 
 // Type Definitions
@@ -229,6 +229,11 @@ export default function LabsPage() {
                   <TableCell className="text-white/80">{lab.authorName}</TableCell>
                   <TableCell className="text-right">
                     <div className="flex gap-2 justify-end">
+                      <Link href={`/admin/labs/statistics/${lab.id}`} passHref>
+                        <Button variant="ghost" size="icon" className="text-white hover:bg-white/10 hover:text-white rounded-lg" aria-label="View Lab Statistics">
+                          <BarChart className="h-4 w-4" />
+                        </Button>
+                      </Link>
                       <Link href={`/admin/labs/edit/${lab.id}`} passHref>
                         <Button variant="ghost" size="icon" className="text-white hover:bg-white/10 hover:text-white rounded-lg" aria-label="Edit Lab">
                           <Pencil className="h-4 w-4" />

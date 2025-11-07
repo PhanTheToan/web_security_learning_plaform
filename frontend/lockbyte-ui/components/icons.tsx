@@ -14,6 +14,10 @@ import {
   LogOut,
   ArrowRight,
   PieChart,
+  BarChart,
+  CheckCircle,
+  XCircle,
+  Clock,
 } from "lucide-react";
 
 export const Icons = {
@@ -30,6 +34,10 @@ export const Icons = {
   Logout: LogOut,
   ArrowRight,
   PieChart,
+  BarChart,
+  CheckCircle,
+  XCircle,
+  Clock,
 };
 
 export default Icons;

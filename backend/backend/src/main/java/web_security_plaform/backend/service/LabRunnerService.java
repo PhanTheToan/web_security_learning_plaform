@@ -329,6 +329,23 @@ public class LabRunnerService {
         return ResponseEntity.ok(new LabListForStatus(solved, expired));
     }
 
+    public ResponseEntity<LabListForStatus> getLabStatusStatistics(Long labId) {
+        ZoneId ZONE = ZoneOffset.UTC;
+
+        List<LabStatusStatistics> solved = labSessionRepository.findAllLabSessionSolved(labId).stream()
+                .map(s -> convert(s.getCompletedAt(), s.getLab(), ZONE))
+                .filter(Objects::nonNull)
+                .sorted(Comparator.comparing(LabStatusStatistics::completedAt))
+                .toList();
+
+        List<LabStatusStatistics> expired = labSessionRepository.findAllLabSessionExpired(labId).stream()
+                .map(s -> convert(s.getExpiresAt(), s.getLab(), ZONE))       // <== dùng expiredAt đúng nghĩa
+                .filter(Objects::nonNull)
+                .sorted(Comparator.comparing(LabStatusStatistics::completedAt))
+                .toList();
+
+        return ResponseEntity.ok(new LabListForStatus(solved, expired));
+    }
     private LabStatusStatistics convert(Instant timestamp, Lab lab, ZoneId zone) {
         if (timestamp == null || lab == null || lab.getId() == null) return null;
         return new LabStatusStatistics(LocalDateTime.ofInstant(timestamp, zone), lab.getId());
@@ -389,9 +406,9 @@ public class LabRunnerService {
         Integer running = labSessionRepository.countByStatus(labId, ESessionStatus.RUNNING);
 
         Map<String, Integer> out = new HashMap<>();
-        out.put("solved", solved);
-        out.put("expired", expired);
-        out.put("running", running);
+        out.put("Solved", solved);
+        out.put("Expired", expired);
+        out.put("Running", running);
 
         return ResponseEntity.ok(out);
     }
@@ -437,26 +454,29 @@ public class LabRunnerService {
     public ResponseEntity<?> getUserLabCountStatistics(Long labId) {
         List<LabSession> sessions = labSessionRepository.findAllByLabId(labId);
         Set<UserLabCountStatistics> userId = new HashSet<>();
-        sessions.forEach(s -> {
-            Integer uid = s.getUser().getId();
+        for (LabSession s : sessions) {
+            Integer uid = s.getUser().getId().intValue();
             String fullName = s.getUser().getFullName() != null ? s.getUser().getFullName() : s.getUser().getUsername();
-            UserLabCountStatistics existing = userId.stream()
-                    .filter(u -> u.userId().equals(uid))
-                    .findFirst()
-                    .orElse(null);
             int errorCount = s.getCounterErrorFlag() != null ? s.getCounterErrorFlag() : 0;
-            if (existing == null) {
-                Integer labAccessCount = 1;
-                Integer totalSolved = s.getStatus() == ESessionStatus.SOLVED ? 1 : 0;
-                userId.add(new UserLabCountStatistics(uid, fullName, errorCount, labAccessCount, totalSolved));
-            } else {
-                userId.remove(existing);
-                Integer labAccessCount = existing.labAccessCount() + 1;
-                Integer totalSolved = existing.totalSolved() + (s.getStatus() == ESessionStatus.SOLVED ? 1 : 0);
-                Integer totalErrorCount = existing.errorCount() + errorCount;
-                userId.add(new UserLabCountStatistics(uid, fullName, totalErrorCount, labAccessCount, totalSolved));
-            }
-        });
+            int labAccessCount = (int) sessions.stream().filter(sess -> sess.getUser().getId().equals(s.getUser().getId())).count();
+            int totalSolved = (int) sessions.stream().filter(sess -> sess.getUser().getId().equals(s.getUser().getId()) && sess.getStatus() == ESessionStatus.SOLVED).count();
+
+            Double fastestSolveTimeSeconds = sessions.stream()
+                    .filter(sess -> sess.getUser().getId().equals(s.getUser().getId()) && sess.getStatus() == ESessionStatus.SOLVED
+                            && sess.getStartedAt() != null && sess.getCompletedAt() != null)
+                    .mapToDouble(sess -> Duration.between(sess.getStartedAt(), sess.getCompletedAt()).getSeconds())
+                    .min()
+                    .orElse(Double.NaN);
+
+            userId.add(new UserLabCountStatistics(
+                    uid,
+                    fullName,
+                    errorCount,
+                    labAccessCount,
+                    totalSolved,
+                    Double.isNaN(fastestSolveTimeSeconds) ? null : fastestSolveTimeSeconds
+            ));
+        }
 
         return ResponseEntity.ok(userId);
     }
@@ -467,7 +487,9 @@ public class LabRunnerService {
             String fullName,
             Integer errorCount,
             Integer labAccessCount,
-            Integer totalSolved
+            Integer totalSolved,
+
+            Double fastestSolveTimeSeconds
     ) {}
 
     public record UserRecentLabs(
