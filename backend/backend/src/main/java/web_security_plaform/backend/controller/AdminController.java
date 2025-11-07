@@ -22,10 +22,7 @@ import web_security_plaform.backend.payload.request.TopicRequest;
 import web_security_plaform.backend.payload.request.UserUpdateRequest;
 import web_security_plaform.backend.payload.response.MessageResponse;
 import web_security_plaform.backend.repository.LabRepository;
-import web_security_plaform.backend.service.LabService;
-import web_security_plaform.backend.service.TagService;
-import web_security_plaform.backend.service.TopicService;
-import web_security_plaform.backend.service.UserService;
+import web_security_plaform.backend.service.*;
 
 import java.net.URI;
 import java.security.Principal;
@@ -48,6 +45,9 @@ public class AdminController {
 
     @Autowired
     private TopicService topicService;
+
+    @Autowired
+    private LabRunnerService labRunnerService;
 
     @Autowired
     private TagService tagService;
@@ -239,4 +239,12 @@ public class AdminController {
     public ResponseEntity<?> getUserInfo(@PathVariable int id) {
         return ResponseEntity.ok(userService.getUserInfoById(id));
     }
+
+    @GetMapping("/statistics")
+    public ResponseEntity<?> getAdminStatistics() {
+        return ResponseEntity.ok(labRunnerService.getAdminStatistics());
+    }
+
+
+
 }

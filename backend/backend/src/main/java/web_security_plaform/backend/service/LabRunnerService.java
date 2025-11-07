@@ -1,28 +1,34 @@
 package web_security_plaform.backend.service;
 
 import com.github.dockerjava.api.DockerClient;
-import com.github.dockerjava.api.async.ResultCallbackTemplate;
 import com.github.dockerjava.api.command.CreateContainerResponse;
 import com.github.dockerjava.api.command.InspectContainerResponse;
 import com.github.dockerjava.api.command.ListContainersCmd;
-import com.github.dockerjava.api.command.PullImageResultCallback;
+import com.github.dockerjava.api.exception.NotFoundException;
 import com.github.dockerjava.api.model.*;
-import com.github.dockerjava.core.DockerClientConfig;
 import jakarta.annotation.Nullable;
 import jakarta.annotation.PreDestroy;
+import jakarta.persistence.Id;
+import lombok.AllArgsConstructor;
+import lombok.Data;
+import lombok.NoArgsConstructor;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
+import web_security_plaform.backend.model.ENum.EDifficulty;
 import web_security_plaform.backend.model.ENum.ESessionStatus;
 import web_security_plaform.backend.model.Lab;
 import web_security_plaform.backend.model.LabSession;
+import web_security_plaform.backend.repository.LabRepository;
 import web_security_plaform.backend.repository.LabSessionRepository;
+import web_security_plaform.backend.repository.UserRepository;
 
-import java.time.Duration;
-import java.time.Instant;
+import java.time.*;
 import java.util.*;
 import java.util.concurrent.*;
 import java.util.stream.Collectors;
+
 
 @Service
 public class LabRunnerService {
@@ -30,6 +36,12 @@ public class LabRunnerService {
 
     @Autowired
     private LabSessionRepository labSessionRepository;
+
+    @Autowired
+    private UserRepository userRepository;
+
+    @Autowired
+    private LabRepository labRepository;
 
     private final ScheduledExecutorService scheduler = Executors.newScheduledThreadPool(1);
     private final Map<String, ScheduledFuture<?>> timers = new ConcurrentHashMap<>();
@@ -130,6 +142,54 @@ public class LabRunnerService {
         }
     }
 
+    public void stopAndCleanupStrict(String containerId) {
+        if (containerId == null || containerId.isBlank()) {
+            throw new IllegalArgumentException("containerId is required");
+        }
+
+        Optional.ofNullable(timers.remove(containerId)).ifPresent(t -> t.cancel(false));
+        containerExpires.remove(containerId);
+
+        boolean exists = true;
+        try {
+            dockerClient.inspectContainerCmd(containerId).exec();
+        } catch (NotFoundException nf) {
+            exists = false;
+        } catch (Exception e) {
+            throw new IllegalStateException("Inspect failed for container " + containerId + ": " + e.getMessage(), e);
+        }
+        if (!exists) {
+            containerToImage.remove(containerId);
+            throw new NoSuchElementException("Container " + containerId + " not found");
+        }
+
+        try {
+            dockerClient.stopContainerCmd(containerId).withTimeout(5).exec();
+        } catch (NotFoundException nf) {
+            containerToImage.remove(containerId);
+            throw new NoSuchElementException("Container " + containerId + " not found while stopping");
+        } catch (Exception e) {
+            throw new IllegalStateException("Failed to stop container " + containerId + ": " + e.getMessage(), e);
+        }
+
+        try {
+            dockerClient.removeContainerCmd(containerId).withForce(true).withRemoveVolumes(true).exec();
+        } catch (NotFoundException nf) {
+        } catch (Exception e) {
+            throw new IllegalStateException("Failed to remove container " + containerId + ": " + e.getMessage(), e);
+        }
+
+        String image = containerToImage.remove(containerId);
+        if (removeImageOnStop && image != null && !image.isBlank()) {
+            try {
+                dockerClient.removeImageCmd(image).withForce(true).exec();
+            } catch (NotFoundException nf) {
+            } catch (Exception e) {
+                throw new IllegalStateException("Failed to remove image " + image + " for container " + containerId + ": " + e.getMessage(), e);
+            }
+        }
+    }
+
     public void stopAndCleanupFirst(String containerId) {
         if (containerId == null || containerId.isBlank()) return;
         Optional.ofNullable(timers.remove(containerId)).ifPresent(t -> t.cancel(false));
@@ -152,6 +212,7 @@ public class LabRunnerService {
         Optional.ofNullable(timers.remove(containerId)).ifPresent(t -> t.cancel(false));
         containerExpires.remove(containerId);
         LabSession labSession = labSessionRepository.findByContainerIdWithStatusRunning(containerId);
+//        System.out.println("labSession found for containerId " + containerId + ": " + (labSession != null));
         if (labSession != null) {
             if (flag){
                 labSession.setCompletedAt(Instant.now());
@@ -159,6 +220,7 @@ public class LabRunnerService {
                 labSessionRepository.save(labSession);
             }else{
                 labSession.setStatus(ESessionStatus.EXPIRED);
+                labSession.setExpiresAt(Instant.now());
                 labSessionRepository.save(labSession);
             }
         }
@@ -249,6 +311,188 @@ public class LabRunnerService {
         }
     }
 
+    public ResponseEntity<LabListForStatus> getLabStatusStatistics() {
+        ZoneId ZONE = ZoneOffset.UTC;
+
+        List<LabStatusStatistics> solved = labSessionRepository.findAllLabSessionSolved().stream()
+                .map(s -> convert(s.getCompletedAt(), s.getLab(), ZONE))
+                .filter(Objects::nonNull)
+                .sorted(Comparator.comparing(LabStatusStatistics::completedAt))
+                .toList();
+
+        List<LabStatusStatistics> expired = labSessionRepository.findAllLabSessionExpired().stream()
+                .map(s -> convert(s.getExpiresAt(), s.getLab(), ZONE))       // <== dùng expiredAt đúng nghĩa
+                .filter(Objects::nonNull)
+                .sorted(Comparator.comparing(LabStatusStatistics::completedAt))
+                .toList();
+
+        return ResponseEntity.ok(new LabListForStatus(solved, expired));
+    }
+
+    private LabStatusStatistics convert(Instant timestamp, Lab lab, ZoneId zone) {
+        if (timestamp == null || lab == null || lab.getId() == null) return null;
+        return new LabStatusStatistics(LocalDateTime.ofInstant(timestamp, zone), lab.getId());
+    }
+
+    public ResponseEntity<?> getAdminStatistics() {
+        Integer labSolvedCount = labSessionRepository.countByStatus(ESessionStatus.SOLVED);
+        Integer labExpiredCount = labSessionRepository.countByStatus(ESessionStatus.EXPIRED);
+        Integer totalLabs = labRepository.findAll().size();
+        Integer totalsUsers = userRepository.findAll().size();
+        AdminStatistics stats = new AdminStatistics(
+                labSolvedCount,
+                labExpiredCount,
+                totalLabs,
+                totalsUsers
+        );
+        return ResponseEntity.ok(stats);
+    }
+
+    public ResponseEntity<?> getUserRecentLabs() {
+        List<UserRecentLabs> out = new ArrayList<>();
+        ZoneId ZONE = ZoneOffset.UTC;
+
+        List<Object[]> results = labSessionRepository.findFiveUserRecentSolvedLabs();
+        for (Object[] row : results) {
+            Integer userId = (Integer) row[0];
+            Integer labId = (Integer) row[1];
+            Instant completedAt = (Instant) row[2];
+            String fullName = userRepository.findById((long)userId)
+                    .map(u -> u.getFullName() != null ? u.getFullName() : u.getUsername())
+                    .orElse("Unknown User");
+
+            String labName = labRepository.findById(labId)
+                    .map(Lab::getName)
+                    .orElse("Unknown Lab");
+
+            out.add(new UserRecentLabs(fullName, labName, LocalDateTime.ofInstant(completedAt, ZONE)));
+        }
+
+        return ResponseEntity.ok(out);
+    }
+
+    public ResponseEntity<?> getLabSolvedLevelStatistics() {
+        List<Object[]> results = labSessionRepository.countSolvedLabsByDifficultyLevel();
+        Map<String, Integer> out = new HashMap<>();
+        for (Object[] row : results) {
+            EDifficulty level = (EDifficulty) row[0];
+            Long countLong = (Long) row[1];
+            Integer count = countLong != null ? countLong.intValue() : 0;
+            out.put(String.valueOf(level), count);
+        }
+        return ResponseEntity.ok(out);
+    }
+
+    public ResponseEntity<?> getSolvedStatusForLab(Integer labId) {
+        Integer solved = labSessionRepository.countByStatus(labId, ESessionStatus.SOLVED);
+        Integer expired = labSessionRepository.countByStatus(labId, ESessionStatus.EXPIRED);
+        Integer running = labSessionRepository.countByStatus(labId, ESessionStatus.RUNNING);
+
+        Map<String, Integer> out = new HashMap<>();
+        out.put("solved", solved);
+        out.put("expired", expired);
+        out.put("running", running);
+
+        return ResponseEntity.ok(out);
+    }
+
+    public ResponseEntity<?> getErrorSubmitStatisticsForLab(Long labId) {
+        List<LabSession> sessions = labSessionRepository.findAllByLabId(labId);
+        Map<String, Integer> out = new HashMap<>();
+        int errorTotal = 0;
+        int correctTotal = 0;
+
+        for (LabSession s : sessions) {
+            int count = s.getCounterErrorFlag() != null ? s.getCounterErrorFlag() : 0;
+            errorTotal += count;
+            if (s.getStatus() == ESessionStatus.SOLVED) {
+                correctTotal += 1;
+            }
+        }
+        out.put("total_error_submissions", errorTotal);
+        out.put("total_correct_submissions", correctTotal);
+        return ResponseEntity.ok(out);
+    }
+
+    public ResponseEntity<?> getAvgTimeToSolveForLab(Long labId) {
+        List<LabSession> sessions = labSessionRepository.findAllByLabId(labId);
+        long totalSeconds = 0;
+        int solvedCount = 0;
+
+        for (LabSession s : sessions) {
+            if (s.getStatus() == ESessionStatus.SOLVED && s.getStartedAt() != null && s.getCompletedAt() != null) {
+                Duration duration = Duration.between(s.getStartedAt(), s.getCompletedAt());
+                totalSeconds += duration.getSeconds();
+                solvedCount += 1;
+            }
+        }
+
+        double avgSeconds = solvedCount > 0 ? (double) totalSeconds / solvedCount : 0.0;
+        Map<String, Object> out = new HashMap<>();
+        out.put("average_time_seconds", avgSeconds);
+        out.put("solved_count", solvedCount);
+        return ResponseEntity.ok(out);
+    }
+
+    public ResponseEntity<?> getUserLabCountStatistics(Long labId) {
+        List<LabSession> sessions = labSessionRepository.findAllByLabId(labId);
+        Set<UserLabCountStatistics> userId = new HashSet<>();
+        sessions.forEach(s -> {
+            Integer uid = s.getUser().getId();
+            String fullName = s.getUser().getFullName() != null ? s.getUser().getFullName() : s.getUser().getUsername();
+            UserLabCountStatistics existing = userId.stream()
+                    .filter(u -> u.userId().equals(uid))
+                    .findFirst()
+                    .orElse(null);
+            int errorCount = s.getCounterErrorFlag() != null ? s.getCounterErrorFlag() : 0;
+            if (existing == null) {
+                Integer labAccessCount = 1;
+                Integer totalSolved = s.getStatus() == ESessionStatus.SOLVED ? 1 : 0;
+                userId.add(new UserLabCountStatistics(uid, fullName, errorCount, labAccessCount, totalSolved));
+            } else {
+                userId.remove(existing);
+                Integer labAccessCount = existing.labAccessCount() + 1;
+                Integer totalSolved = existing.totalSolved() + (s.getStatus() == ESessionStatus.SOLVED ? 1 : 0);
+                Integer totalErrorCount = existing.errorCount() + errorCount;
+                userId.add(new UserLabCountStatistics(uid, fullName, totalErrorCount, labAccessCount, totalSolved));
+            }
+        });
+
+        return ResponseEntity.ok(userId);
+    }
+
+    public record UserLabCountStatistics(
+            @Id
+            Integer userId,
+            String fullName,
+            Integer errorCount,
+            Integer labAccessCount,
+            Integer totalSolved
+    ) {}
+
+    public record UserRecentLabs(
+            String fullName,
+           String labName,
+            LocalDateTime completedAt
+    ) {}
+    public record AdminStatistics(
+            Integer labSolvedCount,
+            Integer labExpiredCount,
+            Integer totalLabs,
+            Integer totalUsers
+    ) {}
+    public record LabStatusStatistics(
+            LocalDateTime completedAt,
+            Integer labId
+    ) {}
+
+    @Data
+    @NoArgsConstructor
+    @AllArgsConstructor
+    public static class LabListForStatus {
+        private List<LabStatusStatistics> solved;
+        private List<LabStatusStatistics> expired;
+    }
 
     // DTO cho status
     public record LabInstanceDTO(

@@ -13,6 +13,7 @@ import {
   Settings,
   LogOut,
   ArrowRight,
+  PieChart,
 } from "lucide-react";
 
 export const Icons = {
@@ -28,6 +29,7 @@ export const Icons = {
   Settings,
   Logout: LogOut,
   ArrowRight,
+  PieChart,
 };
 
 export default Icons;

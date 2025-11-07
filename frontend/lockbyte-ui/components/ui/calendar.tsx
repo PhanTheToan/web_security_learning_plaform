@@ -35,20 +35,19 @@ export function Calendar({
         head_cell:
           "text-white/70 font-normal text-[0.8rem] text-center w-9",
         row: "",
-        cell:
-          "h-9 w-9 text-center align-middle relative " +
-          "[&:has([aria-selected])]:bg-[#9747ff]/20 " +
-          "first:[&:has([aria-selected])]:rounded-l-md " +
-          "last:[&:has([aria-selected])]:rounded-r-md focus-within:z-20",
+        cell: "h-9 w-9 text-center align-middle p-0 relative focus-within:z-20",
         day: cn(
           buttonVariants({ variant: "ghost" }),
-          "h-9 w-9 p-0 font-normal text-white hover:bg-white/10 rounded-full cursor-pointer"
+          "h-9 w-9 p-0 font-normal text-white hover:bg-white/10 rounded-full cursor-pointer aria-selected:opacity-100"
         ),
         day_selected:
-          "bg-[#9747ff] text-white hover:bg-[#9747ff]/90 focus:bg-[#9747ff] rounded-full",
+          "bg-[#9747ff] text-white hover:bg-[#9747ff]/90 focus:bg-[#9747ff]",
         day_today: "bg-white/10 text-white rounded-full",
-        day_outside: "text-white/50 opacity-50",
+        day_outside: "text-white/50 opacity-50 aria-selected:bg-[#9747ff]/30 aria-selected:text-white/80",
         day_disabled: "text-white/40 opacity-50",
+        day_range_middle: "aria-selected:bg-[#9747ff]/20 aria-selected:text-white rounded-none",
+        day_range_start: "aria-selected:rounded-l-full",
+        day_range_end: "aria-selected:rounded-r-full",
         ...classNames,
       }}
       components={{

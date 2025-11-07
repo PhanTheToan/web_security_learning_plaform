@@ -1,9 +1,12 @@
 package web_security_plaform.backend.controller;
 
+import jakarta.ws.rs.GET;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.server.ResponseStatusException;
 import web_security_plaform.backend.model.Lab;
 import web_security_plaform.backend.model.User;
 import web_security_plaform.backend.payload.dto.LabInfoDetail;
@@ -13,9 +16,7 @@ import web_security_plaform.backend.service.LabService;
 import web_security_plaform.backend.service.UserService;
 
 import java.security.Principal;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
 
 @RestController
 @RequestMapping("/api/lab")
@@ -104,12 +105,45 @@ public class LabController {
 
     @PreAuthorize("hasRole('ADMIN')")
     @PostMapping("/containers/cleanup")
-    public ResponseEntity<?> cleanupContainers(
-           @RequestParam String containerIds
-    ) {
-        labRunnerService.stopAndCleanupFirst(containerIds);
-        return ResponseEntity.ok("Stop and cleanup initiated for specified containers.");
+    public ResponseEntity<?> cleanupContainers(@RequestParam String containerIds) {
+        if (containerIds == null || containerIds.isBlank()) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "containerIds is required");
+        }
+
+        List<String> ids = Arrays.stream(containerIds.split(","))
+                .map(String::trim)
+                .filter(s -> !s.isEmpty())
+                .distinct()
+                .toList();
+
+        if (ids.isEmpty()) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "No valid container ids provided");
+        }
+
+        List<CleanupResult> results = new ArrayList<>();
+        for (String id : ids) {
+            try {
+                labRunnerService.stopAndCleanupStrict(id);
+                results.add(CleanupResult.ok(id, "Stopped and cleaned up successfully"));
+            } catch (NoSuchElementException e) {
+                results.add(CleanupResult.fail(id, "Container not found"));
+            } catch (IllegalStateException e) {
+                results.add(CleanupResult.fail(id, e.getMessage()));
+            } catch (Exception e) {
+                results.add(CleanupResult.fail(id, "Cleanup failed: " + e.getClass().getSimpleName() + ": " + e.getMessage()));
+            }
+        }
+
+        boolean anyFailure = results.stream().anyMatch(r -> !r.success());
+        HttpStatus status = anyFailure ? HttpStatus.MULTI_STATUS : HttpStatus.OK;
+        return ResponseEntity.status(status).body(results);
     }
+
+    public record CleanupResult(String containerId, boolean success, String message) {
+        public static CleanupResult ok(String id, String msg) { return new CleanupResult(id, true, msg); }
+        public static CleanupResult fail(String id, String msg) { return new CleanupResult(id, false, msg); }
+    }
+
 
     @DeleteMapping("/images")
     public ResponseEntity<?> deleteImage(
@@ -131,6 +165,56 @@ public class LabController {
             ));
         }
     }
+
+    @PreAuthorize("hasRole('ROLE_ADMIN')")
+    @GetMapping("/solved-statistics")
+    public ResponseEntity<?> getLabStatusStatistics() {
+
+        return ResponseEntity.ok(labRunnerService.getLabStatusStatistics());
+    }
+
+    @PreAuthorize("hasRole('ADMIN')")
+    @GetMapping("/user-recent")
+    public ResponseEntity<?> getUserRecentLabs() {
+       return ResponseEntity.ok(labRunnerService.getUserRecentLabs());
+    }
+
+    @PreAuthorize("hasRole('ADMIN')")
+    @GetMapping("/lab-solved-level")
+    public ResponseEntity<?> getLabSolvedLevelStatistics() {
+
+        return ResponseEntity.ok(labRunnerService.getLabSolvedLevelStatistics());
+    }
+
+    @PreAuthorize("hasRole('ADMIN')")
+    @GetMapping("/solved-status/{labId}")
+    public ResponseEntity<?> getSolvedStatusForLab(@PathVariable Integer labId) {
+
+        return ResponseEntity.ok(labRunnerService.getSolvedStatusForLab(labId));
+    }
+
+    @PreAuthorize("hasRole('ADMIN')")
+    @GetMapping("/error-submit/{labId}")
+    public ResponseEntity<?> getErrorSubmitStatisticsForLab(@PathVariable Long labId) {
+
+        return ResponseEntity.ok(labRunnerService.getErrorSubmitStatisticsForLab(labId));
+    }
+
+    @PreAuthorize("hasRole('ADMIN')")
+    @GetMapping("/avg-time-solved/{labId}")
+    public ResponseEntity<?> getAvgTimeToSolveForLab(@PathVariable Long labId) {
+
+        return ResponseEntity.ok(labRunnerService.getAvgTimeToSolveForLab(labId));
+    }
+
+    @PreAuthorize("hasRole('ADMIN')")
+    @GetMapping("/user-lab-count")
+    public ResponseEntity<?> getUserLabCountStatistics(@RequestParam Long labId) {
+
+        return ResponseEntity.ok(labRunnerService.getUserLabCountStatistics(labId));
+    }
+
+
 
 //    @PreAuthorize("hasRole('ADMIN')")
 //    @PostMapping("/images/cleanup")
