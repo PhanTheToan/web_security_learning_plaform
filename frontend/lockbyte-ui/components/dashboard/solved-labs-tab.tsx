@@ -1,18 +1,32 @@
 "use client";
 
 import { useState } from "react";
+import { DateRange } from "react-day-picker";
 import { DateRangePicker } from "@/components/ui/date-range-picker";
 import { SolvedLabsChart } from "./solved-labs-chart";
 import { SolvedLabsTable } from "./solved-labs-table";
 
-export function SolvedLabsTab({ solvedLabs }) {
-  const [dateRange, setDateRange] = useState({
+interface SolvedLab {
+  labId: number;
+  labName: string;
+  difficulty: string;
+  completedAt: string;
+  errorCount: number;
+}
+
+interface SolvedLabsTabProps {
+  solvedLabs: SolvedLab[];
+}
+
+export function SolvedLabsTab({ solvedLabs }: SolvedLabsTabProps) {
+  const [dateRange, setDateRange] = useState<DateRange | undefined>({
     from: new Date(new Date().setFullYear(new Date().getFullYear() - 1)),
     to: new Date(),
   });
 
   const filteredLabs = solvedLabs.filter((lab) => {
     const completedAt = new Date(lab.completedAt);
+    if (!dateRange?.from || !dateRange?.to) return true;
     return completedAt >= dateRange.from && completedAt <= dateRange.to;
   });
 

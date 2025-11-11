@@ -12,6 +12,18 @@ import {
 import { Button } from "@/components/ui/button";
 import { ArrowUpDown } from "lucide-react";
 
+interface SolvedLab {
+  labId: number;
+  labName: string;
+  difficulty: string;
+  completedAt: string;
+  errorCount: number;
+}
+
+interface SolvedLabsTableProps {
+  solvedLabs: SolvedLab[];
+}
+
 function difficultyClass(difficulty: string) {
   switch ((difficulty || "").toLowerCase()) {
     case "easy":
@@ -27,7 +39,7 @@ function difficultyClass(difficulty: string) {
   }
 }
 
-export function SolvedLabsTable({ solvedLabs }) {
+export function SolvedLabsTable({ solvedLabs }: SolvedLabsTableProps) {
   const [sortOrder, setSortOrder] = useState<"asc" | "desc">("desc");
 
   const sortedLabs = [...solvedLabs].sort((a, b) => {

@@ -3,7 +3,15 @@
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer } from "recharts";
 import { useTheme } from "next-themes";
 
-export function SolvedLabsChart({ solvedLabs }) {
+interface SolvedLab {
+  completedAt: string;
+}
+
+interface SolvedLabsChartProps {
+  solvedLabs: SolvedLab[];
+}
+
+export function SolvedLabsChart({ solvedLabs }: SolvedLabsChartProps) {
   const { theme } = useTheme();
 
   const data = solvedLabs.reduce((acc, lab) => {

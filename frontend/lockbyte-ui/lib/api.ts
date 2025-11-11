@@ -191,37 +191,115 @@ export type LabsApiResponse = {
 
 
 
-export type LabDetail = {
+
+
+
+
+export type CommunitySolution = {
+
+
 
   id: number;
 
+
+
+  status: string;
+
+
+
+  writeup: string;
+
+
+
+  youtubeUrl: string;
+
+
+
+  labId: number;
+
+
+
+  userId: number;
+
+
+
+  fullName: string;
+
+
+
+};
+
+
+
+
+
+
+
+export type LabDetail = {
+
+
+
+  id: number;
+
+
+
   name: string;
+
+
 
   difficulty: "Beginner" | "Intermediate" | "Advanced" | "Expert";
 
+
+
   dockerImage: string | null;
+
+
 
   status: "Published" | "Draft";
 
+
+
   authorName: string;
+
+
 
   tags: Tag[];
 
+
+
   description: string;
+
+
 
   hint: string;
 
+
+
   solution: string;
+
+
 
   fixVulnerabilities: string;
 
+
+
   timeoutMinutes: number;
+
+
 
   linkSource: string | null;
 
-  communitySolutionDTOS: unknown[];
+
+
+  communitySolutionDTOS: CommunitySolution[];
+
+
 
 };
+
+
+
+
 
 
 
@@ -882,11 +960,22 @@ export function submitLabFlag(labId: string | number, labSessionId: number, flag
   });
 }
 
+export function submitCommunitySolution(labId: string | number, youtubeLink: string, writeUpLink: string) {
+  return fetchWithCredentials<void>(`/community-solutions`, {
+    method: "POST",
+    body: JSON.stringify({
+      labId,
+      youtubeLink,
+      writeUpLink,
+    }),
+  });
+}
+
 export const api = {
   get: <T>(path: string, init?: RequestInit & { extraHeaders?: HeadersInit }) => fetchWithCredentials<T>(path, { ...init, method: "GET" }),
-  post: <T>(path: string, body: any, init?: RequestInit & { extraHeaders?: HeadersInit }) => fetchWithCredentials<T>(path, { ...init, method: "POST", body: JSON.stringify(body) }),
-  put: <T>(path: string, body: any, init?: RequestInit & { extraHeaders?: HeadersInit }) => fetchWithCredentials<T>(path, { ...init, method: "PUT", body: JSON.stringify(body) }),
-  patch: <T>(path: string, body: any, init?: RequestInit & { extraHeaders?: HeadersInit }) => fetchWithCredentials<T>(path, { ...init, method: "PATCH", body: JSON.stringify(body) }),
+  post: <T>(path: string, body: unknown, init?: RequestInit & { extraHeaders?: HeadersInit }) => fetchWithCredentials<T>(path, { ...init, method: "POST", body: JSON.stringify(body) }),
+  put: <T>(path: string, body: unknown, init?: RequestInit & { extraHeaders?: HeadersInit }) => fetchWithCredentials<T>(path, { ...init, method: "PUT", body: JSON.stringify(body) }),
+  patch: <T>(path: string, body: unknown, init?: RequestInit & { extraHeaders?: HeadersInit }) => fetchWithCredentials<T>(path, { ...init, method: "PATCH", body: JSON.stringify(body) }),
   delete: <T>(path: string, init?: RequestInit & { extraHeaders?: HeadersInit }) => fetchWithCredentials<T>(path, { ...init, method: "DELETE" }),
 };
 

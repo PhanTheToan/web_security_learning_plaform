@@ -6,13 +6,12 @@ import { useRouter } from "next/navigation"
 import { TemplatesList } from "@/components/admin/email/templates-list"
 import { HtmlPreview } from "@/components/admin/email/shared/html-preview"
 import { getEmailTemplateSchema, previewAdminEmail } from "@/lib/api"
-import { useToast } from "@/hooks/use-toast"
+import { toast } from "@/hooks/use-toast"
 import { set } from "lodash"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 
 export default function TemplatesPage() {
   const router = useRouter()
-  const { toast } = useToast()
   const [templates] = useState(["welcome", "digest", "report", "password-reset"])
   const [previewContent, setPreviewContent] = useState(
     "<html><body><p>Select a template to preview.</p></body></html>"

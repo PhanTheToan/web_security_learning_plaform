@@ -22,7 +22,7 @@ import {
 import { EmailTemplateSchema, SendReq } from "@/types/email"
 import { set, get, isEmpty } from "lodash"
 import { ArrayInput } from "./shared/array-input"
-import { useToast } from "@/hooks/use-toast"
+import { toast } from "@/hooks/use-toast"
 import { Loader2 } from "lucide-react"
 
 interface SendFormProps {
@@ -30,7 +30,6 @@ interface SendFormProps {
 }
 
 export function SendForm({ setPreviewContent }: SendFormProps) {
-  const { toast } = useToast()
   const [templates] = useState(["welcome", "digest", "report", "password-reset"])
   const [selectedTemplate, setSelectedTemplate] = useState<string>("")
   const [schema, setSchema] = useState<EmailTemplateSchema | null>(null)
@@ -83,7 +82,7 @@ export function SendForm({ setPreviewContent }: SendFormProps) {
     }
 
     fetchSchema()
-  }, [selectedTemplate, toast])
+  }, [selectedTemplate])
 
   const handleModelChange = (key: string, value: unknown) => {
     const newModel = { ...model }

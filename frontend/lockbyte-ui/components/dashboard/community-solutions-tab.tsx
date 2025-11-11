@@ -4,6 +4,19 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@
 import { Badge } from "@/components/ui/badge";
 import Link from "next/link";
 
+// --- Type definitions
+interface CommunitySolution {
+  id: number;
+  labId: number;
+  status: "PENDING" | "APPROVED" | "REJECTED";
+  writeup?: string;
+  youtubeUrl?: string;
+}
+
+interface CommunitySolutionsTabProps {
+  solutions: CommunitySolution[];
+}
+
 function statusClass(status: string) {
   switch ((status || "").toLowerCase()) {
     case "approved":
@@ -17,7 +30,7 @@ function statusClass(status: string) {
   }
 }
 
-export function CommunitySolutionsTab({ solutions }) {
+export function CommunitySolutionsTab({ solutions }: CommunitySolutionsTabProps) {
   return (
     <div
       className="rounded-2xl overflow-hidden border border-[#ffffff]/10 
@@ -35,7 +48,7 @@ export function CommunitySolutionsTab({ solutions }) {
         </TableHeader>
 
         <TableBody>
-          {solutions.map((solution: any) => (
+          {solutions.map((solution) => (
             <TableRow
               key={solution.id}
               className="border-b border-white/10 text-white/90 hover:bg-white/5 transition-colors"

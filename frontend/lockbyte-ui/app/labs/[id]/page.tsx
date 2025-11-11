@@ -28,7 +28,7 @@ import {
   Send,
 } from "lucide-react";
 import MarkdownImage from "@/components/MarkdownImage";
-import { useToast } from "@/hooks/use-toast";
+import { toast } from "@/hooks/use-toast";
 import { Input } from "@/components/ui/input";
 import CommunitySolutions from "@/components/community-solutions";
 
@@ -131,7 +131,6 @@ const StatusBadge = ({ status }: { status: string }) => {
 export default function LabDetailPage() {
   const params = useParams();
   const id = params?.id as string | undefined;
-  const { toast } = useToast();
 
   const [lab, setLab] = useState<LabDetail | null>(null);
   const [loading, setLoading] = useState(true);

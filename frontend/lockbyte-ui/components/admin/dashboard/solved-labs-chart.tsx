@@ -137,7 +137,7 @@ export function SolvedLabsChart() {
             <Legend
               iconSize={10}
               wrapperStyle={{ color: 'white', fontSize: '12px' }}
-              formatter={(value, entry) => <span style={{ color: '#e5e7eb' }}>{value}</span>}
+              formatter={(value) => <span style={{ color: '#e5e7eb' }}>{value}</span>}
             />
           </PieChart>
         </ResponsiveContainer>

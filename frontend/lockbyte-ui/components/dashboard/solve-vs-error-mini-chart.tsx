@@ -3,6 +3,10 @@
 import { ResponsiveContainer, PieChart, Pie, Cell, Legend, Tooltip, TooltipProps } from "recharts";
 import { NameType, ValueType } from "recharts/types/component/DefaultTooltipContent";
 
+interface LabelEntry {
+    value: number;
+}
+
 export function SolveVsErrorMiniChart({ totalSolved, totalErrors }: { totalSolved: number; totalErrors: number }) {
     const data = [
         { name: "Solved", value: Number(totalSolved) || 0 },
@@ -27,7 +31,7 @@ export function SolveVsErrorMiniChart({ totalSolved, totalErrors }: { totalSolve
         return null;
     };
 
-    const renderLabel = (entry: any) => {
+    const renderLabel = (entry: LabelEntry) => {
         const total = data.reduce((s, d) => s + d.value, 0);
         if (!total) return "";
         const pct = Math.round((entry.value / total) * 100);

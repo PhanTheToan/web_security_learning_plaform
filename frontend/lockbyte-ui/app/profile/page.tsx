@@ -25,7 +25,7 @@ import {
   CardDescription,
   CardFooter,
 } from '@/components/ui/card';
-import { useToast } from '@/hooks/use-toast';
+import { toast } from '@/hooks/use-toast';
 import { Header } from '@/components/header';
 import { Footer } from '@/components/footer';
 import { User, Lock, Eye, EyeOff } from 'lucide-react';
@@ -82,7 +82,6 @@ type ProfileFormValues = z.infer<typeof profileSchema>;
 export default function ProfilePage() {
   const { user, isLoading: isAuthLoading } = useAuth();
   const router = useRouter();
-  const { toast } = useToast();
   const [isFetchingProfile, setIsFetchingProfile] = useState(true);
   const [showPasswordFields, setShowPasswordFields] = useState(false);
 
@@ -142,7 +141,7 @@ export default function ProfilePage() {
           setIsFetchingProfile(false);
         });
     }
-  }, [user, reset, toast]);
+  }, [user, reset]);
 
   const handleCancelPasswordChange = () => {
     setShowPasswordFields(false);

@@ -2,6 +2,7 @@
 import { useEffect, useState, useRef } from "react";
 import { createPortal } from "react-dom";
 import { Plus, Minus, RefreshCw } from "lucide-react";
+import Image from "next/image";
 
 type Props = {
   src: string;
@@ -97,15 +98,18 @@ export default function ImageLightbox({ src, alt, onClose }: Props) {
         onClick={(e) => e.stopPropagation()}
         onDoubleClick={resetZoom}
       >
-        <img
+        <Image
           ref={imageRef}
           src={src}
-          alt={alt}
+          alt={alt || "Lightbox image"}
+          width={1200}
+          height={800}
           className="max-w-full max-h-full rounded-lg shadow-2xl select-none transition-transform duration-100"
           style={{
             transform: `scale(${scale}) translate(${position.x}px, ${position.y}px)`,
             maxWidth: 'calc(100vw - 40px)',
             maxHeight: 'calc(100vh - 80px)',
+            objectFit: 'contain',
           }}
           draggable={false}
           onMouseDown={handleMouseDown}

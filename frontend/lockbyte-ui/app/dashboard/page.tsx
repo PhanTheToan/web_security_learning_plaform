@@ -1,8 +1,6 @@
 "use client";
 
 import { useEffect, useMemo, useState } from "react";
-import { Header } from "@/components/header";
-import { Footer } from "@/components/footer";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
@@ -12,6 +10,46 @@ import { CommunitySolutionsTab } from "@/components/dashboard/community-solution
 import { UserSolvedSection } from "@/components/dashboard/user-solved-section";
 
 const apiBaseUrl = process.env.NEXT_PUBLIC_API_URL as string;
+
+// --- Type definitions
+interface DashboardData {
+  fullName?: string;
+  totalEasy: number;
+  totalMedium: number;
+  totalHard: number;
+  totalInsane: number;
+  totalSolvedEasy: number;
+  totalSolvedMedium: number;
+  totalSolvedHard: number;
+  totalSolvedInsane: number;
+  percentSolved: number;
+  proficiencyLevel?: string;
+  // Keep these from the original interface if they are still used elsewhere
+  solvedCount: number;
+  totalPoints: number;
+  ranking: number;
+  monthlySolvedCounts: { month: string; count: number }[];
+  userActivity: { date: string; solvedCount: number; errorCount: number }[];
+}
+
+interface CommunitySolution {
+  id: number;
+  labId: number;
+  labName: string;
+  youtubeUrl?: string;
+  writeUpLink?: string;
+  status: "PENDING" | "APPROVED" | "REJECTED";
+  submittedAt: string; // ISO date string
+}
+
+interface SolvedLab {
+  labId: number;
+  labName: string;
+  difficulty: string;
+  completedAt: string; // ISO date string
+  errorCount: number;
+}
+
 
 // --- Shared theme classes (không đổi layout, chỉ style)
 const cardShell =
@@ -24,7 +62,7 @@ const tabListShell =
   "bg-[#ffffff]/5 border border-[#ffffff]/15";
 
 const tabTrigger =
-  "rounded-xl text-white/80 " +
+  "rounded-2xl text-white/80 " +
   "data-[state=active]:bg-gradient-to-br data-[state=active]:from-[#9747ff]/20 data-[state=active]:to-[#5a5bed]/10 " +
   "data-[state=active]:text-white " +
   "hover:bg-white/10 transition-colors";
@@ -32,9 +70,9 @@ const tabTrigger =
 const sectionTitle = "mb-4 text-2xl font-bold text-white";
 
 export default function DashboardPage() {
-  const [dashboardData, setDashboardData] = useState<any>(null);
-  const [communitySolutions, setCommunitySolutions] = useState<any[]>([]);
-  const [solvedLabs, setSolvedLabs] = useState<any[]>([]);
+  const [dashboardData, setDashboardData] = useState<DashboardData | null>(null);
+  const [communitySolutions, setCommunitySolutions] = useState<CommunitySolution[]>([]);
+  const [solvedLabs, setSolvedLabs] = useState<SolvedLab[]>([]);
   const [loading, setLoading] = useState(true);
   const [labsLoading, setLabsLoading] = useState(true);
   const [errorMsg, setErrorMsg] = useState<string | null>(null);
@@ -59,11 +97,11 @@ export default function DashboardPage() {
 
         setDashboardData(dashboardJson?.body ?? dashboardJson);
         setCommunitySolutions(Array.isArray(solutionsJson?.body) ? solutionsJson.body : []);
-      } catch (e: any) {
+      } catch (e: unknown) {
         console.error(e);
         setDashboardData(null);
         setCommunitySolutions([]);
-        setErrorMsg(e?.message || "Failed to load dashboard.");
+        setErrorMsg(e instanceof Error ? e.message : "Failed to load dashboard.");
       } finally {
         setLoading(false);
       }
@@ -85,18 +123,18 @@ export default function DashboardPage() {
 
         const json = await res.json();
         const raw = Array.isArray(json) ? json : (json?.body ?? []);
-        const normalized = raw.map((x: any) => ({
-          labId: x.labId,
-          labName: x.labName ?? x.name ?? x.title ?? "Unknown",
-          difficulty: x.difficulty ?? "Unknown",
-          completedAt: x.completedAt, // ISO
-          errorCount: Number.isFinite(x.errorCount) ? x.errorCount : Number(x.errorCount ?? 0),
+        const normalized: SolvedLab[] = raw.map((x: Record<string, unknown>) => ({
+          labId: x.labId as number,
+          labName: (x.labName ?? x.name ?? x.title ?? "Unknown") as string,
+          difficulty: (x.difficulty ?? "Unknown") as string,
+          completedAt: x.completedAt as string, // ISO
+          errorCount: Number.isFinite(x.errorCount) ? (x.errorCount as number) : Number(x.errorCount ?? 0),
         }));
         setSolvedLabs(normalized);
-      } catch (e: any) {
+      } catch (e: unknown) {
         console.error(e);
         setSolvedLabs([]);
-        setErrorMsg(e?.message || "Failed to load solved labs.");
+        setErrorMsg(e instanceof Error ? e.message : "Failed to load solved labs.");
       } finally {
         setLabsLoading(false);
       }

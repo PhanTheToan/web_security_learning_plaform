@@ -27,11 +27,10 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog"
-import { useToast } from "@/hooks/use-toast"
+import { toast } from "@/hooks/use-toast"
 import { Skeleton } from "@/components/ui/skeleton"
 
 export default function LogsPage() {
-  const { toast } = useToast()
   const [logs, setLogs] = useState<PageResp<EmailLog> | null>(null)
   const [isLoading, setIsLoading] = useState(true)
   const [filters, setFilters] = useState({
@@ -63,7 +62,7 @@ export default function LogsPage() {
     } finally {
       setIsLoading(false)
     }
-  }, [filters, debouncedKeyword, toast])
+  }, [filters, debouncedKeyword])
 
   useEffect(() => {
     fetchLogs()
