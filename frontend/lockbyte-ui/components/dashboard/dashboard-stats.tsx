@@ -1,74 +1,77 @@
+"use client";
+
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Progress } from "@/components/ui/progress";
 
-// màu rõ ràng theo level
-const levelColor: Record<string, string> = {
-    Easy: "#22c55e",    // green-500
-    Medium: "#facc15",  // yellow-400
-    Hard: "#ef4444",    // red-500
-    Insane: "#a855f7",  // purple-500
+type DashboardData = {
+    fullName?: string;
+    totalEasy: number;
+    totalMedium: number;
+    totalHard: number;
+    totalInsane: number;
+    totalSolvedEasy: number;
+    totalSolvedMedium: number;
+    totalSolvedHard: number;
+    totalSolvedInsane: number;
+    percentSolved: number; // 0..100
+    proficiencyLevel?: string; // "Beginner" | "Intermediate" | "Advanced"
 };
 
-const Ring = ({
-    title,
-    solved,
-    total,
-    color,
+function pct(solved: number, total: number) {
+    if (!total || total <= 0) return 0;
+    const p = (solved / total) * 100;
+    return Number.isFinite(p) ? Math.max(0, Math.min(100, +p.toFixed(1))) : 0;
+}
+
+function levelColor(level: "Easy" | "Medium" | "Hard" | "Insane") {
+    switch (level) {
+        case "Easy":
+            return { ring: "from-emerald-500" };
+        case "Medium":
+            return { ring: "from-amber-400" };
+        case "Hard":
+            return { ring: "from-rose-500" };
+        case "Insane":
+            return { ring: "from-violet-500" };
+    }
+}
+
+function overallColors(percent: number) {
+    // <30 Beginner (đỏ), 30..70 Intermediate (vàng), >70 Advanced (xanh)
+    if (percent < 30) return { bar: "bg-rose-500", text: "text-rose-400", label: "Beginner" };
+    if (percent <= 70) return { bar: "bg-amber-400", text: "text-amber-300", label: "Intermediate" };
+    return { bar: "bg-emerald-500", text: "text-emerald-300", label: "Advanced" };
+}
+
+function Ring({
+    percent,
+    colorFrom,
+    label,
 }: {
-    title: string;
-    solved: number;
-    total: number;
-    color: string;
-}) => {
-    const percentage = total > 0 ? (solved / total) * 100 : 0;
-    const circumference = 2 * Math.PI * 45;
-    const strokeDashoffset = circumference - (percentage / 100) * circumference;
+    percent: number;
+    colorFrom: string; // e.g. "from-emerald-500"
+    label: string;
+}) {
+    const angle = Math.round((percent / 100) * 360);
+    const style = {
+        background: `conic-gradient(var(--tw-gradient-from) ${angle}deg, rgba(255,255,255,0.08) ${angle}deg)`,
+    } as React.CSSProperties;
 
     return (
-        <Card className="bg-transparent border-white/10">
-            <CardHeader>
-                <CardTitle className="text-white">{title}</CardTitle>
-            </CardHeader>
-            <CardContent className="flex flex-col items-center text-white">
-                <div className="relative h-24 w-24">
-                    <svg className="h-full w-full" viewBox="0 0 100 100">
-                        <circle
-                            stroke="rgba(255,255,255,0.2)"
-                            strokeWidth="10"
-                            fill="transparent"
-                            r="45"
-                            cx="50"
-                            cy="50"
-                        />
-                        <circle
-                            stroke={color}
-                            strokeWidth="10"
-                            strokeDasharray={circumference}
-                            strokeDashoffset={strokeDashoffset}
-                            strokeLinecap="round"
-                            fill="transparent"
-                            r="45"
-                            cx="50"
-                            cy="50"
-                            transform="rotate(-90 50 50)"
-                        />
-                    </svg>
-                    <span className="absolute inset-0 flex items-center justify-center text-xl font-bold">
-                        {Math.round(percentage)}%
-                    </span>
+        <div className="flex items-center gap-4">
+            <div className={`h-16 w-16 rounded-full bg-gradient-to-tr ${colorFrom}`} style={style}>
+                <div className="m-[6px] flex h-[calc(100%-12px)] w-[calc(100%-12px)] items-center justify-center rounded-full bg-[#0b0f17]">
+                    <span className="text-sm font-semibold text-white">{percent.toFixed(0)}%</span>
                 </div>
-                <div className="mt-2 text-center">
-                    <p className="text-lg font-semibold">
-                        {solved} / {total}
-                    </p>
-                    <p className="text-sm text-white/60">Solved</p>
-                </div>
-            </CardContent>
-        </Card>
+            </div>
+            <div className="leading-tight">
+                <div className="text-sm text-white/70">{label}</div>
+            </div>
+        </div>
     );
-};
+}
 
-export function DashboardStats({ data }: { data: any }) {
+export function DashboardStats({ data }: { data: DashboardData }) {
     const {
         totalEasy,
         totalMedium,
@@ -78,35 +81,66 @@ export function DashboardStats({ data }: { data: any }) {
         totalSolvedMedium,
         totalSolvedHard,
         totalSolvedInsane,
-        percentSolved,
     } = data;
 
-    const computedLevel =
-        percentSolved < 30.0 ? "Beginner" : percentSolved <= 70.0 ? "Intermediate" : "Advanced";
+    const easyPct = pct(totalSolvedEasy, totalEasy);
+    const medPct = pct(totalSolvedMedium, totalMedium);
+    const hardPct = pct(totalSolvedHard, totalHard);
+    const insanePct = pct(totalSolvedInsane, totalInsane);
+
+    const overall = Number.isFinite(data.percentSolved) ? Math.max(0, Math.min(100, +data.percentSolved)) : 0;
+    const overallUI = overallColors(overall);
+    const shownLevel =
+        data.proficiencyLevel ??
+        (overall < 30 ? "Beginner" : overall <= 70 ? "Intermediate" : "Advanced");
 
     return (
-        <div className="text-white">
-            <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
-                <Ring title="Easy" solved={totalSolvedEasy} total={totalEasy} color={levelColor.Easy} />
-                <Ring title="Medium" solved={totalSolvedMedium} total={totalMedium} color={levelColor.Medium} />
-                <Ring title="Hard" solved={totalSolvedHard} total={totalHard} color={levelColor.Hard} />
-                <Ring title="Insane" solved={totalSolvedInsane} total={totalInsane} color={levelColor.Insane} />
-            </div>
+        <div className="grid gap-6 lg:grid-cols-5">
+            {/* Level Breakdown */}
+            <Card className="bg-transparent border-white/10 lg:col-span-3">
+                <CardHeader>
+                    <CardTitle className="text-white">Level Breakdown</CardTitle>
+                </CardHeader>
+                <CardContent>
+                    <div className="grid gap-5 sm:grid-cols-2">
+                        <Ring percent={easyPct} colorFrom={levelColor("Easy").ring} label={`Easy: ${totalSolvedEasy}/${totalEasy}`} />
+                        <Ring percent={medPct} colorFrom={levelColor("Medium").ring} label={`Medium: ${totalSolvedMedium}/${totalMedium}`} />
+                        <Ring percent={hardPct} colorFrom={levelColor("Hard").ring} label={`Hard: ${totalSolvedHard}/${totalHard}`} />
+                        <Ring percent={insanePct} colorFrom={levelColor("Insane").ring} label={`Insane: ${totalSolvedInsane}/${totalInsane}`} />
+                    </div>
+                </CardContent>
+            </Card>
 
-            <Card className="mt-4 bg-transparent border-white/10">
+            {/* Overall Progress  */}
+            <Card className="bg-transparent border-white/10 lg:col-span-2">
                 <CardHeader>
                     <CardTitle className="text-white">Overall Progress</CardTitle>
                 </CardHeader>
-                <CardContent>
-                    <div className="flex items-center gap-4">
-                        <span className="min-w-[3ch] text-right font-semibold">{Math.round(percentSolved)}%</span>
-                        <Progress value={percentSolved} className="w-full" />
-                        <span className="ml-4 rounded-md border border-white/20 bg-white/10 px-2 py-1 text-sm">
-                            Level: {computedLevel}
-                        </span>
+                <CardContent className="space-y-3">
+                    <div className="flex items-baseline justify-between">
+                        <div className="text-sm text-white/70">Solved</div>
+                        <div className="text-xl font-semibold text-white">{overall.toFixed(1)}%</div>
+                    </div>
+
+                    {/* Thanh %: tô màu bar bằng selector con của shadcn Progress */}
+                    <Progress
+                        value={overall}
+                        className={`h-3 bg-white/10 [&>div]:${overallUI.bar}`}
+                    />
+
+                    <div className="flex items-center justify-between">
+                        <span className="text-xs text-white/60">0%</span>
+                        <span className="text-xs text-white/60">100%</span>
+                    </div>
+
+                    <div className="pt-2 text-sm">
+                        <span className="text-white/70">Proficiency: </span>
+                        <span className={`font-medium ${overallUI.text}`}>{shownLevel}</span>
                     </div>
                 </CardContent>
             </Card>
         </div>
     );
 }
+
+export default DashboardStats;

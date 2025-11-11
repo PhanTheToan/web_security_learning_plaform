@@ -96,7 +96,6 @@ export default function DashboardPage() {
 
   return (
     <div className="flex min-h-screen flex-col bg-transparent">
-      <Header />
 
       <main className="container mx-auto flex-1 px-4 py-6 md:px-8">
         <div className="space-y-8">
