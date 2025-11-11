@@ -10,6 +10,11 @@ interface StatusData {
   Solved: number
 }
 
+interface ChartDataPoint {
+  name: string
+  value: number
+}
+
 const COLORS = {
   Solved: "#22c55e",
   Expired: "#ef4444",
@@ -18,10 +23,10 @@ const COLORS = {
 
 const CustomTooltip = ({ active, payload }: TooltipProps<ValueType, NameType>) => {
   if (active && payload && payload.length) {
-    const data = payload[0]
+    const data = payload[0].payload as ChartDataPoint
     return (
       <div className="bg-card/95 backdrop-blur-sm border-2 border-primary/50 p-3 rounded-xl shadow-[0_0_20px_rgba(99,102,241,0.3)] text-white">
-        <p className="label text-sm font-semibold" style={{ color: data.color }}>
+        <p className="label text-sm font-semibold" style={{ color: payload[0].color }}>
           {`${data.name}: ${data.value}`}
         </p>
       </div>
@@ -31,7 +36,7 @@ const CustomTooltip = ({ active, payload }: TooltipProps<ValueType, NameType>) =
 }
 
 export function LabStatusPieChart({ labId }: { labId: string }) {
-  const [data, setData] = useState<any[]>([])
+  const [data, setData] = useState<ChartDataPoint[]>([])
   const [isLoading, setIsLoading] = useState(true)
 
   useEffect(() => {
@@ -41,7 +46,7 @@ export function LabStatusPieChart({ labId }: { labId: string }) {
         if (!res.ok) throw new Error("Failed to fetch status data.")
         const responseData = await res.json()
         const statusData: StatusData = responseData.body
-        const chartData = Object.entries(statusData).map(([name, value]) => ({ name, value }))
+        const chartData: ChartDataPoint[] = Object.entries(statusData).map(([name, value]) => ({ name, value: Number(value) }))
         setData(chartData)
       } catch (error) {
         toast.error(error instanceof Error ? error.message : "An unknown error occurred.")
@@ -62,7 +67,7 @@ export function LabStatusPieChart({ labId }: { labId: string }) {
           <PieChart>
             <Pie data={data} dataKey="value" nameKey="name" cx="50%" cy="50%" outerRadius={100} fill="#8884d8">
               {data.map((entry, index) => (
-                <Cell key={`cell-${index}`} fill={(COLORS as any)[entry.name]} />
+                <Cell key={`cell-${index}`} fill={COLORS[entry.name as keyof typeof COLORS]} />
               ))}
             </Pie>
             <Tooltip content={<CustomTooltip />} />

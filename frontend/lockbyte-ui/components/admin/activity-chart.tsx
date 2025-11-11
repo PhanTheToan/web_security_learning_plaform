@@ -108,7 +108,7 @@ export function ActivityChart() {
       date: format(parseISO(date), "MMM d"),
       solved: groupedSolved[date] || 0,
       expired: groupedExpired[date] || 0,
-    }))
+    })) as ChartDataPoint[]
   }, [rawData, dateRange])
 
   return (

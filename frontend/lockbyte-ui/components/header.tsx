@@ -51,6 +51,11 @@ export function Header() {
             <Link href="/labs" className="text-[#ffffff]/80 hover:text-[#ffffff] text-sm transition-colors">
               Lab
             </Link>
+            {user && (
+              <Link href="/dashboard" className="text-[#ffffff]/80 hover:text-[#ffffff] text-sm transition-colors">
+                Dashboard
+              </Link>
+            )}
             <a href="#pricing" className="text-[#ffffff]/80 hover:text-[#ffffff] text-sm transition-colors">
               Pricing
             </a>

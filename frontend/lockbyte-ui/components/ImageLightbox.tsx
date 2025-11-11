@@ -65,7 +65,7 @@ export default function ImageLightbox({ src, alt, onClose }: Props) {
     });
   };
 
-  const handleMouseUp = (e: React.MouseEvent) => {
+  const handleMouseUp = () => {
     isPanning.current = false;
     if (imageRef.current) {
       imageRef.current.style.cursor = scale > 1 ? "grab" : "default";

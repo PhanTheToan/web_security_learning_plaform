@@ -882,4 +882,12 @@ export function submitLabFlag(labId: string | number, labSessionId: number, flag
   });
 }
 
+export const api = {
+  get: <T>(path: string, init?: RequestInit & { extraHeaders?: HeadersInit }) => fetchWithCredentials<T>(path, { ...init, method: "GET" }),
+  post: <T>(path: string, body: any, init?: RequestInit & { extraHeaders?: HeadersInit }) => fetchWithCredentials<T>(path, { ...init, method: "POST", body: JSON.stringify(body) }),
+  put: <T>(path: string, body: any, init?: RequestInit & { extraHeaders?: HeadersInit }) => fetchWithCredentials<T>(path, { ...init, method: "PUT", body: JSON.stringify(body) }),
+  patch: <T>(path: string, body: any, init?: RequestInit & { extraHeaders?: HeadersInit }) => fetchWithCredentials<T>(path, { ...init, method: "PATCH", body: JSON.stringify(body) }),
+  delete: <T>(path: string, init?: RequestInit & { extraHeaders?: HeadersInit }) => fetchWithCredentials<T>(path, { ...init, method: "DELETE" }),
+};
+
 

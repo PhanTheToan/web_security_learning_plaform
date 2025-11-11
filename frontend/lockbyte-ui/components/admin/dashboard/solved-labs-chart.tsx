@@ -3,13 +3,27 @@ import { useEffect, useState } from "react"
 import { PieChart, Pie, Cell, ResponsiveContainer, Tooltip, Legend, TooltipProps } from "recharts"
 import { NameType, ValueType } from "recharts/types/component/DefaultTooltipContent"
 import { toast } from "sonner"
-import { Icons } from "@/components/icons"
 
 interface SolvedLabsData {
   Easy?: number
   Medium?: number
   Hard?: number
   Insane?: number
+}
+
+interface ChartDataPoint {
+  name: string
+  value: number
+}
+
+interface PieLabelRenderProps {
+  cx: number
+  cy: number
+  midAngle: number
+  innerRadius: number
+  outerRadius: number
+  percent: number
+  index: number
 }
 
 const COLORS = {
@@ -20,7 +34,7 @@ const COLORS = {
 }
 
 const RADIAN = Math.PI / 180
-const renderCustomizedLabel = ({ cx, cy, midAngle, innerRadius, outerRadius, percent }: any) => {
+const renderCustomizedLabel = ({ cx, cy, midAngle, innerRadius, outerRadius, percent }: PieLabelRenderProps) => {
   const radius = innerRadius + (outerRadius - innerRadius) * 0.6
   const x = cx + radius * Math.cos(-midAngle * RADIAN)
   const y = cy + radius * Math.sin(-midAngle * RADIAN)
@@ -36,7 +50,7 @@ const renderCustomizedLabel = ({ cx, cy, midAngle, innerRadius, outerRadius, per
 
 const CustomTooltip = ({ active, payload }: TooltipProps<ValueType, NameType>) => {
   if (active && payload && payload.length) {
-    const data = payload[0].payload;
+    const data = payload[0].payload as ChartDataPoint;
     return (
       <div className="bg-card/95 backdrop-blur-sm border-2 border-primary/50 p-3 rounded-xl shadow-[0_0_20px_rgba(99,102,241,0.3)] text-white">
         <p className="label text-sm font-semibold" style={{ color: payload[0].color }}>
@@ -51,7 +65,7 @@ const CustomTooltip = ({ active, payload }: TooltipProps<ValueType, NameType>) =
 
 
 export function SolvedLabsChart() {
-  const [data, setData] = useState<any[]>([])
+  const [data, setData] = useState<ChartDataPoint[]>([])
   const [isLoading, setIsLoading] = useState(true)
   const apiBaseUrl = process.env.NEXT_PUBLIC_API_URL
 
@@ -63,8 +77,8 @@ export function SolvedLabsChart() {
         if (!res.ok) throw new Error("Failed to fetch solved labs data.")
         const responseData = await res.json()
         const solvedData: SolvedLabsData = responseData.body
-        const chartData = Object.entries(solvedData)
-          .map(([name, value]) => ({ name, value }))
+        const chartData: ChartDataPoint[] = Object.entries(solvedData)
+          .map(([name, value]) => ({ name, value: Number(value) }))
           .filter((item) => item.value > 0)
 
         if (chartData.length === 0) {
@@ -82,7 +96,7 @@ export function SolvedLabsChart() {
     fetchSolvedLabs()
   }, [apiBaseUrl])
 
-  const chartColors = data.map((entry) => (COLORS as any)[entry.name] || "#8884d8")
+  const chartColors = data.map((entry) => COLORS[entry.name as keyof typeof COLORS] || "#8884d8")
 
   return (
     <div className="bg-gradient-to-br from-[#ffffff]/8 via-[#9747ff]/5 to-[#5a5bed]/8 backdrop-blur-sm p-6 rounded-xl border border-[#ffffff]/10 hover:border-[#9747ff]/60 transition-all duration-300 h-full shadow-[0_0_15px_rgba(151,71,255,0.15)]">
@@ -116,7 +130,7 @@ export function SolvedLabsChart() {
               nameKey="name"
             >
               {data.map((entry, index) => (
-                <Cell key={`cell-${index}`} fill={chartColors[index % chartColors.length]} stroke={chartColors[index % chartColors.length]} />
+                <Cell key={`cell-${entry.name}`} fill={chartColors[index % chartColors.length]} stroke={chartColors[index % chartColors.length]} />
               ))}
             </Pie>
             <Tooltip content={<CustomTooltip />} />

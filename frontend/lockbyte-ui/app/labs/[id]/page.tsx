@@ -12,7 +12,7 @@ import {
 import { Header } from "@/components/header";
 import { Footer } from "@/components/footer";
 import ParticlesComponent from "@/components/particles-background";
-import { getPublicLabById, LabDetail, getLabSessionStatus, startLabSession, submitLabFlag } from "@/lib/api";
+import { getPublicLabById, LabDetail, getLabSessionStatus, startLabSession, submitLabFlag, submitCommunitySolution } from "@/lib/api";
 import LabDetailLoading from "./loading";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -25,10 +25,12 @@ import {
   ShieldCheck,
   Users,
   Loader2,
+  Send,
 } from "lucide-react";
 import MarkdownImage from "@/components/MarkdownImage";
 import { useToast } from "@/hooks/use-toast";
 import { Input } from "@/components/ui/input";
+import CommunitySolutions from "@/components/community-solutions";
 
 // Reusing markdown rendering logic from Topic Detail Page
 function fixUnclosedFences(md: string) {
@@ -121,8 +123,9 @@ const StatusBadge = ({ status }: { status: string }) => {
     SOLVED: "bg-green-500/10 text-green-300 border-green-500/20",
     EXPIRED: "bg-gray-500/10 text-gray-300 border-gray-500/20",
   };
-  const className = styles[status as keyof typeof styles] || "bg-gray-500/10 text-gray-300";
-  return <Badge className={className}>{status}</Badge>
+  const finalStatus = status.startsWith("SOLVED") ? "SOLVED" : status;
+  const className = styles[finalStatus as keyof typeof styles] || "bg-gray-500/10 text-gray-300";
+  return <Badge className={className}>{finalStatus}</Badge>
 }
 
 export default function LabDetailPage() {
@@ -139,11 +142,19 @@ export default function LabDetailPage() {
   const [isStartingLab, setIsStartingLab] = useState(false);
   const [isSubmittingFlag, setIsSubmittingFlag] = useState(false);
   const [flag, setFlag] = useState("");
+  const [canSubmitSolution, setCanSubmitSolution] = useState(false);
+  const [youtubeLink, setYoutubeLink] = useState("");
+  const [writeUpLink, setWriteUpLink] = useState("");
+  const [isSubmittingSolution, setIsSubmittingSolution] = useState(false);
 
   const fetchStatus = useCallback(async () => {
     if (!id) return;
     try {
       const statusResult = await getLabSessionStatus(id);
+      setLabStatus(statusResult);
+      setCanSubmitSolution(false);
+      setRunningLabUrl(null);
+
       if (statusResult.startsWith("RUNNING")) {
         const match = statusResult.match(/RUNNING - ID: (\d+) - URL: (.*)/);
         if (match) {
@@ -151,19 +162,16 @@ export default function LabDetailPage() {
           setLabSessionId(parseInt(sessionId, 10));
           setRunningLabUrl(url);
         } else {
-          // Fallback for the old format
           const sessionId = parseInt(statusResult.split(": ")[1], 10);
           setLabSessionId(sessionId);
-          setRunningLabUrl(null); // No URL available in old format
         }
-        setLabStatus("RUNNING");
-      } else {
-        setLabStatus(statusResult);
-        setRunningLabUrl(null);
+      } else if (statusResult === "SOLVED") {
+        setCanSubmitSolution(true);
       }
     } catch {
-      setLabStatus("EXPIRED"); // Default to EXPIRED on error
+      setLabStatus("EXPIRED");
       setRunningLabUrl(null);
+      setCanSubmitSolution(false);
     }
   }, [id]);
 
@@ -194,7 +202,7 @@ export default function LabDetailPage() {
       });
       setTimeout(() => {
         window.open(result.url, '_blank');
-        fetchStatus(); // Re-fetch status after starting
+        fetchStatus();
       }, 3000);
     } catch {
       toast({
@@ -217,7 +225,7 @@ export default function LabDetailPage() {
           title: "Success!",
           description: result,
         });
-        fetchStatus(); // Re-fetch to update status to SOLVED
+        fetchStatus();
       } else {
         toast({
           variant: "destructive",
@@ -230,18 +238,48 @@ export default function LabDetailPage() {
         variant: "destructive",
         title: "Error",
         description: e instanceof Error ? e.message : "An unexpected error occurred.",
-      });    } finally {
+      });
+    } finally {
       setIsSubmittingFlag(false);
     }
   };
 
+  const handleSolutionSubmit = async () => {
+    if (!id || (!youtubeLink && !writeUpLink)) {
+      toast({
+        variant: "destructive",
+        title: "Submission Error",
+        description: "Please provide at least one link.",
+      });
+      return;
+    }
+    setIsSubmittingSolution(true);
+    try {
+      await submitCommunitySolution(id, youtubeLink, writeUpLink);
+      toast({
+        title: "Solution Submitted!",
+        description: "Thank you for your contribution.",
+      });
+      setYoutubeLink("");
+      setWriteUpLink("");
+      fetchStatus(); // Re-fetch status to hide the form
+    } catch (e) {
+      toast({
+        variant: "destructive",
+        title: "Submission Failed",
+        description: e instanceof Error ? e.message : "An unexpected error occurred.",
+      });
+    } finally {
+      setIsSubmittingSolution(false);
+    }
+  };
 
   if (loading) return <LabDetailLoading />;
   if (error) return <div className="p-6 text-center text-red-400">Error: {error}</div>;
   if (!lab) return <div className="p-6 text-center text-white/80">Lab not found.</div>;
 
   const renderAccessButton = () => {
-    if (labStatus === 'RUNNING') {
+    if (labStatus.startsWith('RUNNING')) {
       if (runningLabUrl) {
         return (
           <a href={runningLabUrl} target="_blank" rel="noopener noreferrer" className="block">
@@ -251,7 +289,6 @@ export default function LabDetailPage() {
           </a>
         );
       }
-      // Fallback if URL is not available
       return (
         <Button className="w-full bg-blue-600 hover:bg-blue-700 text-white font-bold text-lg py-6" disabled>
           LAB IS RUNNING
@@ -266,7 +303,7 @@ export default function LabDetailPage() {
         disabled={isStartingLab}
       >
         {isStartingLab && <Loader2 className="mr-3 h-6 w-6 animate-spin" />}
-        {labStatus === 'SOLVED' ? 'REACTIVE' : 'ACCESS THE LAB'}
+        {labStatus.startsWith('SOLVED') ? 'REACTIVE' : 'ACCESS THE LAB'}
       </Button>
     );
   };
@@ -315,7 +352,38 @@ export default function LabDetailPage() {
 
               {renderAccessButton()}
 
-              {labStatus === 'RUNNING' && (
+              {canSubmitSolution && (
+                <div className="space-y-4 rounded-xl border border-white/10 bg-gradient-to-br from-white/5 to-green-500/10 p-6">
+                  <h2 className="text-2xl font-semibold flex items-center"><Send className="mr-3 h-6 w-6 text-green-400" />Submit Your Solution</h2>
+                  <p className="text-sm text-slate-400">Contribute to the community by sharing your solution.</p>
+                  <div className="space-y-4">
+                    <Input
+                      type="url"
+                      placeholder="YouTube Link (optional)"
+                      value={youtubeLink}
+                      onChange={(e) => setYoutubeLink(e.target.value)}
+                      className="bg-slate-800/60 border-slate-700"
+                    />
+                    <Input
+                      type="url"
+                      placeholder="Write-up Link (e.g., Medium, HackMD) (optional)"
+                      value={writeUpLink}
+                      onChange={(e) => setWriteUpLink(e.target.value)}
+                      className="bg-slate-800/60 border-slate-700"
+                    />
+                    <Button
+                      onClick={handleSolutionSubmit}
+                      disabled={isSubmittingSolution}
+                      className="w-full bg-green-600 hover:bg-green-700"
+                    >
+                      {isSubmittingSolution && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+                      Submit Contribution
+                    </Button>
+                  </div>
+                </div>
+              )}
+
+              {labStatus.startsWith('RUNNING') && (
                 <div className="space-y-4 rounded-xl border border-white/10 bg-gradient-to-br from-white/5 to-blue-500/8 p-6">
                   <h2 className="text-2xl font-semibold flex items-center"><Flag className="mr-3 h-6 w-6 text-green-400" />Submit Flag</h2>
                   <div className="flex items-center gap-4">
@@ -337,7 +405,6 @@ export default function LabDetailPage() {
                   </div>
                 </div>
               )}
-
 
               <Accordion type="single" collapsible className="w-full rounded-xl border border-white/10 bg-gradient-to-br from-white/5 via-purple-500/5 to-blue-500/8 px-6">
                 {lab.hint && (
@@ -368,8 +435,7 @@ export default function LabDetailPage() {
                   <AccordionItem value="community">
                     <AccordionTrigger><Users className="mr-3 h-5 w-5 text-teal-400" />Community Solutions</AccordionTrigger>
                     <AccordionContent>
-                      {/* Render community solutions here */}
-                      <p>Community solutions will be displayed here.</p>
+                      <CommunitySolutions solutions={lab.communitySolutionDTOS} />
                     </AccordionContent>
                   </AccordionItem>
                 )}

@@ -18,7 +18,7 @@ import {
 } from "@/components/ui/alert-dialog"
 import { Input } from "@/components/ui/input"
 import { Badge } from "@/components/ui/badge"
-import { Trash2, RefreshCw } from "lucide-react"
+import { Trash2 } from "lucide-react"
 
 // Type definitions based on API responses
 interface DockerImage {
@@ -113,47 +113,38 @@ export function DockerManager() {
 
   const apiBaseUrl = process.env.NEXT_PUBLIC_API_URL
 
-  const fetchImages = async () => {
-    setIsLoading((prev) => ({ ...prev, images: true }))
-    try {
-      const res = await fetch(`${apiBaseUrl}/lab/images`, { credentials: "include" })
-      if (!res.ok) throw new Error("Failed to fetch images.")
-      const data = await res.json()
-      setImages(data)
-    } catch (error) {
-      toast.error(error instanceof Error ? error.message : "An unknown error occurred.")
-    } finally {
-      setIsLoading((prev) => ({ ...prev, images: false }))
-    }
-  }
-
-  const fetchContainers = async () => {
-    setIsLoading((prev) => ({ ...prev, containers: true }))
-    try {
-      const res = await fetch(`${apiBaseUrl}/lab/status`, { credentials: "include" })
-      if (!res.ok) throw new Error("Failed to fetch containers.")
-      const data = await res.json()
-      setContainers(data)
-    } catch (error) {
-      toast.error(error instanceof Error ? error.message : "An unknown error occurred.")
-    } finally {
-      setIsLoading((prev) => ({ ...prev, containers: false }))
-    }
-  }
-  
-  const handleRefresh = (tab: 'containers' | 'images') => {
-    if (tab === 'containers') {
-      fetchContainers();
-    } else {
-      fetchImages();
-    }
-  }
-
-
   useEffect(() => {
+    const fetchImages = async () => {
+      setIsLoading((prev) => ({ ...prev, images: true }))
+      try {
+        const res = await fetch(`${apiBaseUrl}/lab/images`, { credentials: "include" })
+        if (!res.ok) throw new Error("Failed to fetch images.")
+        const data = await res.json()
+        setImages(data)
+      } catch (error) {
+        toast.error(error instanceof Error ? error.message : "An unknown error occurred.")
+      } finally {
+        setIsLoading((prev) => ({ ...prev, images: false }))
+      }
+    }
+  
+    const fetchContainers = async () => {
+      setIsLoading((prev) => ({ ...prev, containers: true }))
+      try {
+        const res = await fetch(`${apiBaseUrl}/lab/status`, { credentials: "include" })
+        if (!res.ok) throw new Error("Failed to fetch containers.")
+        const data = await res.json()
+        setContainers(data)
+      } catch (error) {
+        toast.error(error instanceof Error ? error.message : "An unknown error occurred.")
+      } finally {
+        setIsLoading((prev) => ({ ...prev, containers: false }))
+      }
+    }
+
     fetchImages()
     fetchContainers()
-  }, [])
+  }, [apiBaseUrl])
 
   const handleOpenDialog = (id: string, name: string, type: "image" | "container") => {
     setItemToDelete({ id, name, type })
@@ -177,7 +168,11 @@ export function DockerManager() {
           throw new Error(result.error)
         }
         toast.success(result.message || `Image ${itemToDelete.name} deleted successfully.`)
-        fetchImages() // Refresh list
+        // Re-fetch images after deletion
+        const resImages = await fetch(`${apiBaseUrl}/lab/images`, { credentials: "include" })
+        if (!resImages.ok) throw new Error("Failed to fetch images after deletion.")
+        const dataImages = await resImages.json()
+        setImages(dataImages)
       } catch (error) {
         toast.error(error instanceof Error ? error.message : "Failed to delete image.")
       }
@@ -196,7 +191,11 @@ export function DockerManager() {
             throw new Error(message)
           }
         }
-        fetchContainers() // Refresh list
+        // Re-fetch containers after deletion
+        const resContainers = await fetch(`${apiBaseUrl}/lab/status`, { credentials: "include" })
+        if (!resContainers.ok) throw new Error("Failed to fetch containers after deletion.")
+        const dataContainers = await resContainers.json()
+        setContainers(dataContainers)
       } catch (error) {
         toast.error(error instanceof Error ? error.message : "Failed to stop container.")
       }
