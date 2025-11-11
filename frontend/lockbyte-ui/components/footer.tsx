@@ -11,7 +11,7 @@ export function Footer() {
           <div className="flex flex-col md:flex-row items-center justify-between gap-6">
             <div>
               <h3 className="text-[#ffffff] text-xl font-semibold mb-2">
-                Stay updated with the latest in cybersecurity
+                Stay updated with the latest in Cybersecurity
               </h3>
               <p className="text-[#ffffff]/60 text-sm">Subscribe to our newsletter for security tips and updates</p>
             </div>

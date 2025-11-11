@@ -13,6 +13,24 @@ import { UserSolvedSection } from "@/components/dashboard/user-solved-section";
 
 const apiBaseUrl = process.env.NEXT_PUBLIC_API_URL as string;
 
+// --- Shared theme classes (không đổi layout, chỉ style)
+const cardShell =
+  "bg-gradient-to-br from-[#ffffff]/8 via-[#9747ff]/5 to-[#5a5bed]/8 " +
+  "border border-[#ffffff]/10 rounded-2xl backdrop-blur-sm " +
+  "hover:border-[#9747ff]/40 transition-all duration-300 shadow-[0_0_15px_rgba(151,71,255,0.15)]";
+
+const tabListShell =
+  "grid w-full grid-cols-2 rounded-2xl " +
+  "bg-[#ffffff]/5 border border-[#ffffff]/15";
+
+const tabTrigger =
+  "rounded-xl text-white/80 " +
+  "data-[state=active]:bg-gradient-to-br data-[state=active]:from-[#9747ff]/20 data-[state=active]:to-[#5a5bed]/10 " +
+  "data-[state=active]:text-white " +
+  "hover:bg-white/10 transition-colors";
+
+const sectionTitle = "mb-4 text-2xl font-bold text-white";
+
 export default function DashboardPage() {
   const [dashboardData, setDashboardData] = useState<any>(null);
   const [communitySolutions, setCommunitySolutions] = useState<any[]>([]);
@@ -53,7 +71,7 @@ export default function DashboardPage() {
     load();
   }, []);
 
-  // Load solved labs (hiển thị biểu đồ & bảng)
+  // Load solved labs (biểu đồ & bảng)
   useEffect(() => {
     const loadLabs = async () => {
       setLabsLoading(true);
@@ -96,7 +114,6 @@ export default function DashboardPage() {
 
   return (
     <div className="flex min-h-screen flex-col bg-transparent">
-
       <main className="container mx-auto flex-1 px-4 py-6 md:px-8">
         <div className="space-y-8">
           {errorMsg && (
@@ -108,18 +125,17 @@ export default function DashboardPage() {
           {/* User Info */}
           <section>
             {loading ? (
-              <Card className="bg-transparent border-white/10">
+              <Card className={cardShell}>
                 <CardHeader className="flex flex-row items-center space-x-4">
-                  <Skeleton className="h-12 w-12 rounded-full" />
-                  <div className="space-y-2">
-                    <Skeleton className="h-4 w-[250px]" />
-                    <Skeleton className="h-4 w-[200px]" />
+                  <Skeleton className="h-12 w-12 rounded-full bg-white/10" />
+                  <div className="space-y-2 w-full">
+                    <Skeleton className="h-4 w-[250px] rounded-lg bg-white/10" />
+                    <Skeleton className="h-4 w-[200px] rounded-lg bg-white/10" />
                   </div>
                 </CardHeader>
               </Card>
             ) : (
               <div className="text-white">
-                {/* Truyền object thay vì string */}
                 <UserProfileCard user={userForCard} proficiencyLevel={dashboardData?.proficiencyLevel} />
               </div>
             )}
@@ -127,13 +143,13 @@ export default function DashboardPage() {
 
           {/* Dashboard Stats */}
           <section>
-            <h2 className="mb-4 text-2xl font-bold text-white">Dashboard</h2>
+            <h2 className={sectionTitle}>Dashboard</h2>
             {loading ? (
               <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
-                <Skeleton className="h-[140px] w-full" />
-                <Skeleton className="h-[140px] w-full" />
-                <Skeleton className="h-[140px] w-full" />
-                <Skeleton className="h-[140px] w-full" />
+                <Skeleton className="h-[140px] w-full rounded-2xl bg-gradient-to-br from-white/5 to-white/10" />
+                <Skeleton className="h-[140px] w-full rounded-2xl bg-gradient-to-br from-white/5 to-white/10" />
+                <Skeleton className="h-[140px] w-full rounded-2xl bg-gradient-to-br from-white/5 to-white/10" />
+                <Skeleton className="h-[140px] w-full rounded-2xl bg-gradient-to-br from-white/5 to-white/10" />
               </div>
             ) : dashboardData ? (
               <div className="text-white">
@@ -145,39 +161,41 @@ export default function DashboardPage() {
           {/* Tabs */}
           <section>
             <Tabs defaultValue="solved" className="text-white">
-              <TabsList className="grid w-full grid-cols-2 bg-white/10 text-white">
-                <TabsTrigger value="solved" className="data-[state=active]:bg-white/20 data-[state=active]:text-white">
+              <TabsList className={tabListShell}>
+                <TabsTrigger value="solved" className={tabTrigger}>
                   Solved Labs
                 </TabsTrigger>
-                <TabsTrigger value="community" className="data-[state=active]:bg-white/20 data-[state=active]:text-white">
+                <TabsTrigger value="community" className={tabTrigger}>
                   Community Solutions
                 </TabsTrigger>
               </TabsList>
 
               <TabsContent value="solved" className="mt-4">
+                {/* Child đã tự render card/graph/border của nó */}
                 <UserSolvedSection labs={solvedLabs} loading={labsLoading} />
               </TabsContent>
 
               <TabsContent value="community" className="mt-4">
-                <Card className="bg-transparent border-white/10">
+                <Card className="bg-transparent border border-[#ffffff]/10 rounded-2xl backdrop-blur-sm hover:border-[#9747ff]/40 transition-all duration-300">
                   <CardHeader>
                     <CardTitle className="text-white">My Community Solutions</CardTitle>
                   </CardHeader>
-                  <CardContent>
+                  <CardContent className="text-white">
                     {loading ? (
-                      <Skeleton className="h-[300px] w-full" />
+                      <Skeleton className="h-[300px] w-full rounded-xl bg-white/10" />
                     ) : (
                       <CommunitySolutionsTab solutions={communitySolutions} />
                     )}
                   </CardContent>
                 </Card>
               </TabsContent>
+
             </Tabs>
           </section>
         </div>
       </main>
 
-      <Footer />
+
     </div>
   );
 }

@@ -75,7 +75,7 @@ export function UserLabsActivityChart({ labs }: { labs: LabItem[] }) {
     const hasData = data.length > 0;
 
     return (
-        <div className="h-[320px]">
+        <div className="h-[420px] glass-card hover:glass-card-hover transition-all duration-300 rounded-2xl p-4">
             <div className="mb-2 flex items-center justify-between">
                 <CardDescription className="text-white/70">
                     {mode === "daily" ? "Daily solved count" : "Cumulative solved over time"}
@@ -84,7 +84,7 @@ export function UserLabsActivityChart({ labs }: { labs: LabItem[] }) {
                     <Button
                         size="sm"
                         variant={mode === "daily" ? "default" : "outline"}
-                        className={mode === "daily" ? "bg-white/20 text-white hover:bg-white/30" : "bg-white/10 text-white border-white/20 hover:bg-white/20"}
+                        className={mode === "daily" ? "bg-white/20 text-white hover:bg-white/30 rounded-2xl" : "bg-white/10 text-white border-white/20 hover:bg-white/20 rounded-2xl"}
                         onClick={() => setMode("daily")}
                     >
                         Daily
@@ -92,7 +92,7 @@ export function UserLabsActivityChart({ labs }: { labs: LabItem[] }) {
                     <Button
                         size="sm"
                         variant={mode === "cumulative" ? "default" : "outline"}
-                        className={mode === "cumulative" ? "bg-white/20 text-white hover:bg-white/30" : "bg-white/10 text-white border-white/20 hover:bg-white/20"}
+                        className={mode === "cumulative" ? "bg-white/20 text-white hover:bg-white/30 rounded-2xl" : "bg-white/10 text-white border-white/20 hover:bg-white/20 rounded-2xl"}
                         onClick={() => setMode("cumulative")}
                     >
                         Cumulative

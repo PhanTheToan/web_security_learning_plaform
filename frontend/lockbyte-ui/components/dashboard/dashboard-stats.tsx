@@ -13,8 +13,8 @@ type DashboardData = {
     totalSolvedMedium: number;
     totalSolvedHard: number;
     totalSolvedInsane: number;
-    percentSolved: number; // 0..100
-    proficiencyLevel?: string; // "Beginner" | "Intermediate" | "Advanced"
+    percentSolved: number;
+    proficiencyLevel?: string;
 };
 
 function pct(solved: number, total: number) {
@@ -37,25 +37,14 @@ function levelColor(level: "Easy" | "Medium" | "Hard" | "Insane") {
 }
 
 function overallColors(percent: number) {
-    // <30 Beginner (đỏ), 30..70 Intermediate (vàng), >70 Advanced (xanh)
     if (percent < 30) return { bar: "bg-rose-500", text: "text-rose-400", label: "Beginner" };
     if (percent <= 70) return { bar: "bg-amber-400", text: "text-amber-300", label: "Intermediate" };
     return { bar: "bg-emerald-500", text: "text-emerald-300", label: "Advanced" };
 }
 
-function Ring({
-    percent,
-    colorFrom,
-    label,
-}: {
-    percent: number;
-    colorFrom: string; // e.g. "from-emerald-500"
-    label: string;
-}) {
+function Ring({ percent, colorFrom, label }: { percent: number; colorFrom: string; label: string }) {
     const angle = Math.round((percent / 100) * 360);
-    const style = {
-        background: `conic-gradient(var(--tw-gradient-from) ${angle}deg, rgba(255,255,255,0.08) ${angle}deg)`,
-    } as React.CSSProperties;
+    const style = { background: `conic-gradient(var(--tw-gradient-from) ${angle}deg, rgba(255,255,255,0.08) ${angle}deg)` } as React.CSSProperties;
 
     return (
         <div className="flex items-center gap-4">
@@ -72,16 +61,7 @@ function Ring({
 }
 
 export function DashboardStats({ data }: { data: DashboardData }) {
-    const {
-        totalEasy,
-        totalMedium,
-        totalHard,
-        totalInsane,
-        totalSolvedEasy,
-        totalSolvedMedium,
-        totalSolvedHard,
-        totalSolvedInsane,
-    } = data;
+    const { totalEasy, totalMedium, totalHard, totalInsane, totalSolvedEasy, totalSolvedMedium, totalSolvedHard, totalSolvedInsane } = data;
 
     const easyPct = pct(totalSolvedEasy, totalEasy);
     const medPct = pct(totalSolvedMedium, totalMedium);
@@ -90,14 +70,11 @@ export function DashboardStats({ data }: { data: DashboardData }) {
 
     const overall = Number.isFinite(data.percentSolved) ? Math.max(0, Math.min(100, +data.percentSolved)) : 0;
     const overallUI = overallColors(overall);
-    const shownLevel =
-        data.proficiencyLevel ??
-        (overall < 30 ? "Beginner" : overall <= 70 ? "Intermediate" : "Advanced");
+    const shownLevel = data.proficiencyLevel ?? (overall < 30 ? "Beginner" : overall <= 70 ? "Intermediate" : "Advanced");
 
     return (
         <div className="grid gap-6 lg:grid-cols-5">
-            {/* Level Breakdown */}
-            <Card className="bg-transparent border-white/10 lg:col-span-3">
+            <Card className="glass-card hover:glass-card-hover transition-all duration-300 rounded-2xl lg:col-span-3">
                 <CardHeader>
                     <CardTitle className="text-white">Level Breakdown</CardTitle>
                 </CardHeader>
@@ -111,8 +88,7 @@ export function DashboardStats({ data }: { data: DashboardData }) {
                 </CardContent>
             </Card>
 
-            {/* Overall Progress  */}
-            <Card className="bg-transparent border-white/10 lg:col-span-2">
+            <Card className="glass-card hover:glass-card-hover transition-all duration-300 rounded-2xl lg:col-span-2">
                 <CardHeader>
                     <CardTitle className="text-white">Overall Progress</CardTitle>
                 </CardHeader>
@@ -121,18 +97,11 @@ export function DashboardStats({ data }: { data: DashboardData }) {
                         <div className="text-sm text-white/70">Solved</div>
                         <div className="text-xl font-semibold text-white">{overall.toFixed(1)}%</div>
                     </div>
-
-                    {/* Thanh %: tô màu bar bằng selector con của shadcn Progress */}
-                    <Progress
-                        value={overall}
-                        className={`h-3 bg-white/10 [&>div]:${overallUI.bar}`}
-                    />
-
+                    <Progress value={overall} className={`h-3 bg-white/10 [&>div]:${overallUI.bar}`} />
                     <div className="flex items-center justify-between">
                         <span className="text-xs text-white/60">0%</span>
                         <span className="text-xs text-white/60">100%</span>
                     </div>
-
                     <div className="pt-2 text-sm">
                         <span className="text-white/70">Proficiency: </span>
                         <span className={`font-medium ${overallUI.text}`}>{shownLevel}</span>

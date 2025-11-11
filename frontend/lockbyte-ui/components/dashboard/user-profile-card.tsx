@@ -1,19 +1,25 @@
-import { Card, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+"use client";
 
-export function UserProfileCard({ user, proficiencyLevel }) {
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import Image from "next/image";
+
+export function UserProfileCard({ user, proficiencyLevel }: { user: { fullName: string; avatarUrl?: string }; proficiencyLevel?: string }) {
   return (
-    <Card>
-      <CardHeader className="flex flex-row items-center space-x-4">
-        <Avatar>
-          <AvatarImage src={user.avatarUrl || "/avatar.png"} alt={user.fullName} />
-          <AvatarFallback>{user.fullName.charAt(0)}</AvatarFallback>
-        </Avatar>
+    <Card className="glass-card hover:glass-card-hover transition-all duration-300 rounded-2xl">
+      <CardHeader className="flex flex-row items-center gap-4">
+        <div className="relative h-14 w-14 overflow-hidden rounded-full ring-2 ring-purple-400/40">
+          <Image src={user.avatarUrl || "/avatar.png"} alt={user.fullName} fill className="object-cover" />
+        </div>
         <div>
-          <CardTitle>{user.fullName}</CardTitle>
-          <CardDescription>Proficiency Level: {proficiencyLevel}</CardDescription>
+          <CardTitle className="text-white">{user.fullName}</CardTitle>
+          {proficiencyLevel && (
+            <p className="text-sm text-white/70">Proficiency: {proficiencyLevel}</p>
+          )}
         </div>
       </CardHeader>
+      <CardContent>
+        <p className="text-white/70 text-sm">Welcome back! Keep hacking — every solved lab boosts your skill graph.</p>
+      </CardContent>
     </Card>
   );
 }

@@ -1,46 +1,60 @@
+"use client";
+
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Badge } from "@/components/ui/badge";
 import Link from "next/link";
 
-export function CommunitySolutionsTab({ solutions }) {
-  const getStatusBadge = (status: string) => {
-    switch ((status || "").toLowerCase()) {
-      case "approved":
-        return "bg-emerald-500 text-white";
-      case "pending":
-        return "bg-yellow-500 text-white";
-      case "rejected":
-        return "bg-red-500 text-white";
-      default:
-        return "bg-gray-500 text-white";
-    }
-  };
+function statusClass(status: string) {
+  switch ((status || "").toLowerCase()) {
+    case "approved":
+      return "bg-green-500/20 text-green-300 border border-green-500/30";
+    case "pending":
+      return "bg-amber-400/20 text-amber-200 border border-amber-300/30";
+    case "rejected":
+      return "bg-rose-500/20 text-rose-300 border border-rose-500/30";
+    default:
+      return "bg-white/10 text-white/80 border border-white/20";
+  }
+}
 
+export function CommunitySolutionsTab({ solutions }) {
   return (
-    <div className="text-white">
+    <div
+      className="rounded-2xl overflow-hidden border border-[#ffffff]/10 
+  bg-gradient-to-br from-[#ffffff]/8 via-[#9747ff]/5 to-[#5a5bed]/8 
+  backdrop-blur-sm hover:border-[#9747ff]/40 transition-all duration-30"
+    >
       <Table>
         <TableHeader>
-          <TableRow>
-            <TableHead className="text-white/80">Lab ID</TableHead>
-            <TableHead className="text-white/80">Status</TableHead>
-            <TableHead className="text-white/80">Writeup</TableHead>
-            <TableHead className="text-white/80">YouTube URL</TableHead>
+          <TableRow className="bg-white/10 border-b border-white/10">
+            <TableHead className="text-white font-semibold">Lab ID</TableHead>
+            <TableHead className="text-white font-semibold">Status</TableHead>
+            <TableHead className="text-white font-semibold">Writeup</TableHead>
+            <TableHead className="text-white font-semibold">YouTube URL</TableHead>
           </TableRow>
         </TableHeader>
+
         <TableBody>
-          {solutions.map((solution) => (
-            <TableRow key={solution.id}>
-              <TableCell className="text-white">{solution.labId}</TableCell>
-              <TableCell>
-                <Badge className={getStatusBadge(solution.status)}>{solution.status}</Badge>
+          {solutions.map((solution: any) => (
+            <TableRow
+              key={solution.id}
+              className="border-b border-white/10 text-white/90 hover:bg-white/5 transition-colors"
+            >
+              <TableCell className="py-3">{solution.labId}</TableCell>
+              <TableCell className="py-3">
+                <Badge
+                  className={`rounded-full px-2.5 py-1 text-xs ${statusClass(solution.status)}`}
+                >
+                  {solution.status}
+                </Badge>
               </TableCell>
-              <TableCell>
+              <TableCell className="py-3">
                 {solution.writeup ? (
                   <Link
                     href={solution.writeup}
                     target="_blank"
                     rel="noopener noreferrer"
-                    className="text-white underline underline-offset-4 hover:text-white/80"
+                    className="text-blue-400 hover:underline underline-offset-4"
                   >
                     View Writeup
                   </Link>
@@ -48,13 +62,13 @@ export function CommunitySolutionsTab({ solutions }) {
                   <span className="text-white/60">N/A</span>
                 )}
               </TableCell>
-              <TableCell>
+              <TableCell className="py-3">
                 {solution.youtubeUrl ? (
                   <Link
                     href={solution.youtubeUrl}
                     target="_blank"
                     rel="noopener noreferrer"
-                    className="text-white underline underline-offset-4 hover:text-white/80"
+                    className="text-blue-400 hover:underline underline-offset-4"
                   >
                     Watch Video
                   </Link>
@@ -64,8 +78,9 @@ export function CommunitySolutionsTab({ solutions }) {
               </TableCell>
             </TableRow>
           ))}
+
           {solutions.length === 0 && (
-            <TableRow>
+            <TableRow className="border-t border-white/10">
               <TableCell colSpan={4} className="py-6 text-center text-white/70">
                 No community solutions found.
               </TableCell>

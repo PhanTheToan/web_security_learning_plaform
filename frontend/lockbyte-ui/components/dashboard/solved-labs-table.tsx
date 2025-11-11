@@ -7,72 +7,88 @@ import {
   TableCell,
   TableHead,
   TableHeader,
-  TableRow,
+  TableRow
 } from "@/components/ui/table";
 import { Button } from "@/components/ui/button";
 import { ArrowUpDown } from "lucide-react";
-import { Badge } from "@/components/ui/badge";
+
+function difficultyClass(difficulty: string) {
+  switch ((difficulty || "").toLowerCase()) {
+    case "easy":
+      return "label-level-easy";
+    case "medium":
+      return "label-level-medium";
+    case "hard":
+      return "label-level-hard";
+    case "insane":
+      return "label-level-insane";
+    default:
+      return "label-level-unknown";
+  }
+}
 
 export function SolvedLabsTable({ solvedLabs }) {
-  const [sortOrder, setSortOrder] = useState("desc");
+  const [sortOrder, setSortOrder] = useState<"asc" | "desc">("desc");
 
   const sortedLabs = [...solvedLabs].sort((a, b) => {
-    const dateA = new Date(a.completedAt);
-    const dateB = new Date(b.completedAt);
-    if (sortOrder === "asc") {
-      return dateA - dateB;
-    }
-    return dateB - dateA;
+    const dateA = new Date(a.completedAt).getTime();
+    const dateB = new Date(b.completedAt).getTime();
+    return sortOrder === "asc" ? dateA - dateB : dateB - dateA;
   });
 
-  const toggleSortOrder = () => {
-    setSortOrder(sortOrder === "asc" ? "desc" : "asc");
-  };
-
-  const getDifficultyBadge = (difficulty) => {
-    switch (difficulty.toLowerCase()) {
-      case "easy":
-        return "bg-green-500";
-      case "medium":
-        return "bg-yellow-500";
-      case "hard":
-        return "bg-red-500";
-      case "insane":
-        return "bg-purple-500";
-      default:
-        return "bg-gray-500";
-    }
-  };
+  const toggleSortOrder = () => setSortOrder(sortOrder === "asc" ? "desc" : "asc");
 
   return (
-    <Table>
-      <TableHeader>
-        <TableRow>
-          <TableHead>Lab Name</TableHead>
-          <TableHead>Difficulty</TableHead>
-          <TableHead>
-            <Button variant="ghost" onClick={toggleSortOrder}>
-              Completed At
-              <ArrowUpDown className="ml-2 h-4 w-4" />
-            </Button>
-          </TableHead>
-          <TableHead>Error Count</TableHead>
-        </TableRow>
-      </TableHeader>
-      <TableBody>
-        {sortedLabs.map((lab) => (
-          <TableRow key={lab.labId}>
-            <TableCell>{lab.labName}</TableCell>
-            <TableCell>
-              <Badge className={getDifficultyBadge(lab.difficulty)}>
-                {lab.difficulty}
-              </Badge>
-            </TableCell>
-            <TableCell>{new Date(lab.completedAt).toLocaleDateString()}</TableCell>
-            <TableCell>{lab.errorCount}</TableCell>
+    <div className="rounded-2xl overflow-hidden border border-[#ffffff]/10 
+  bg-gradient-to-br from-[#ffffff]/8 via-[#9747ff]/5 to-[#5a5bed]/8 
+  backdrop-blur-sm hover:border-[#9747ff]/40 transition-all duration-300"
+    >
+      <Table>
+        <TableHeader>
+          <TableRow className="bg-white/10 border-b border-white/10">
+            <TableHead className="text-white font-semibold">Lab Name</TableHead>
+            <TableHead className="text-white font-semibold">Difficulty</TableHead>
+            <TableHead className="text-white font-semibold">
+              <Button
+                variant="ghost"
+                onClick={toggleSortOrder}
+                className="text-white font-semibold hover:bg-white/10"
+              >
+                Completed At
+                <ArrowUpDown className="ml-2 h-4 w-4" />
+              </Button>
+            </TableHead>
+            <TableHead className="text-white font-semibold">Error Count</TableHead>
           </TableRow>
-        ))}
-      </TableBody>
-    </Table>
+        </TableHeader>
+
+
+        <TableBody>
+          {sortedLabs.map((lab) => (
+            <TableRow
+              key={lab.labId}
+              className="border-b border-white/10 text-white/90 hover:bg-white/5 transition-colors"
+            >
+              <TableCell className="py-3">{lab.labName}</TableCell>
+              <TableCell className="py-3">
+                <span className={difficultyClass(lab.difficulty)}>{lab.difficulty}</span>
+              </TableCell>
+              <TableCell className="py-3">
+                {new Date(lab.completedAt).toLocaleDateString()}
+              </TableCell>
+              <TableCell className="py-3">{lab.errorCount}</TableCell>
+            </TableRow>
+          ))}
+
+          {sortedLabs.length === 0 && (
+            <TableRow className="border-t border-white/10">
+              <TableCell colSpan={4} className="py-6 text-center text-white/70">
+                No labs in this range.
+              </TableCell>
+            </TableRow>
+          )}
+        </TableBody>
+      </Table>
+    </div>
   );
 }

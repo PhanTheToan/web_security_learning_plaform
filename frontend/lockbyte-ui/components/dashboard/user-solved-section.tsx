@@ -60,7 +60,7 @@ export function UserSolvedSection({
     const totalErrors = filtered.reduce((a, b) => a + (Number(b.errorCount) || 0), 0);
 
     return (
-        <div className="space-y-6 text-white">
+        <div className="space-y-6 text-white rounded-2xl">
             {/* Bộ lọc + counter */}
             <div className="flex flex-col items-start justify-between gap-4 sm:flex-row sm:items-center">
                 <div>
