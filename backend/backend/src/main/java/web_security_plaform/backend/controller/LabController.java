@@ -220,6 +220,36 @@ public class LabController {
         return ResponseEntity.ok(labRunnerService.getLabStatusStatistics(labId));
     }
 
+    @PreAuthorize("hasRole('ADMIN') || hasRole('USER')")
+    @GetMapping("/community-solutions/user")
+    public ResponseEntity<?> getCommunitySolutionsForUser(Principal principal) {
+        User user = userService.findByUsername(principal.getName());
+        return ResponseEntity.ok(labRunnerService.getCommunitySolutionsForUser(user));
+    }
+
+    @PreAuthorize("hasRole('ADMIN') || hasRole('USER')")
+    @PostMapping("/community-solutions")
+    public ResponseEntity<?> submitCommunitySolution(Principal principal,
+                                                     @RequestParam Integer labId,
+                                                     @RequestParam String youtubeLink,
+                                                     @RequestParam String writeUpLink) {
+        User user = userService.findByUsername(principal.getName());
+        return ResponseEntity.ok(labRunnerService.submitCommunitySolution(user, labId, youtubeLink,writeUpLink));
+    }
+
+    @PreAuthorize("hasRole('ADMIN')")
+    @PutMapping("/community-solutions/{solutionId}")
+    public ResponseEntity<?> updateStatus(@PathVariable int solutionId,
+                                                     @RequestParam Boolean approve
+                                                     ) {
+        return ResponseEntity.ok(labRunnerService.updateStatusCommunitySolution(solutionId, approve));
+    }
+
+    @PreAuthorize("hasRole('ADMIN')")
+    @GetMapping("/community-solutions/{labId}")
+    public ResponseEntity<?> getAllCommunitySolutions( @PathVariable int labId) {
+        return ResponseEntity.ok(labRunnerService.getAllCommunitySolutions(labId));
+    }
 
 
 //    @PreAuthorize("hasRole('ADMIN')")

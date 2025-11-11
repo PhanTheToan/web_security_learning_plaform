@@ -76,17 +76,19 @@ export function SolvedLabsTable({ solvedLabs }: SolvedLabsTableProps) {
 
 
         <TableBody>
-          {sortedLabs.map((lab) => (
+          {sortedLabs.map((lab, index) => (
             <TableRow
               key={lab.labId}
-              className="border-b border-white/10 text-white/90 hover:bg-white/5 transition-colors"
+              className={`border-b border-white/10 text-white/80 transition-colors ${
+                index % 2 === 0 ? "bg-white/0 hover:bg-white/5" : "bg-white/5 hover:bg-white/10"
+              }`}
             >
               <TableCell className="py-3">{lab.labName}</TableCell>
               <TableCell className="py-3">
                 <span className={difficultyClass(lab.difficulty)}>{lab.difficulty}</span>
               </TableCell>
               <TableCell className="py-3">
-                {new Date(lab.completedAt).toLocaleDateString()}
+                {new Date(lab.completedAt).toLocaleDateString('en-GB')}
               </TableCell>
               <TableCell className="py-3">{lab.errorCount}</TableCell>
             </TableRow>

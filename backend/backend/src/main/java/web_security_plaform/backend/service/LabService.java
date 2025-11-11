@@ -121,6 +121,7 @@ public class LabService {
                 .map(solution -> {
                     CommunitySolutionsDTO dto = new CommunitySolutionsDTO();
                     dto.setId(solution.getId());
+                    dto.setFullName(solution.getUser().getFullName());
                     dto.setStatus(solution.getStatus());
                     dto.setWriteup(solution.getWriteUpUrl());
                     dto.setYoutubeUrl(solution.getYoutubeUrl());
@@ -164,6 +165,7 @@ public class LabService {
                 .map(solution -> {
                     CommunitySolutionsDTO dto = new CommunitySolutionsDTO();
                     dto.setId(solution.getId());
+                    dto.setFullName(solution.getUser().getFullName());
                     dto.setStatus(solution.getStatus());
                     dto.setWriteup(solution.getWriteUpUrl());
                     dto.setYoutubeUrl(solution.getYoutubeUrl());

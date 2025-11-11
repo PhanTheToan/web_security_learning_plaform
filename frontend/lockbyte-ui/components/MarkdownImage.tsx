@@ -19,16 +19,16 @@ export default function MarkdownImage(props: React.ImgHTMLAttributes<HTMLImageEl
 
   return (
     <>
-      <div className={`relative ${className ?? ""}`} style={{ width: '100%', height: 'auto' }}>
-        <Image
-          src={src}
-          alt={alt || ""}
-          fill
-          sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
-          onClick={() => setOpen(true)}
-          {...imageProps}
-        />
-      </div>
+      <Image
+        src={src}
+        alt={alt || ""}
+        width={0}
+        height={0}
+        sizes="100vw"
+        style={{ width: '100%', height: 'auto' }}
+        onClick={() => setOpen(true)}
+        {...imageProps}
+      />
       {open && <ImageLightbox src={src} alt={alt} onClose={() => setOpen(false)} />}
     </>
   );

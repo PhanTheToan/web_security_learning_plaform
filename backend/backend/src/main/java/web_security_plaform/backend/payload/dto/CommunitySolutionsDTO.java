@@ -7,6 +7,7 @@ import web_security_plaform.backend.model.ENum.EStatus;
 @Data
 public class CommunitySolutionsDTO {
     private int id;
+    private String fullName;
     private ESolutionStatus status;
     private String writeup;
     private String youtubeUrl;

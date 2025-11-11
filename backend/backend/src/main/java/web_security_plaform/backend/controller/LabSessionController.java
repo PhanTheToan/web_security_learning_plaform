@@ -6,12 +6,10 @@ import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
+import web_security_plaform.backend.model.*;
 import web_security_plaform.backend.model.ENum.ESessionStatus;
-import web_security_plaform.backend.model.EmailEvent;
-import web_security_plaform.backend.model.Lab;
-import web_security_plaform.backend.model.LabSession;
-import web_security_plaform.backend.model.User;
 import web_security_plaform.backend.payload.response.LabSessionDTO;
+import web_security_plaform.backend.repository.CommunitySolutionRepository;
 import web_security_plaform.backend.repository.LabSessionRepository;
 import web_security_plaform.backend.service.LabRunnerService;
 import web_security_plaform.backend.service.LabService;
@@ -47,6 +45,9 @@ public class LabSessionController {
     @Autowired
     private LabSessionRepository labSessionRepository;
 
+    @Autowired
+    private CommunitySolutionRepository communitySolutionRepository;
+
 
     private final ApplicationEventPublisher publisher;
 
@@ -81,6 +82,12 @@ public class LabSessionController {
                 .anyMatch(s -> s.getStatus() == ESessionStatus.SOLVED);
 
         if (hasSolved) {
+
+            CommunitySolution solution = communitySolutionRepository
+                    .findByLabIdAndUserId(labId, user.getId());
+            if(solution != null){
+                return  ResponseEntity.ok(ESessionStatus.SOLVED + " - Community Solution ID: " + solution.getId());
+            }
             return ResponseEntity.ok(ESessionStatus.SOLVED);
         }
 

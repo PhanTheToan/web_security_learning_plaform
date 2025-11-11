@@ -39,4 +39,15 @@ public interface LabRepository extends JpaRepository<Lab, Integer> {
             "WHERE l.name LIKE :name")
     List<Lab> findByNameContainingWithTags(@Param("name") String name);
 
+    @Query("SELECT l.difficulty, COUNT(l) FROM Lab l GROUP BY l.difficulty")
+    List<Object[]> countLabsByLevel();
+
+    @Query("""
+    SELECT ls.lab.difficulty, COUNT(DISTINCT ls.lab.id)
+    FROM LabSession ls
+    WHERE ls.user.id = ?1 AND ls.status = 'SOLVED'
+    GROUP BY ls.lab.difficulty
+    """)
+    List<Object[]> countLabsSolvedByUserByLevel(Integer id);
+
 }

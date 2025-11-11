@@ -48,10 +48,12 @@ export function CommunitySolutionsTab({ solutions }: CommunitySolutionsTabProps)
         </TableHeader>
 
         <TableBody>
-          {solutions.map((solution) => (
+          {solutions.map((solution, index) => (
             <TableRow
               key={solution.id}
-              className="border-b border-white/10 text-white/90 hover:bg-white/5 transition-colors"
+              className={`border-b border-white/10 text-white/80 transition-colors ${
+                index % 2 === 0 ? "bg-white/0 hover:bg-white/5" : "bg-white/5 hover:bg-white/10"
+              }`}
             >
               <TableCell className="py-3">{solution.labId}</TableCell>
               <TableCell className="py-3">

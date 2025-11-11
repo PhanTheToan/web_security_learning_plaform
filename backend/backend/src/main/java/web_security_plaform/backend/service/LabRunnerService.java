@@ -14,17 +14,21 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
+import web_security_plaform.backend.model.*;
 import web_security_plaform.backend.model.ENum.EDifficulty;
 import web_security_plaform.backend.model.ENum.ESessionStatus;
-import web_security_plaform.backend.model.Lab;
-import web_security_plaform.backend.model.LabSession;
+import web_security_plaform.backend.model.ENum.ESolutionStatus;
+import web_security_plaform.backend.payload.dto.CommunitySolutionsDTO;
+import web_security_plaform.backend.repository.CommunitySolutionRepository;
 import web_security_plaform.backend.repository.LabRepository;
 import web_security_plaform.backend.repository.LabSessionRepository;
 import web_security_plaform.backend.repository.UserRepository;
 
 import java.time.*;
+import java.time.format.DateTimeFormatter;
 import java.util.*;
 import java.util.concurrent.*;
 import java.util.stream.Collectors;
@@ -41,7 +45,12 @@ public class LabRunnerService {
     private UserRepository userRepository;
 
     @Autowired
+    private CommunitySolutionRepository communitySolutionRepository;
+
+    @Autowired
     private LabRepository labRepository;
+
+    private final ApplicationEventPublisher publisher;
 
     private final ScheduledExecutorService scheduler = Executors.newScheduledThreadPool(1);
     private final Map<String, ScheduledFuture<?>> timers = new ConcurrentHashMap<>();
@@ -54,8 +63,9 @@ public class LabRunnerService {
 
     private final boolean removeImageOnStop = false;
 
-    public LabRunnerService(DockerClient dockerClient) {
+    public LabRunnerService(DockerClient dockerClient, ApplicationEventPublisher publisher) {
         this.dockerClient = dockerClient;
+        this.publisher = publisher;
     }
 
     public StartLabResult startLab(String dockerImageName, String labSlug, String userId, int timeoutMinutes) {
@@ -480,6 +490,198 @@ public class LabRunnerService {
 
         return ResponseEntity.ok(userId);
     }
+
+    public ResponseEntity<?> getCommunitySolutionsForUser(User user) {
+        List<CommunitySolution> communitySolution = communitySolutionRepository.findAllCommunitySolutionByUserId(user.getId());
+
+        List<CommunitySolutionDTO> out = new ArrayList<>();
+        communitySolution.forEach(communitySolution1 -> {
+            CommunitySolutionDTO dto = new CommunitySolutionDTO(
+                    communitySolution1.getId(),
+                    communitySolution1.getStatus(),
+                    communitySolution1.getWriteUpUrl(),
+                    communitySolution1.getYoutubeUrl(),
+                    communitySolution1.getLab().getId(),
+                    communitySolution1.getUser().getId(),
+                    communitySolution1.getUser().getFullName() != null ? communitySolution1.getUser().getFullName() : communitySolution1.getUser().getUsername()
+            );
+           out.add(dto);
+        });
+        return ResponseEntity.ok(out);
+    }
+
+    public ResponseEntity<?> submitCommunitySolution(User user, Integer labId, String youtubeLink, String writeUpLink) {
+        Lab lab = labRepository.findById(labId).orElse(null);
+        if (lab == null) {
+            return ResponseEntity.badRequest().body("Lab not found");
+        }
+
+        CommunitySolution existingSolution = communitySolutionRepository.findByUserIdAndLabId(user.getId(), labId);
+        if (existingSolution != null) {
+            return ResponseEntity.badRequest().body("You have already submitted a solution for this lab");
+        }
+        LabSession labSession = labSessionRepository.findFirstByUserIdAndLabIdAndStatus(user.getId(), labId, ESessionStatus.SOLVED);
+
+        if (labSession == null) {
+            return ResponseEntity.badRequest().body("You must solve the lab before submitting a community solution");
+        }
+
+        CommunitySolution communitySolution = new CommunitySolution();
+        communitySolution.setUser(user);
+        communitySolution.setLab(lab);
+        communitySolution.setYoutubeUrl(youtubeLink);
+        communitySolution.setWriteUpUrl(writeUpLink);
+        communitySolution.setStatus(ESolutionStatus.Pending);
+
+
+        communitySolutionRepository.save(communitySolution);
+
+
+
+        Map<String, Object> model = Map.of(
+                "subject", "Pending Status" + lab.getName(),
+                "user", Map.of(
+                        "fullName", user.getFullName(),
+                        "username", user.getUsername(),
+                        "email", user.getEmail()
+                ),
+                "lab", Map.of(
+                        "id", lab.getId(),
+                        "name", lab.getName()
+
+                )
+        );
+
+        publisher.publishEvent(EmailEvent.builder()
+                .to(user.getEmail())
+                .subject("🎉 Pending Community Solution: " + lab.getName())
+                .templateName("community-solution-pending")
+                .model(model)
+                .partials(List.of(
+                ))
+                .attachmentUrls(List.of(
+                ))
+                .generateReport(false)
+                .build());
+
+        CommunitySolutionDTO dto = new CommunitySolutionDTO(
+                communitySolution.getId(),
+                communitySolution.getStatus(),
+                communitySolution.getWriteUpUrl(),
+                communitySolution.getYoutubeUrl(),
+                communitySolution.getLab().getId(),
+                communitySolution.getUser().getId(),
+                communitySolution.getUser().getFullName() != null ? communitySolution.getUser().getFullName() : communitySolution.getUser().getUsername()
+        );
+
+        return ResponseEntity.ok(dto);
+    }
+
+
+
+    public ResponseEntity<?> updateStatusCommunitySolution(int solutionId, Boolean approved) {
+        CommunitySolution communitySolution = communitySolutionRepository.findById(solutionId).orElse(null);
+        if (communitySolution == null) {
+            return ResponseEntity.badRequest().body("Community solution not found");
+        }
+        User user = communitySolution.getUser();
+        Lab lab = communitySolution.getLab();
+
+        String subjectStatus = approved != null && approved ? "Approved" : "Rejected";
+        if (approved != null && approved) {
+            communitySolution.setStatus(ESolutionStatus.Approved);
+            Map<String, Object> model = Map.of(
+                    "subject", subjectStatus + " Status" + lab.getName(),
+                    "user", Map.of(
+                            "fullName", user.getFullName(),
+                            "username", user.getUsername(),
+                            "email", user.getEmail()
+                    ),
+                    "lab", Map.of(
+                            "id", lab.getId(),
+                            "name", lab.getName()
+
+                    )
+            );
+
+            publisher.publishEvent(EmailEvent.builder()
+                    .to(user.getEmail())
+                    .subject("🎉 " + subjectStatus + " Community Solution: " + lab.getName())
+                    .templateName("comunity-solution-accept")
+                    .model(model)
+                    .partials(List.of(
+                    ))
+                    .attachmentUrls(List.of(
+                    ))
+                    .generateReport(false)
+                    .build());
+        } else {
+            Map<String, Object> model = Map.of(
+                    "subject", subjectStatus + " Status" + lab.getName(),
+                    "user", Map.of(
+                            "fullName", user.getFullName(),
+                            "username", user.getUsername(),
+                            "email", user.getEmail()
+                    ),
+                    "lab", Map.of(
+                            "id", lab.getId(),
+                            "name", lab.getName()
+
+                    )
+            );
+
+            publisher.publishEvent(EmailEvent.builder()
+                    .to(user.getEmail())
+                    .subject("🎉 " + subjectStatus + " Community Solution: " + lab.getName())
+                    .templateName("community-solution-rejected")
+                    .model(model)
+                    .partials(List.of(
+                    ))
+                    .attachmentUrls(List.of(
+                    ))
+                    .generateReport(false)
+                    .build());
+            communitySolution.setStatus(ESolutionStatus.Rejected);
+        }
+
+        communitySolutionRepository.save(communitySolution);
+
+
+
+
+
+        return ResponseEntity.ok("Community solution status updated successfully");
+    }
+
+    public ResponseEntity<?> getAllCommunitySolutions(int labId) {
+        List<CommunitySolution> communitySolutions = communitySolutionRepository.findAllByLabId(labId);
+
+        List<CommunitySolutionDTO> out = new ArrayList<>();
+        communitySolutions.forEach(communitySolution1 -> {
+            CommunitySolutionDTO dto = new CommunitySolutionDTO(
+                    communitySolution1.getId(),
+                    communitySolution1.getStatus(),
+                    communitySolution1.getWriteUpUrl(),
+                    communitySolution1.getYoutubeUrl(),
+                    communitySolution1.getLab().getId(),
+                    communitySolution1.getUser().getId(),
+                    communitySolution1.getUser().getFullName() != null ? communitySolution1.getUser().getFullName() : communitySolution1.getUser().getUsername()
+            );
+            out.add(dto);
+        });
+        return ResponseEntity.ok(out);
+
+    }
+
+    record CommunitySolutionDTO(
+            int id,
+            ESolutionStatus status,
+            String writeup,
+            String youtubeUrl,
+            Integer labId,
+            int userId,
+            String fullName
+    ) {}
 
     public record UserLabCountStatistics(
             @Id

@@ -29,5 +29,15 @@ public class UserController {
         return userService.updateUserByUser(userUpdateRequest, user.getId());
     }
 
+    @GetMapping("/dashboard")
+    public ResponseEntity<?> getUserDashboard(Principal principal) {
+        User user = userService.findByUsername(principal.getName());
+        return userService.getUserDashboard(user);
+    }
+    @GetMapping("/labs")
+    public ResponseEntity<?> getUserLabs(Principal principal) {
+        User user = userService.findByUsername(principal.getName());
+        return userService.getUserLabs(user);
+    }
 
 }

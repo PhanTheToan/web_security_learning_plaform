@@ -10,8 +10,10 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.server.ResponseStatusException;
+import web_security_plaform.backend.model.ENum.EDifficulty;
 import web_security_plaform.backend.model.ENum.ERole;
 import web_security_plaform.backend.model.ENum.EStatus;
+import web_security_plaform.backend.model.LabSession;
 import web_security_plaform.backend.model.Role;
 import web_security_plaform.backend.model.User;
 import web_security_plaform.backend.payload.dto.UserInfoAdminResponse;
@@ -20,11 +22,15 @@ import web_security_plaform.backend.payload.request.SignupRequest;
 import web_security_plaform.backend.payload.request.UserUpdateRequest;
 import web_security_plaform.backend.payload.response.MessageResponse;
 import web_security_plaform.backend.payload.response.UserInfoResponse;
+import web_security_plaform.backend.repository.LabRepository;
+import web_security_plaform.backend.repository.LabSessionRepository;
 import web_security_plaform.backend.repository.RoleRepository;
 import web_security_plaform.backend.repository.UserRepository;
 import web_security_plaform.backend.security.jwt.JwtUtils;
 
+import java.time.Instant;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
 
@@ -38,6 +44,12 @@ public class UserService {
 
     @Autowired
     PasswordEncoder encoder;
+
+    @Autowired
+    private LabRepository labRepository;
+
+    @Autowired
+    private LabSessionRepository labSessionRepository;
 
     @Autowired
     JwtUtils jwtUtils;
@@ -218,6 +230,92 @@ public class UserService {
         return toUserInfoUserResponse(u);
     }
 
+
+    public ResponseEntity<?> getUserDashboard(User user) {
+        List<Object[]> totalLabsByLevel = labRepository.countLabsByLevel();
+        List<Object[]> totalLabsSolvedByUserByLevel = labSessionRepository.countLabsSolvedByUserByLevel(user.getId());
+
+        int totalsEasy = 0, totalsMedium = 0, totalsHard = 0, totalInsane = 0;
+        int solvedEasy = 0, solvedMedium = 0, solvedHard = 0, solvedInsane = 0;
+
+        for (Object[] row : totalLabsByLevel) {
+            EDifficulty level = (EDifficulty) row[0];               // <-- enum, not String
+            int count = ((Number) row[1]).intValue();               // an toàn hơn Long cast
+            switch (level) {
+                case Easy   -> totalsEasy   = count;
+                case Medium -> totalsMedium = count;
+                case Hard   -> totalsHard   = count;
+                case Insane -> totalInsane  = count;
+            }
+        }
+
+        for (Object[] row : totalLabsSolvedByUserByLevel) {
+            EDifficulty level = (EDifficulty) row[0];               // <-- enum
+            int count = ((Number) row[1]).intValue();
+            switch (level) {
+                case Easy   -> solvedEasy   = count;
+                case Medium -> solvedMedium = count;
+                case Hard   -> solvedHard   = count;
+                case Insane -> solvedInsane = count;
+            }
+        }
+
+        int totalLabs = totalsEasy + totalsMedium + totalsHard + totalInsane;
+        int totalLabsSolved = solvedEasy + solvedMedium + solvedHard + solvedInsane;
+
+        double percentSolved = (totalLabs == 0)
+                ? 0.0
+                : (totalLabsSolved * 100.0) / totalLabs;
+
+        String proficiencyLevel =
+                (percentSolved < 30.0) ? "Beginner" :
+                        (percentSolved <= 70.0) ? "Intermediate" : "Advanced";
+
+        labByLevelResponse response = new labByLevelResponse(user.getFullName(),
+                totalsEasy, totalsMedium, totalsHard, totalInsane,
+                solvedEasy, solvedMedium, solvedHard, solvedInsane,
+                percentSolved, proficiencyLevel
+        );
+        return ResponseEntity.ok(response);
+    }
+
+    public ResponseEntity<?> getUserLabs(User user) {
+        List<LabSession> labSessions = labSessionRepository.findFirstSolvedSessionsWithLab(user.getId());
+        List<labSolvedLevelStatisticsResponse> response = labSessions.stream()
+                .map(ls -> new labSolvedLevelStatisticsResponse(
+                        ls.getLab().getName(),
+                        ls.getLab().getDifficulty().name(),
+                        ls.getCompletedAt(),
+                        ls.getLab().getId(),
+                        ls.getCounterErrorFlag() != null ? ls.getCounterErrorFlag() : 0
+                ))
+                .collect(Collectors.toList());
+        return ResponseEntity.ok(response);
+    }
+
+
+
+    record labSolvedLevelStatisticsResponse(
+            String labName,
+            String difficulty,
+            Instant completedAt,
+            int labId,
+            int errorCount
+
+    ){}
+    record labByLevelResponse(
+            String fullName,
+            int totalEasy,
+            int totalMedium,
+            int totalHard,
+            int totalInsane,
+            int totalSolvedEasy,
+            int totalSolvedMedium,
+            int totalSolvedHard,
+            int totalSolvedInsane,
+            double percentSolved,
+            String proficiencyLevel
+    ){}
 
 }
 

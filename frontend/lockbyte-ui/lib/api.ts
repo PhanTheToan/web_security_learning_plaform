@@ -67,9 +67,9 @@ async function fetchWithCredentials<T>(
 
   if (!resp.ok) {
 
-        console.error(`API Error: ${resp.status} ${resp.statusText}`, raw);
+    console.error(`API Error: ${resp.status} ${resp.statusText}`, raw);
 
-        throw new Error(raw || `Request failed: ${resp.status}`);
+    throw new Error(raw || `Request failed: ${resp.status}`);
 
   }
 
@@ -961,15 +961,19 @@ export function submitLabFlag(labId: string | number, labSessionId: number, flag
 }
 
 export function submitCommunitySolution(labId: string | number, youtubeLink: string, writeUpLink: string) {
-  return fetchWithCredentials<void>(`/community-solutions`, {
-    method: "POST",
-    body: JSON.stringify({
-      labId,
+  return fetchWithCredentials<void>(
+    `/lab/community-solutions?${new URLSearchParams({
+      labId: labId.toString(),
       youtubeLink,
       writeUpLink,
-    }),
-  });
+    })}`,
+    {
+      method: "POST",
+    }
+  );
+
 }
+
 
 export const api = {
   get: <T>(path: string, init?: RequestInit & { extraHeaders?: HeadersInit }) => fetchWithCredentials<T>(path, { ...init, method: "GET" }),
