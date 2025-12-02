@@ -11,10 +11,8 @@ import web_security_plaform.backend.model.ENum.ESessionStatus;
 import web_security_plaform.backend.payload.response.LabSessionDTO;
 import web_security_plaform.backend.repository.CommunitySolutionRepository;
 import web_security_plaform.backend.repository.LabSessionRepository;
-import web_security_plaform.backend.service.LabRunnerService;
-import web_security_plaform.backend.service.LabService;
-import web_security_plaform.backend.service.LabSessionService;
-import web_security_plaform.backend.service.UserService;
+import web_security_plaform.backend.repository.UserStarRepository;
+import web_security_plaform.backend.service.*;
 
 import java.security.Principal;
 import java.time.Duration;
@@ -47,6 +45,12 @@ public class LabSessionController {
 
     @Autowired
     private CommunitySolutionRepository communitySolutionRepository;
+
+    @Autowired
+    private UserStarRepository userStarRepository;
+
+    @Autowired
+    private LeaderboardService leaderboardService;
 
 
     private final ApplicationEventPublisher publisher;
@@ -119,10 +123,32 @@ public class LabSessionController {
         if(labSession != null && labSession.getUser().getId().equals(user.getId()) && labSession.getLab().getId().equals(labId)
                 && labSession.getStatus().equals(ESessionStatus.RUNNING)){
             if(Objects.equals(lab.getFlag(), flag)){
+                boolean existsSolvedSession = labSessionService
+                        .findLabSessionsByUserIdAndLabId(user.getId(), labId)
+                        .stream()
+                        .anyMatch(s -> s.getStatus() == ESessionStatus.SOLVED);
+
                 labSession.setStatus(ESessionStatus.SOLVED);
                 labSession.setCompletedAt(Instant.now());
-                labSession.setFlagSubmitted(flag);
                 labSessionRepository.save(labSession);
+
+                if (!existsSolvedSession) {
+                    Duration duration = Duration.between(labSession.getStartedAt(), labSession.getCompletedAt());
+                    int timeSolved = (int) duration.toMinutes();
+
+                    int errorCount = labSession.getCounterErrorFlag() != null ? labSession.getCounterErrorFlag() : 0;
+
+                    UserStar userStar = new UserStar();
+                    userStar.setUser(user);
+                    userStar.setLab(lab);
+                    userStar.setTimeSolved(timeSolved);
+                    userStar.setErrorCount(errorCount);
+                    userStar.setStartedAt(labSession.getStartedAt());
+                    userStar.setCompletedAt(labSession.getCompletedAt());
+
+                    userStarRepository.save(userStar);
+                    leaderboardService.updateStatsOnFirstSolve(user, timeSolved, errorCount);
+                }
                 labRunnerService.stopAfter(labSession, Duration.ofSeconds(180),true);
                 Instant completedAt = Instant.now();
 
@@ -161,6 +187,7 @@ public class LabSessionController {
                         ))
                         .generateReport(false)
                         .build());
+
                 return ResponseEntity.ok("Flag is correct! Lab completed.");
             }else{
                 int counterErrorFlag = labSession.getCounterErrorFlag() != null ? labSession.getCounterErrorFlag() : 0;

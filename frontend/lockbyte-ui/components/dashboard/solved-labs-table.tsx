@@ -18,6 +18,7 @@ interface SolvedLab {
   difficulty: string;
   completedAt: string;
   errorCount: number;
+  firstTimeSolvedLab: number;
 }
 
 interface SolvedLabsTableProps {
@@ -41,6 +42,15 @@ function difficultyClass(difficulty: string) {
 
 export function SolvedLabsTable({ solvedLabs }: SolvedLabsTableProps) {
   const [sortOrder, setSortOrder] = useState<"asc" | "desc">("desc");
+
+  const formatSecondsToMinutesAndSeconds = (totalSeconds: number) => {
+    const minutes = Math.floor(totalSeconds / 60);
+    const seconds = totalSeconds % 60;
+    if (minutes > 0) {
+      return `${minutes}m ${seconds}s`;
+    }
+    return `${seconds}s`;
+  };
 
   const sortedLabs = [...solvedLabs].sort((a, b) => {
     const dateA = new Date(a.completedAt).getTime();
@@ -70,6 +80,7 @@ export function SolvedLabsTable({ solvedLabs }: SolvedLabsTableProps) {
                 <ArrowUpDown className="ml-2 h-4 w-4" />
               </Button>
             </TableHead>
+            <TableHead className="text-white font-semibold">Time to First Solve</TableHead>
             <TableHead className="text-white font-semibold">Error Count</TableHead>
           </TableRow>
         </TableHeader>
@@ -88,15 +99,16 @@ export function SolvedLabsTable({ solvedLabs }: SolvedLabsTableProps) {
                 <span className={difficultyClass(lab.difficulty)}>{lab.difficulty}</span>
               </TableCell>
               <TableCell className="py-3">
-                {new Date(lab.completedAt).toLocaleDateString('en-GB')}
+                {new Date(lab.completedAt).toLocaleString('en-GB')}
               </TableCell>
+              <TableCell className="py-3">{formatSecondsToMinutesAndSeconds(lab.firstTimeSolvedLab)}</TableCell>
               <TableCell className="py-3">{lab.errorCount}</TableCell>
             </TableRow>
           ))}
 
           {sortedLabs.length === 0 && (
             <TableRow className="border-t border-white/10">
-              <TableCell colSpan={4} className="py-6 text-center text-white/70">
+              <TableCell colSpan={5} className="py-6 text-center text-white/70">
                 No labs in this range.
               </TableCell>
             </TableRow>

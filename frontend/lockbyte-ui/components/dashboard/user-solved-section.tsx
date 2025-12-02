@@ -20,6 +20,7 @@ type LabItem = {
     completedAt: string; // ISO
     labId: number;
     errorCount: number;
+    firstTimeSolvedLab: number;
 };
 
 export function UserSolvedSection({
@@ -32,14 +33,11 @@ export function UserSolvedSection({
     const [labs, setLabs] = useState<LabItem[]>(labsProp ?? []);
     const [isLoading, setIsLoading] = useState<boolean>(loadingProp);
 
-    // ✅ MẶC ĐỊNH: KHÔNG LỌC (ALL-TIME)
     const [dateRange, setDateRange] = useState<DateRange | undefined>(undefined);
 
-    // Đồng bộ khi parent đổi labs / loading
     useEffect(() => { if (labsProp) setLabs(labsProp); }, [labsProp]);
     useEffect(() => { setIsLoading(loadingProp); }, [loadingProp]);
 
-    // Filter robust + bỏ record lỗi định dạng thời gian
     const filtered = useMemo(() => {
         const all = (labs ?? []).filter(x => !!x?.completedAt);
         if (!dateRange?.from && !dateRange?.to) return all;
@@ -48,7 +46,7 @@ export function UserSolvedSection({
         const to = dateRange?.to ? endOfDay(dateRange.to) : null;
 
         return all.filter((x) => {
-            const t = parseISO(x.completedAt); // xử lý ISO có/không 'Z'
+            const t = parseISO(x.completedAt);
             if (isNaN(+t)) return false;
             if (from && t < from) return false;
             if (to && t > to) return false;

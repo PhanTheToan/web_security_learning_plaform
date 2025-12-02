@@ -44,6 +44,21 @@ public interface LabSessionRepository extends JpaRepository<LabSession, Integer>
 
 
     List<LabSession> findAllByLabId(Long labId);
+    @Query("""
+    SELECT ls
+    FROM LabSession ls
+    WHERE ls.lab.id = :labId
+      AND ls.status = 'SOLVED'
+      AND ls.completedAt = (
+          SELECT MIN(ls2.completedAt)
+          FROM LabSession ls2
+          WHERE ls2.lab.id = :labId
+            AND ls2.user.id = ls.user.id
+            AND ls2.status = 'SOLVED'
+      )
+    ORDER BY ls.completedAt DESC
+    """)
+    List<LabSession> findAllFirstSolvedSessionsByLabId(@Param("labId") Integer labId);
 
     @Query("""
 SELECT ls.lab.difficulty, COUNT(DISTINCT ls.lab.id)

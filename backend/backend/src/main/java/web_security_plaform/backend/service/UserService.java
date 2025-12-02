@@ -28,6 +28,7 @@ import web_security_plaform.backend.repository.RoleRepository;
 import web_security_plaform.backend.repository.UserRepository;
 import web_security_plaform.backend.security.jwt.JwtUtils;
 
+import java.time.Duration;
 import java.time.Instant;
 import java.util.HashSet;
 import java.util.List;
@@ -282,13 +283,17 @@ public class UserService {
     public ResponseEntity<?> getUserLabs(User user) {
         List<LabSession> labSessions = labSessionRepository.findFirstSolvedSessionsWithLab(user.getId());
         List<labSolvedLevelStatisticsResponse> response = labSessions.stream()
-                .map(ls -> new labSolvedLevelStatisticsResponse(
+                .map(ls -> {
+                    long solvedTime = Duration.between(ls.getStartedAt(), ls.getCompletedAt()).toSeconds();
+                    return new labSolvedLevelStatisticsResponse(
                         ls.getLab().getName(),
                         ls.getLab().getDifficulty().name(),
                         ls.getCompletedAt(),
-                        ls.getLab().getId(),
-                        ls.getCounterErrorFlag() != null ? ls.getCounterErrorFlag() : 0
-                ))
+                        (int) solvedTime,
+                            ls.getLab().getId(),
+                        ls.getCounterErrorFlag() != null ? ls.getCounterErrorFlag() : 0);
+
+                })
                 .collect(Collectors.toList());
         return ResponseEntity.ok(response);
     }
@@ -299,6 +304,7 @@ public class UserService {
             String labName,
             String difficulty,
             Instant completedAt,
+            int firstTimeSolvedLab,
             int labId,
             int errorCount
 

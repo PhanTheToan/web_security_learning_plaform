@@ -5,6 +5,7 @@ export interface User {
   roles: string[];
   fullName: string;
   avatarUrl?: string;
+  rank?: string;
 }
 
 export interface SignUpData {

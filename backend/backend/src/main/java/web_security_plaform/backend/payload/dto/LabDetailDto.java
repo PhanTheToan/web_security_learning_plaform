@@ -3,6 +3,7 @@ package web_security_plaform.backend.payload.dto;
 import lombok.Data;
 import web_security_plaform.backend.model.ENum.EDifficulty;
 import web_security_plaform.backend.model.ENum.EStatus;
+import web_security_plaform.backend.service.LabService;
 
 import java.util.List;
 import java.util.Set;
@@ -23,5 +24,6 @@ public class LabDetailDto {
     private Integer timeoutMinutes;
     private String linkSource;
     private List<CommunitySolutionsDTO> communitySolutionDTOS;
+    private List<LabService.RecentSolvedLab> recentSolvedLabs;
     private String flag;
 }

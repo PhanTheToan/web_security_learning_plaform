@@ -28,6 +28,7 @@ import web_security_plaform.backend.repository.RoleRepository;
 import web_security_plaform.backend.repository.UserRepository;
 import web_security_plaform.backend.security.jwt.JwtUtils;
 import web_security_plaform.backend.security.services.UserDetailsImpl;
+import web_security_plaform.backend.service.LeaderboardService;
 
 import java.time.LocalDateTime;
 import java.util.*;
@@ -55,6 +56,9 @@ public class AuthController {
 
     @Autowired
     JwtUtils jwtUtils;
+
+    @Autowired
+    private LeaderboardService leaderboardService;
 
     @GetMapping("/hello")
     public String hello() {
@@ -134,7 +138,8 @@ public class AuthController {
             List<String> roles = user.getRoles().stream()
                     .map(role -> role.getName().name())
                     .collect(Collectors.toList());
-            return ResponseEntity.ok(new UserInfoResponse(user.getId(), username, user.getEmail(), roles, user.getFullName()));
+            String rank = leaderboardService.getUserRankString(user.getId());
+            return ResponseEntity.ok(new UserInfoResponse(user.getId(), username, user.getEmail(), roles, user.getFullName(), rank));
         } else {
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Authentication failed!");
         }

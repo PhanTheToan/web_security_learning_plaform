@@ -15,6 +15,7 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog"
+import { Textarea } from "@/components/ui/textarea"
 import { toast } from "sonner"
 import { ExternalLink, Check, X } from "lucide-react"
 
@@ -26,6 +27,7 @@ interface CommunitySolution {
   labId: number
   userId: number
   fullName: string
+  feedback?: string
 }
 
 type SolutionToUpdate = {
@@ -39,6 +41,7 @@ export function CommunitySolutionsTable({ labId }: { labId: string }) {
   const [isLoading, setIsLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
   const [solutionToUpdate, setSolutionToUpdate] = useState<SolutionToUpdate | null>(null)
+  const [adminFeedback, setAdminFeedback] = useState("")
 
   const fetchSolutions = useCallback(async () => {
     setIsLoading(true)
@@ -65,9 +68,14 @@ export function CommunitySolutionsTable({ labId }: { labId: string }) {
 
     const { id, action } = solutionToUpdate
     const approve = action === "approve"
+    
+    let url = `${process.env.NEXT_PUBLIC_API_URL}/lab/community-solutions/${id}?approve=${approve}`
+    if (adminFeedback) {
+      url += `&adminFeedback=${encodeURIComponent(adminFeedback)}`
+    }
 
     try {
-      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/lab/community-solutions/${id}?approve=${approve}`, {
+      const res = await fetch(url, {
         method: "PUT",
         credentials: "include",
       })
@@ -83,6 +91,7 @@ export function CommunitySolutionsTable({ labId }: { labId: string }) {
       toast.error(errorMessage)
     } finally {
       setSolutionToUpdate(null)
+      setAdminFeedback("")
     }
   }
 
@@ -122,6 +131,7 @@ export function CommunitySolutionsTable({ labId }: { labId: string }) {
                   <TableHead className="text-white font-semibold">Write-up</TableHead>
                   <TableHead className="text-white font-semibold">YouTube</TableHead>
                   <TableHead className="text-white font-semibold">Status</TableHead>
+                  <TableHead className="text-white font-semibold">Feedback</TableHead>
                   <TableHead className="text-white font-semibold text-right">Actions</TableHead>
                 </TableRow>
               </TableHeader>
@@ -140,6 +150,7 @@ export function CommunitySolutionsTable({ labId }: { labId: string }) {
                       </a>
                     </TableCell>
                     <TableCell>{getStatusBadge(solution.status)}</TableCell>
+                    <TableCell className="text-sm text-white/80">{solution.feedback || "N/A"}</TableCell>
                     <TableCell className="text-right">
                       <Button
                         variant="ghost"
@@ -178,6 +189,20 @@ export function CommunitySolutionsTable({ labId }: { labId: string }) {
               <span className="font-bold text-amber-400">{solutionToUpdate?.fullName}</span>?
             </AlertDialogDescription>
           </AlertDialogHeader>
+          
+          {solutionToUpdate?.action && (
+            <div className="my-4">
+              <label htmlFor="feedback" className="text-sm font-medium text-white/90 mb-2 block">Feedback (Optional)</label>
+              <Textarea
+                id="feedback"
+                placeholder={`Provide a reason for ${solutionToUpdate.action === 'approve' ? 'approval' : 'rejection'}...`}
+                value={adminFeedback}
+                onChange={(e) => setAdminFeedback(e.target.value)}
+                className="bg-slate-800/60 border-slate-700 text-white"
+              />
+            </div>
+          )}
+
           <AlertDialogFooter>
             <AlertDialogCancel
               onClick={() => setSolutionToUpdate(null)}

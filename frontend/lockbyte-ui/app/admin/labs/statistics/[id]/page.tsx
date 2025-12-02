@@ -8,6 +8,7 @@ import { AverageTimeStat } from "@/components/admin/labs/statistics/average-time
 import { LabActivityChart } from "@/components/admin/labs/statistics/lab-activity-chart"
 import { UserLabActivityTable } from "@/components/admin/labs/statistics/user-lab-activity-table"
 import { CommunitySolutionsTable } from "@/components/admin/labs/statistics/community-solutions-table"
+import { LabLogsTable } from "@/components/admin/labs/statistics/lab-logs-table"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { toast } from "sonner"
 
@@ -81,12 +82,21 @@ export default function LabStatisticsPage() {
           >
             Community Solutions
           </TabsTrigger>
+          <TabsTrigger
+            value="lab-logs"
+            className="data-[state=active]:bg-gradient-to-br data-[state=active]:from-[#9747ff]/20 data-[state=active]:to-[#5a5bed]/10 data-[state=active]:text-white rounded-lg text-white/70"
+          >
+            Lab Logs
+          </TabsTrigger>
         </TabsList>
         <TabsContent value="user-activity">
           <UserLabActivityTable labId={labId} />
         </TabsContent>
         <TabsContent value="community-solutions">
           <CommunitySolutionsTable labId={labId} />
+        </TabsContent>
+        <TabsContent value="lab-logs">
+          <LabLogsTable labId={labId} />
         </TabsContent>
       </Tabs>
     </div>

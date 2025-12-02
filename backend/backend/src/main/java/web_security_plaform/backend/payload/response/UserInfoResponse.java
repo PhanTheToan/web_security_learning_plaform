@@ -22,6 +22,9 @@ public class UserInfoResponse {
     @Setter
     private String fullName;
 
+    @Setter
+    private String rank;
+
 
 
     public UserInfoResponse(Integer id, String username, String email, List<String> roles) {
@@ -31,12 +34,13 @@ public class UserInfoResponse {
         this.roles = roles;
     }
 
-    public UserInfoResponse(Integer id, String username, String email, List<String> roles, String fullName) {
+    public UserInfoResponse(Integer id, String username, String email, List<String> roles, String fullName, String rank) {
         this.id = id;
         this.username = username;
         this.email = email;
         this.roles = roles;
         this.fullName = fullName;
+        this.rank = rank;
     }
 
 }

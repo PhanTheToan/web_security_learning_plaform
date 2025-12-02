@@ -8,6 +8,7 @@ import { UserProfileCard } from "@/components/dashboard/user-profile-card";
 import { DashboardStats } from "@/components/dashboard/dashboard-stats";
 import { CommunitySolutionsTab } from "@/components/dashboard/community-solutions-tab";
 import { UserSolvedSection } from "@/components/dashboard/user-solved-section";
+import { useAuth } from "@/contexts/AuthContext";
 
 const apiBaseUrl = process.env.NEXT_PUBLIC_API_URL as string;
 
@@ -76,6 +77,8 @@ export default function DashboardPage() {
   const [loading, setLoading] = useState(true);
   const [labsLoading, setLabsLoading] = useState(true);
   const [errorMsg, setErrorMsg] = useState<string | null>(null);
+
+  const { user } = useAuth();
 
   // Load dashboard + community solutions
   useEffect(() => {
@@ -146,8 +149,9 @@ export default function DashboardPage() {
     () => ({
       fullName: dashboardData?.fullName ?? "User",
       avatarUrl: "/avatar.png",
+      rank: user?.rank,
     }),
-    [dashboardData]
+    [dashboardData, user]
   );
 
   return (

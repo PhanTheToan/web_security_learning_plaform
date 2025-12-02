@@ -463,47 +463,82 @@ public class LabRunnerService {
 
     public ResponseEntity<?> getUserLabCountStatistics(Long labId) {
         List<LabSession> sessions = labSessionRepository.findAllByLabId(labId);
-        Set<UserLabCountStatistics> userId = new HashSet<>();
-        for (LabSession s : sessions) {
-            Integer uid = s.getUser().getId().intValue();
-            String fullName = s.getUser().getFullName() != null ? s.getUser().getFullName() : s.getUser().getUsername();
-            int errorCount = s.getCounterErrorFlag() != null ? s.getCounterErrorFlag() : 0;
-            int labAccessCount = (int) sessions.stream().filter(sess -> sess.getUser().getId().equals(s.getUser().getId())).count();
-            int totalSolved = (int) sessions.stream().filter(sess -> sess.getUser().getId().equals(s.getUser().getId()) && sess.getStatus() == ESessionStatus.SOLVED).count();
 
-            Double fastestSolveTimeSeconds = sessions.stream()
-                    .filter(sess -> sess.getUser().getId().equals(s.getUser().getId()) && sess.getStatus() == ESessionStatus.SOLVED
-                            && sess.getStartedAt() != null && sess.getCompletedAt() != null)
-                    .mapToDouble(sess -> Duration.between(sess.getStartedAt(), sess.getCompletedAt()).getSeconds())
-                    .min()
-                    .orElse(Double.NaN);
+        Map<Long, List<LabSession>> sessionsByUser = sessions.stream()
+                .collect(Collectors.groupingBy(sess -> Long.valueOf(sess.getUser().getId())));
 
-            userId.add(new UserLabCountStatistics(
-                    uid,
-                    fullName,
-                    errorCount,
-                    labAccessCount,
-                    totalSolved,
-                    Double.isNaN(fastestSolveTimeSeconds) ? null : fastestSolveTimeSeconds
-            ));
-        }
+        List<UserLabCountStatistics> stats = sessionsByUser.entrySet().stream()
+                .map(entry -> {
+                    Long userId = entry.getKey();
+                    List<LabSession> userSessions = entry.getValue();
 
-        return ResponseEntity.ok(userId);
+                    User user = userSessions.get(0).getUser();
+                    String fullName = user.getFullName() != null ? user.getFullName() : user.getUsername();
+
+                    int labAccessCount = userSessions.size();
+
+                    int errorCount = userSessions.stream()
+                            .mapToInt(sess -> sess.getCounterErrorFlag() != null ? sess.getCounterErrorFlag() : 0)
+                            .sum();
+
+                    List<LabSession> solvedSessions = userSessions.stream()
+                            .filter(sess -> sess.getStatus() == ESessionStatus.SOLVED
+                                    && sess.getStartedAt() != null
+                                    && sess.getCompletedAt() != null)
+                            .sorted(Comparator.comparing(LabSession::getCompletedAt))
+                            .toList();
+
+                    int totalSolved = solvedSessions.size();
+
+                    Double firstSolvedTimeSeconds = null;
+                    Double fastestSolveTimeSeconds = null;
+                    Double averageSolveTimeSeconds = null;
+
+                    if (!solvedSessions.isEmpty()) {
+                        List<Long> durations = solvedSessions.stream()
+                                .map(sess -> Duration.between(sess.getStartedAt(), sess.getCompletedAt()).getSeconds())
+                                .toList();
+
+                        long firstSolveDuration = durations.get(0); // do đã sort theo completedAt
+                        long fastestDuration = durations.stream().mapToLong(Long::longValue).min().orElse(0L);
+                        double averageDuration = durations.stream().mapToLong(Long::longValue).average().orElse(0.0);
+
+                        firstSolvedTimeSeconds = (double) firstSolveDuration;
+                        fastestSolveTimeSeconds = (double) fastestDuration;
+                        averageSolveTimeSeconds = averageDuration;
+                    }
+
+                    return new UserLabCountStatistics(
+                            userId.intValue(),
+                            fullName,
+                            errorCount,
+                            labAccessCount,
+                            totalSolved,
+                            firstSolvedTimeSeconds,
+                            fastestSolveTimeSeconds,
+                            averageSolveTimeSeconds
+                    );
+                })
+                .toList();
+
+        // 4. Trả về list thống kê
+        return ResponseEntity.ok(stats);
     }
 
     public ResponseEntity<?> getCommunitySolutionsForUser(User user) {
         List<CommunitySolution> communitySolution = communitySolutionRepository.findAllCommunitySolutionByUserId(user.getId());
 
-        List<CommunitySolutionDTO> out = new ArrayList<>();
+        List<CommunitySolutionDTOUser> out = new ArrayList<>();
         communitySolution.forEach(communitySolution1 -> {
-            CommunitySolutionDTO dto = new CommunitySolutionDTO(
+            CommunitySolutionDTOUser dto = new CommunitySolutionDTOUser(
                     communitySolution1.getId(),
                     communitySolution1.getStatus(),
                     communitySolution1.getWriteUpUrl(),
                     communitySolution1.getYoutubeUrl(),
                     communitySolution1.getLab().getId(),
                     communitySolution1.getUser().getId(),
-                    communitySolution1.getUser().getFullName() != null ? communitySolution1.getUser().getFullName() : communitySolution1.getUser().getUsername()
+                    communitySolution1.getUser().getFullName() != null ? communitySolution1.getUser().getFullName() : communitySolution1.getUser().getUsername(),
+                    communitySolution1.getFeedback() != null ? communitySolution1.getFeedback() : "No feedback provided"
             );
            out.add(dto);
         });
@@ -579,7 +614,7 @@ public class LabRunnerService {
 
 
 
-    public ResponseEntity<?> updateStatusCommunitySolution(int solutionId, Boolean approved) {
+    public ResponseEntity<?> updateStatusCommunitySolution(int solutionId, Boolean approved, String feedback) {
         CommunitySolution communitySolution = communitySolutionRepository.findById(solutionId).orElse(null);
         if (communitySolution == null) {
             return ResponseEntity.badRequest().body("Community solution not found");
@@ -590,6 +625,7 @@ public class LabRunnerService {
         String subjectStatus = approved != null && approved ? "Approved" : "Rejected";
         if (approved != null && approved) {
             communitySolution.setStatus(ESolutionStatus.Approved);
+            communitySolution.setFeedback(feedback != null ? feedback : "No feedback provided");
             Map<String, Object> model = Map.of(
                     "subject", subjectStatus + " Status" + lab.getName(),
                     "user", Map.of(
@@ -625,15 +661,17 @@ public class LabRunnerService {
                     ),
                     "lab", Map.of(
                             "id", lab.getId(),
-                            "name", lab.getName()
+                            "name", lab.getName(),
+                            "feedback", feedback != null ? feedback : "No feedback provided"
 
                     )
             );
+            communitySolution.setFeedback(feedback != null ? feedback : "No feedback provided");
 
             publisher.publishEvent(EmailEvent.builder()
                     .to(user.getEmail())
                     .subject("🎉 " + subjectStatus + " Community Solution: " + lab.getName())
-                    .templateName("community-solution-rejected")
+                    .templateName("email_templates_community-solution-rejected")
                     .model(model)
                     .partials(List.of(
                     ))
@@ -656,21 +694,44 @@ public class LabRunnerService {
     public ResponseEntity<?> getAllCommunitySolutions(int labId) {
         List<CommunitySolution> communitySolutions = communitySolutionRepository.findAllByLabId(labId);
 
-        List<CommunitySolutionDTO> out = new ArrayList<>();
+        List<CommunitySolutionDTOUser> out = new ArrayList<>();
         communitySolutions.forEach(communitySolution1 -> {
-            CommunitySolutionDTO dto = new CommunitySolutionDTO(
+            CommunitySolutionDTOUser dto = new CommunitySolutionDTOUser(
                     communitySolution1.getId(),
                     communitySolution1.getStatus(),
                     communitySolution1.getWriteUpUrl(),
                     communitySolution1.getYoutubeUrl(),
                     communitySolution1.getLab().getId(),
                     communitySolution1.getUser().getId(),
-                    communitySolution1.getUser().getFullName() != null ? communitySolution1.getUser().getFullName() : communitySolution1.getUser().getUsername()
+                    communitySolution1.getUser().getFullName() != null ? communitySolution1.getUser().getFullName() : communitySolution1.getUser().getUsername(),
+                    communitySolution1.getFeedback() != null ? communitySolution1.getFeedback() : "No feedback provided"
             );
             out.add(dto);
         });
         return ResponseEntity.ok(out);
 
+    }
+
+    public ResponseEntity<?> getLabLogs(Long labId) {
+        List<LabSession> sessions = labSessionRepository.findAllByLabId(labId);
+        List<Map<String, Object>> logs = new ArrayList<>();
+
+        for (LabSession session : sessions) {
+            Map<String, Object> logEntry = new HashMap<>();
+            logEntry.put("sessionId", session.getId());
+            logEntry.put("userId", session.getUser().getId());
+            logEntry.put("username", session.getUser().getUsername());
+            logEntry.put("status", session.getStatus());
+            logEntry.put("startedAt", session.getStartedAt());
+            logEntry.put("completedAt", session.getCompletedAt());
+            logEntry.put("expiresAt", session.getExpiresAt());
+            logEntry.put("containerId", session.getContainerId());
+            logEntry.put("flagSubmitted", session.getFlagSubmitted() != null ? session.getFlagSubmitted() : "None");
+            logEntry.put("counterErrorFlag", session.getCounterErrorFlag());
+            logs.add(logEntry);
+        }
+
+        return ResponseEntity.ok(logs.stream().sorted(Comparator.comparing(log -> (Instant) log.get("startedAt"))).collect(Collectors.toList()));
     }
 
     record CommunitySolutionDTO(
@@ -683,15 +744,26 @@ public class LabRunnerService {
             String fullName
     ) {}
 
+    record CommunitySolutionDTOUser(
+            int id,
+            ESolutionStatus status,
+            String writeup,
+            String youtubeUrl,
+            Integer labId,
+            int userId,
+            String fullName,
+            String feedback
+    ) {}
+
     public record UserLabCountStatistics(
-            @Id
             Integer userId,
             String fullName,
-            Integer errorCount,
-            Integer labAccessCount,
-            Integer totalSolved,
-
-            Double fastestSolveTimeSeconds
+            int errorCount,
+            int labAccessCount,
+            int totalSolved,
+            Double firstSolvedTimeSeconds,
+            Double fastestSolveTimeSeconds,
+            Double averageSolveTimeSeconds
     ) {}
 
     public record UserRecentLabs(

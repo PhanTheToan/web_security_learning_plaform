@@ -52,6 +52,9 @@ public class AdminController {
     @Autowired
     private TagService tagService;
 
+    @Autowired
+    private LeaderboardService leaderboardService;
+
     @GetMapping("/labs")
     public ResponseEntity<Page<LabDetailDto>> getAllLabs(@RequestParam(defaultValue = "0") int page,
             @RequestParam(defaultValue = "10") int size) {
@@ -245,6 +248,11 @@ public class AdminController {
         return ResponseEntity.ok(labRunnerService.getAdminStatistics());
     }
 
+
+    @GetMapping("/ranking")
+    public ResponseEntity<List<?>> getFullLeaderboard() {
+        return ResponseEntity.ok(leaderboardService.getFullLeaderboard());
+    }
 
 
 }

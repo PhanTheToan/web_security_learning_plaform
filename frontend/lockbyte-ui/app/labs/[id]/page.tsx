@@ -31,6 +31,7 @@ import MarkdownImage from "@/components/MarkdownImage";
 import { toast } from "@/hooks/use-toast";
 import { Input } from "@/components/ui/input";
 import CommunitySolutions from "@/components/community-solutions";
+import RecentSolves from "@/components/RecentSolves";
 
 // Reusing markdown rendering logic from Topic Detail Page
 function fixUnclosedFences(md: string) {
@@ -442,6 +443,9 @@ export default function LabDetailPage() {
             </div>
           </div>
         </div>
+        {lab.recentSolvedLabs && lab.recentSolvedLabs.length > 0 && (
+          <RecentSolves solves={lab.recentSolvedLabs} />
+        )}
       </main>
       <Footer />
     </div>

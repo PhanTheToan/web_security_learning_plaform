@@ -7,6 +7,7 @@ import org.springframework.web.bind.annotation.*;
 import web_security_plaform.backend.model.User;
 import web_security_plaform.backend.payload.dto.UserInfoUserResponse;
 import web_security_plaform.backend.payload.request.UserUpdateRequest;
+import web_security_plaform.backend.service.LeaderboardService;
 import web_security_plaform.backend.service.UserService;
 
 import java.security.Principal;

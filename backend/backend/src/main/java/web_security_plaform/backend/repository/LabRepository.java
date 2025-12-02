@@ -7,6 +7,7 @@ import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 import web_security_plaform.backend.model.Lab;
+import web_security_plaform.backend.model.LabSession;
 import web_security_plaform.backend.model.Tag;
 
 import java.util.List;
@@ -42,12 +43,6 @@ public interface LabRepository extends JpaRepository<Lab, Integer> {
     @Query("SELECT l.difficulty, COUNT(l) FROM Lab l GROUP BY l.difficulty")
     List<Object[]> countLabsByLevel();
 
-    @Query("""
-    SELECT ls.lab.difficulty, COUNT(DISTINCT ls.lab.id)
-    FROM LabSession ls
-    WHERE ls.user.id = ?1 AND ls.status = 'SOLVED'
-    GROUP BY ls.lab.difficulty
-    """)
-    List<Object[]> countLabsSolvedByUserByLevel(Integer id);
+
 
 }

@@ -11,6 +11,7 @@ interface CommunitySolution {
   status: "PENDING" | "APPROVED" | "REJECTED";
   writeup?: string;
   youtubeUrl?: string;
+  feedback?: string;
 }
 
 interface CommunitySolutionsTabProps {
@@ -44,6 +45,7 @@ export function CommunitySolutionsTab({ solutions }: CommunitySolutionsTabProps)
             <TableHead className="text-white font-semibold">Status</TableHead>
             <TableHead className="text-white font-semibold">Writeup</TableHead>
             <TableHead className="text-white font-semibold">YouTube URL</TableHead>
+            <TableHead className="text-white font-semibold">Admin Feedback</TableHead>
           </TableRow>
         </TableHeader>
 
@@ -91,12 +93,15 @@ export function CommunitySolutionsTab({ solutions }: CommunitySolutionsTabProps)
                   <span className="text-white/60">N/A</span>
                 )}
               </TableCell>
+              <TableCell className="py-3 text-sm text-white/80">
+                {solution.feedback || <span className="text-white/60">N/A</span>}
+              </TableCell>
             </TableRow>
           ))}
 
           {solutions.length === 0 && (
             <TableRow className="border-t border-white/10">
-              <TableCell colSpan={4} className="py-6 text-center text-white/70">
+              <TableCell colSpan={5} className="py-6 text-center text-white/70">
                 No community solutions found.
               </TableCell>
             </TableRow>

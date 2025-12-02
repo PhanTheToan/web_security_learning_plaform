@@ -42,8 +42,8 @@ export function Header() {
           </Link>
 
           <nav className="hidden md:flex items-center gap-8">
-            <Link href="/about" className="text-[#ffffff]/80 hover:text-[#ffffff] text-sm transition-colors">
-              About
+            <Link href="/ranking" className="text-[#ffffff]/80 hover:text-[#ffffff] text-sm transition-colors">
+              Ranking
             </Link>
             <Link href="/topics" className="text-[#ffffff]/80 hover:text-[#ffffff] text-sm transition-colors">
               Topic

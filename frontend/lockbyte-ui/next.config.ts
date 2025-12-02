@@ -12,6 +12,10 @@ const nextConfig: NextConfig = {
         protocol: 'https',
         hostname: 'hackmd.io',
       },
+      {
+        protocol: 'https',
+        hostname: 'tse3.mm.bing.net',
+      }
     ],
   },
 };

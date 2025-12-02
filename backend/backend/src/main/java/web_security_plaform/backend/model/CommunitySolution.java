@@ -36,6 +36,9 @@ public class CommunitySolution {
     @Column(name = "youtube_url", length = 255)
     private String youtubeUrl;
 
+    @Column(name = "feedback", length = 1000)
+    private String feedback;
+
     @NotNull
     @Enumerated(EnumType.STRING)
     @Column(nullable = false)

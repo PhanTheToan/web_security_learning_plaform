@@ -9,6 +9,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import web_security_plaform.backend.model.ENum.EStatus;
 import web_security_plaform.backend.model.Lab;
+import web_security_plaform.backend.model.LabSession;
 import web_security_plaform.backend.model.Tag;
 import web_security_plaform.backend.model.User;
 import web_security_plaform.backend.payload.dto.CommunitySolutionsDTO;
@@ -18,8 +19,11 @@ import web_security_plaform.backend.payload.dto.TagDTO;
 import web_security_plaform.backend.payload.request.LabRequest;
 import web_security_plaform.backend.repository.CommunitySolutionRepository;
 import web_security_plaform.backend.repository.LabRepository;
+import web_security_plaform.backend.repository.LabSessionRepository;
 import web_security_plaform.backend.repository.TagRepository;
 
+import java.time.Instant;
+import java.time.LocalDate;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -30,6 +34,9 @@ public class LabService {
 
     @Autowired
     private CommunitySolutionRepository communitySolutionRepository;
+
+    @Autowired
+    private LabSessionRepository labSessionRepository;
 
     @Autowired
     private TagRepository tagRepository;
@@ -189,10 +196,21 @@ public class LabService {
         dto.setTimeoutMinutes(lab.getTimeoutMinutes());
         dto.setLinkSource(lab.getLinkSource());
 
+        List<LabSession> labSessions =
+                labSessionRepository.findAllFirstSolvedSessionsByLabId(lab.getId());
+
+        List<RecentSolvedLab> recentFirstSolves = labSessions.stream()
+                .map(ls -> new RecentSolvedLab(
+                        ls.getUser().getFullName(),
+                        ls.getCompletedAt()
+                ))
+                .toList();
+        dto.setRecentSolvedLabs(recentFirstSolves);
         dto.setCommunitySolutionDTOS(communitySolutions);
 
         return dto;
     }
+
 
     public Lab updateLabs(LabRequest labRequest, User author, int id) {
         Lab newLab = labRepository.findById(id)
@@ -288,4 +306,8 @@ public class LabService {
         return labRepository.findById(labId)
                 .orElseThrow(() -> new RuntimeException("Lab not found with id: " + labId));
     }
+    public record RecentSolvedLab(
+           String fullName,
+           Instant lastSolvedDate
+    ) { }
 }

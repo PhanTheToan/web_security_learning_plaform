@@ -240,9 +240,10 @@ public class LabController {
     @PreAuthorize("hasRole('ADMIN')")
     @PutMapping("/community-solutions/{solutionId}")
     public ResponseEntity<?> updateStatus(@PathVariable int solutionId,
-                                                     @RequestParam Boolean approve
+                                                     @RequestParam Boolean approve,
+                                          @RequestParam(required = false) String adminFeedback
                                                      ) {
-        return ResponseEntity.ok(labRunnerService.updateStatusCommunitySolution(solutionId, approve));
+        return ResponseEntity.ok(labRunnerService.updateStatusCommunitySolution(solutionId, approve, adminFeedback));
     }
 
     @PreAuthorize("hasRole('ADMIN')")
@@ -251,6 +252,11 @@ public class LabController {
         return ResponseEntity.ok(labRunnerService.getAllCommunitySolutions(labId));
     }
 
+    @PreAuthorize("hasRole('ADMIN')")
+    @GetMapping("/logs/{labId}")
+    public ResponseEntity<?> getLabLogs(@PathVariable long labId) {
+        return ResponseEntity.ok(labRunnerService.getLabLogs(labId));
+    }
 
 //    @PreAuthorize("hasRole('ADMIN')")
 //    @PostMapping("/images/cleanup")

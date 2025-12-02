@@ -10,6 +10,7 @@ import web_security_plaform.backend.model.ENum.EStatus;
 import web_security_plaform.backend.model.Topic;
 import web_security_plaform.backend.payload.dto.TopicsResponse;
 import web_security_plaform.backend.repository.TopicRepository;
+import web_security_plaform.backend.service.LeaderboardService;
 import web_security_plaform.backend.service.TagService;
 import web_security_plaform.backend.service.TopicService;
 
@@ -27,6 +28,9 @@ public class PublicController {
 
     @Autowired
     private TopicRepository topicRepository;
+
+    @Autowired
+    private LeaderboardService leaderboardService;
 
     @GetMapping("/tags")
     public List<?> getTagName(){
@@ -48,5 +52,9 @@ public class PublicController {
             return ResponseEntity.notFound().build();
         }
         return ResponseEntity.ok(topicService.getTopicDetailById(id));
+    }
+    @GetMapping("/top-10")
+    public ResponseEntity<List<?>> getTop10Leaderboard() {
+        return ResponseEntity.ok(leaderboardService.getTop10Leaderboard());
     }
 }

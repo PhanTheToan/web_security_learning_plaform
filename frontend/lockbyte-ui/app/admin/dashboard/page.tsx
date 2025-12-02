@@ -5,6 +5,7 @@ import { StatCard } from "@/components/admin/stat-card"
 import { SolvedLabsChart } from "@/components/admin/dashboard/solved-labs-chart"
 import { RecentActivity } from "@/components/admin/recent-activity"
 import { DockerManager } from "@/components/admin/dashboard/docker-manager"
+import { RankingTable } from "@/components/admin/dashboard/ranking-table"
 import { Icons } from "@/components/icons"
 import { useEffect, useState } from "react"
 import { toast } from "sonner"
@@ -93,6 +94,11 @@ export default function AdminDashboardPage() {
       {/* Recent Activity Area */}
       <div>
         <RecentActivity />
+      </div>
+
+      {/* Ranking Table Area */}
+      <div>
+        <RankingTable />
       </div>
 
       {/* Docker Manager Area */}
