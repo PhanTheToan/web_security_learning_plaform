@@ -11,7 +11,9 @@ import web_security_plaform.backend.config.R2HandlebarsRenderer;
 import web_security_plaform.backend.model.EmailEvent;
 import web_security_plaform.backend.model.EmailLog;
 import web_security_plaform.backend.model.User;
+import web_security_plaform.backend.repository.EmailGroupMemberRepository;
 import web_security_plaform.backend.repository.UserRepository;
+import web_security_plaform.backend.service.EmailBroadcastService;
 import web_security_plaform.backend.service.MailService;
 import org.springframework.context.ApplicationEventPublisher;
 
@@ -30,6 +32,8 @@ public class AdminEmailController {
     private final R2HandlebarsRenderer renderer;
     private final MailService mailService;
     private final ApplicationEventPublisher publisher;
+    private final EmailGroupMemberRepository emailGroupMemberRepository;
+    private final EmailBroadcastService emailBroadcastService;
 
     private final UserRepository userRepository;
 
@@ -123,6 +127,20 @@ public class AdminEmailController {
         return ResponseEntity.ok("QUEUED");
     }
 
+    @PostMapping("/broadcast-group")
+    public ResponseEntity<String> broadcastGroup(@RequestBody BroadcastGroupReq req) {
+
+        List<String> cc  = resolveEmails(req.getCcUserIds(), req.getCc());
+        List<String> bcc = resolveEmails(req.getBccUserIds(), req.getBcc());
+
+        String ccStr  = cc.isEmpty()  ? null : String.join(",", cc);
+        String bccStr = bcc.isEmpty() ? null : String.join(",", bcc);
+
+        emailBroadcastService.broadcastGroup(req.getGroupId(), req, ccStr, bccStr);
+
+        return ResponseEntity.ok("QUEUED");
+    }
+
 
 
     @Data
@@ -161,6 +179,12 @@ public class AdminEmailController {
         public Boolean generateReport;
         public String reportKeyPrefix;
     }
+    @Data
+    @NoArgsConstructor
+    public static class BroadcastGroupReq extends SendReqMulti {
+        private Long groupId;
+    }
+
 
     @GetMapping("/logs")
     public ResponseEntity<Page<EmailLog>> getEmailLogs(
@@ -172,4 +196,5 @@ public class AdminEmailController {
         Page<EmailLog> logs = mailService.getEmailLogs(page, size, keyword, status);
         return ResponseEntity.ok(logs);
     }
+
 }

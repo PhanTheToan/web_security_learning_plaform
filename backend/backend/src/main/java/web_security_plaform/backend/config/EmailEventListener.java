@@ -13,7 +13,7 @@ public class EmailEventListener {
 
     private final MailService mailService;
 
-    @Async
+    @Async("mailExecutor")
     @EventListener
     public void handle(EmailEvent e) {
         mailService.sendEmailFromR2(
