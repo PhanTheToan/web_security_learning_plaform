@@ -22,4 +22,7 @@ public interface EmailLogRepository extends JpaRepository<EmailLog, Long> {
             @Param("status") EmailStatus status,
             Pageable pageable
     );
+    Page<EmailLog> findByStatus(EmailStatus status, Pageable pageable);
+    Page<EmailLog> findBySubjectContainingIgnoreCase(String q, Pageable pageable);
+    Page<EmailLog> findByToEmailContainingIgnoreCase(String q, Pageable pageable);
 }
