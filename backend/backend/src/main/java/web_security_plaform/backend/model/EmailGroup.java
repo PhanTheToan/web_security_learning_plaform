@@ -4,10 +4,11 @@ import jakarta.persistence.*;
 import lombok.*;
 
 @Data
-@AllArgsConstructor
 @NoArgsConstructor
+@AllArgsConstructor
+@Builder
 @Entity
-@Table(name="email_group")
+@Table(name = "email_group")
 public class EmailGroup {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)

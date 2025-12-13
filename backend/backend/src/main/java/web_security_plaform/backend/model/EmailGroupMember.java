@@ -25,5 +25,5 @@ public class EmailGroupMember {
     private Long groupId;
 
     @Column(name="user_id", nullable = false)
-    private Integer userId;
+    private Long userId;
 }

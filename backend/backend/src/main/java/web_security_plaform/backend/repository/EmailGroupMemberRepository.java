@@ -10,13 +10,13 @@ import java.util.List;
 
 public interface EmailGroupMemberRepository extends JpaRepository<EmailGroupMember, Long> {
 
-    boolean existsByGroupIdAndUserId(Long groupId, Integer userId);
+    boolean existsByGroupIdAndUserId(Long groupId, Long userId);
 
     long countByGroupId(Long groupId);
 
     @Modifying
     @Query("delete from EmailGroupMember m where m.groupId = :groupId and m.userId in :userIds")
-    int deleteMembers(@Param("groupId") Long groupId, @Param("userIds") List<Integer> userIds);
+    int deleteMembers(@Param("groupId") Long groupId, @Param("userIds") List<Long> userIds);
 
     @Query("""
         select u.email
@@ -40,5 +40,5 @@ public interface EmailGroupMemberRepository extends JpaRepository<EmailGroupMemb
               where m.groupId = :groupId
           )
     """)
-    Page<Integer> findUserIdsByGroupId(@Param("groupId") Long groupId, Pageable pageable);
+    Page<Long> findUserIdsByGroupId(@Param("groupId") Long groupId, Pageable pageable);
 }

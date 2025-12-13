@@ -1,21 +1,23 @@
 package web_security_plaform.backend.model;
 
+import web_security_plaform.backend.model.ENum.EmailJobStatus;
 import jakarta.persistence.*;
 import lombok.*;
-import web_security_plaform.backend.model.ENum.EmailJobStatus;
 
 import java.time.LocalDateTime;
 
-@Data @NoArgsConstructor @AllArgsConstructor @Builder
+@Data
+@NoArgsConstructor
+@AllArgsConstructor
+@Builder
 @Entity
 @Table(name = "email_job",
-        indexes = {
-                @Index(name="idx_job_status", columnList="status"),
-                @Index(name="idx_job_group", columnList="group_id")
-        })
+       indexes = {
+         @Index(name="idx_job_status", columnList="status"),
+         @Index(name="idx_job_group", columnList="group_id")
+       })
 public class EmailJob {
-    @Id
-    @Column(length = 64)
+    @Id @Column(length = 64)
     private String id; // e.g. JOB-20251214-000001
 
     @Column(name="group_id", nullable=false)
@@ -31,12 +33,15 @@ public class EmailJob {
     @Column(nullable=false, length=32)
     private EmailJobStatus status;
 
+    @Builder.Default
     @Column(nullable=false)
     private Integer total = 0;
 
+    @Builder.Default
     @Column(nullable=false)
     private Integer sent = 0;
 
+    @Builder.Default
     @Column(nullable=false)
     private Integer failed = 0;
 
