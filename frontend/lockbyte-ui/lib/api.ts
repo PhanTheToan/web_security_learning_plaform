@@ -1149,30 +1149,24 @@ export function deleteEmailGroup(groupId: number) {
 
 
 export function listEmailGroupMembers(groupId: number, params?: { page?: number; size?: number; keyword?: string }) {
-
-
-
   const query = new URLSearchParams();
-
-
-
   if (params?.page !== undefined) query.set("page", String(params.page));
-
-
-
   if (params?.size !== undefined) query.set("size", String(params.size));
-
-
-
   if (params?.keyword) query.set("keyword", params.keyword);
 
-
-
-  return fetchWithCredentials<PageResp<EmailGroupMember>>(`/admin/email/groups/${groupId}/members?${query.toString()}`);
-
-
+  return fetchWithCredentials<PageResp<[number, string]>>(
+  `/admin/email/groups/${groupId}/members?${query.toString()}`
+).then((pageResp) => {
+  const members: EmailGroupMember[] = (pageResp.content ?? []).map(([userId, email]) => ({
+    id: userId,
+    userId,
+    email,
+  }));
+  return { ...pageResp, content: members };
+});
 
 }
+
 
 
 
@@ -1208,24 +1202,12 @@ export function addEmailGroupMembers(groupId: number, payload: { emails?: string
 
 
 
-export function removeEmailGroupMember(groupId: number, memberId: number) {
-
-
-
-  return fetchWithCredentials<void>(`/admin/email/groups/${groupId}/members/${memberId}`, {
-
-
-
+export function removeEmailGroupMembers(groupId: number, payload: { userIds: number[] }) {
+  return fetchWithCredentials<{ removed: number }>(`/admin/email/groups/${groupId}/members`, {
     method: "DELETE",
-
-
-
+    body: JSON.stringify(payload),
   });
-
-
-
 }
-
 
 
 

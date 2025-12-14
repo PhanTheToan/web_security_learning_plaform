@@ -31,7 +31,7 @@ public interface EmailGroupMemberRepository extends JpaRepository<EmailGroupMemb
     Page<String> findEmailsByGroupId(@Param("groupId") Long groupId, Pageable pageable);
 
     @Query("""
-        select u.id
+        select u.id, u.email
         from User u
         where u.email is not null
           and u.id in (

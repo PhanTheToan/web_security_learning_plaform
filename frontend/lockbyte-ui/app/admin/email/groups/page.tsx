@@ -2,7 +2,6 @@
 
 import { useEffect, useMemo, useState } from "react";
 import { toast } from "@/hooks/use-toast";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 
 import {
   listEmailGroups,
@@ -11,7 +10,7 @@ import {
   deleteEmailGroup,
   listEmailGroupMembers,
   addEmailGroupMembers,
-  removeEmailGroupMember,
+  removeEmailGroupMembers,
 } from "@/lib/api";
 
 import type { EmailGroup, EmailGroupMember } from "@/types/email";
@@ -45,6 +44,9 @@ export default function EmailGroupsPage() {
   const [membersKeyword, setMembersKeyword] = useState("");
   const [loadingMembers, setLoadingMembers] = useState(false);
 
+  // ===== Bulk selection (Option B) =====
+  const [selectedUserIds, setSelectedUserIds] = useState<number[]>([]);
+
   const groupsQuery = useMemo(
     () => ({ page: groupsPage, size: groupsSize, keyword: groupsKeyword || undefined }),
     [groupsPage, groupsSize, groupsKeyword]
@@ -54,7 +56,17 @@ export default function EmailGroupsPage() {
     setLoadingGroups(true);
     try {
       const page = await listEmailGroups(groupsQuery);
-      setGroups(page.content ?? []);
+      const base = page.content ?? [];
+
+      // compute memberCount using members totalElements (N+1 calls)
+      const withCount = await Promise.all(
+        base.map(async (g) => {
+          const membersPage = await listEmailGroupMembers(g.id, { page: 0, size: 1 });
+          return { ...g, memberCount: membersPage.totalElements ?? 0 };
+        })
+      );
+
+      setGroups(withCount);
       setGroupsTotal(page.totalElements ?? 0);
     } catch (e) {
       toast({ variant: "destructive", title: "Error", description: "Failed to load groups." });
@@ -92,6 +104,11 @@ export default function EmailGroupsPage() {
     fetchMembers();
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [openMembers, activeGroup?.id, membersPage, membersSize, membersKeyword]);
+
+  // Reset selection when member list context changes
+  useEffect(() => {
+    setSelectedUserIds([]);
+  }, [activeGroup?.id, membersPage, membersSize, membersKeyword]);
 
   // ===== Handlers =====
   const onClickCreate = () => {
@@ -135,6 +152,7 @@ export default function EmailGroupsPage() {
     setActiveGroup(g);
     setMembersPage(0);
     setMembersKeyword("");
+    setSelectedUserIds([]);
     setOpenMembers(true);
   };
 
@@ -146,53 +164,64 @@ export default function EmailGroupsPage() {
         title: "Members updated",
         description: `Added: ${res.added ?? 0}, Skipped: ${res.skipped ?? 0}`,
       });
+      setSelectedUserIds([]);
       fetchMembers();
-      fetchGroups(); // nếu backend trả memberCount
+      fetchGroups();
     } catch (e: any) {
       toast({ variant: "destructive", title: "Error", description: e?.message ?? "Failed to add members." });
     }
   };
 
-  const onRemoveMember = async (memberId: number) => {
+  // ===== Option B: bulk remove selected =====
+  const onRemoveSelected = async () => {
     if (!activeGroup) return;
+    if (selectedUserIds.length === 0) {
+      toast({ variant: "destructive", title: "No selection", description: "Select members first." });
+      return;
+    }
+
     try {
-      await removeEmailGroupMember(activeGroup.id, memberId);
-      toast({ title: "Removed", description: "Member removed." });
+      const res = await removeEmailGroupMembers(activeGroup.id, { userIds: selectedUserIds });
+      toast({
+        title: "Removed",
+        description: `Removed: ${res?.removed ?? selectedUserIds.length} member(s).`,
+      });
+      setSelectedUserIds([]);
       fetchMembers();
       fetchGroups();
     } catch (e: any) {
-      toast({ variant: "destructive", title: "Error", description: e?.message ?? "Failed to remove member." });
+      toast({ variant: "destructive", title: "Error", description: e?.message ?? "Failed to remove members." });
     }
   };
 
   return (
     <div className="space-y-6 p-6">
-          <GroupsToolbar
-            keyword={groupsKeyword}
-            onKeywordChange={(v) => {
-              setGroupsKeyword(v);
-              setGroupsPage(0);
-            }}
-            onCreate={onClickCreate}
-            onRefresh={fetchGroups}
-            isRefreshing={loadingGroups}
-          />
+      <GroupsToolbar
+        keyword={groupsKeyword}
+        onKeywordChange={(v) => {
+          setGroupsKeyword(v);
+          setGroupsPage(0);
+        }}
+        onCreate={onClickCreate}
+        onRefresh={fetchGroups}
+        isRefreshing={loadingGroups}
+      />
 
-          <GroupsTable
-            data={groups}
-            loading={loadingGroups}
-            page={groupsPage}
-            size={groupsSize}
-            total={groupsTotal}
-            onPageChange={setGroupsPage}
-            onSizeChange={(s) => {
-              setGroupsSize(s);
-              setGroupsPage(0);
-            }}
-            onEdit={onClickEdit}
-            onDelete={onDeleteGroup}
-            onManageMembers={onOpenMembers}
-          />
+      <GroupsTable
+        data={groups}
+        loading={loadingGroups}
+        page={groupsPage}
+        size={groupsSize}
+        total={groupsTotal}
+        onPageChange={setGroupsPage}
+        onSizeChange={(s) => {
+          setGroupsSize(s);
+          setGroupsPage(0);
+        }}
+        onEdit={onClickEdit}
+        onDelete={onDeleteGroup}
+        onManageMembers={onOpenMembers}
+      />
 
       <GroupDialog
         open={openGroupDialog}
@@ -222,8 +251,11 @@ export default function EmailGroupsPage() {
           setMembersPage(0);
         }}
         onAddMembers={onAddMembers}
-        onRemoveMember={onRemoveMember}
         onRefresh={fetchMembers}
+        selectedUserIds={selectedUserIds}
+        onSelectedUserIdsChange={setSelectedUserIds}
+        onRemoveSelected={onRemoveSelected}
+        onClearSelection={() => setSelectedUserIds([])}
       />
     </div>
   );

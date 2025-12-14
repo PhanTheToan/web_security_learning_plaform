@@ -38,6 +38,7 @@ public class EmailGroupMemberAdminController {
         return ResponseEntity.ok(memberService.removeMembers(groupId, req));
     }
 
+
     @PostMapping("/sync")
     public ResponseEntity<BulkMembersRes> sync(@PathVariable Long groupId, @RequestBody SyncGroupReq req) {
         return ResponseEntity.ok(memberService.syncGroup(groupId, req));

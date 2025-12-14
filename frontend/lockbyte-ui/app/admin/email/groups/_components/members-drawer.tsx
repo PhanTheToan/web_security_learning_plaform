@@ -28,8 +28,13 @@ type Props = {
   onSizeChange: (s: number) => void;
 
   onAddMembers: (payload: { emails?: string[]; userIds?: number[] }) => void | Promise<void>;
-  onRemoveMember: (memberId: number) => void | Promise<void>;
   onRefresh: () => void;
+
+  // ===== Option B selection =====
+  selectedUserIds: number[];
+  onSelectedUserIdsChange: (ids: number[]) => void;
+  onRemoveSelected: () => void | Promise<void>;
+  onClearSelection: () => void;
 };
 
 export function MembersDrawer({
@@ -46,14 +51,17 @@ export function MembersDrawer({
   onPageChange,
   onSizeChange,
   onAddMembers,
-  onRemoveMember,
   onRefresh,
+  selectedUserIds,
+  onSelectedUserIdsChange,
+  onRemoveSelected,
+  onClearSelection,
 }: Props) {
   const [openAdd, setOpenAdd] = useState(false);
 
   return (
     <Sheet open={open} onOpenChange={onOpenChange}>
-      <SheetContent side="right" className="w-full sm:w-[720px] border-white/10 bg-gray-950 text-white">
+      <SheetContent side="right" className="w-full sm:w-[760px] border-white/10 bg-gray-950 text-white">
         <SheetHeader>
           <SheetTitle>Group Members {group ? `— ${group.name}` : ""}</SheetTitle>
         </SheetHeader>
@@ -67,14 +75,31 @@ export function MembersDrawer({
                 value={keyword}
                 onChange={(e) => onKeywordChange(e.target.value)}
               />
-              <Button variant="secondary" onClick={onRefresh} disabled={!!loading} className="text-white">
+              <Button variant="secondary" onClick={onRefresh} disabled={!!loading}>
                 Refresh
               </Button>
             </div>
 
-            <Button onClick={() => setOpenAdd(true)} disabled={!group} className="text-white">
-              Add Members
-            </Button>
+            <div className="flex gap-2">
+              <Button onClick={() => setOpenAdd(true)} disabled={!group}>
+                Add Members
+              </Button>
+            </div>
+          </div>
+
+          {/* Option B: selection toolbar */}
+          <div className="flex flex-col gap-2 rounded-lg border border-white/10 bg-white/5 p-3 sm:flex-row sm:items-center sm:justify-between">
+            <div className="text-sm text-gray-300">
+              Selected: <span className="text-white">{selectedUserIds.length}</span>
+            </div>
+            <div className="flex gap-2">
+              <Button variant="secondary" onClick={onClearSelection} disabled={selectedUserIds.length === 0}>
+                Clear
+              </Button>
+              <Button variant="destructive" onClick={onRemoveSelected} disabled={selectedUserIds.length === 0}>
+                Remove selected
+              </Button>
+            </div>
           </div>
 
           <MembersTable
@@ -85,14 +110,12 @@ export function MembersDrawer({
             total={total}
             onPageChange={onPageChange}
             onSizeChange={onSizeChange}
-            onRemove={onRemoveMember}
+            // Option B props
+            selectedUserIds={selectedUserIds}
+            onSelectedUserIdsChange={onSelectedUserIdsChange}
           />
 
-          <AddMembersDialog
-            open={openAdd}
-            onOpenChange={setOpenAdd}
-            onSubmit={onAddMembers}
-          />
+          <AddMembersDialog open={openAdd} onOpenChange={setOpenAdd} onSubmit={onAddMembers} />
         </div>
       </SheetContent>
     </Sheet>

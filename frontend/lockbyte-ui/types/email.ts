@@ -54,12 +54,9 @@ export type EmailGroup = {
 };
 
 export type EmailGroupMember = {
-  id: number;
-  groupId: number;
+  id: number;   
+  userId: number;
   email: string;
-  userId?: number | null;
-  status: "ACTIVE" | "INACTIVE";
-  createdAt?: string;
 };
 
 export type BroadcastGroupReq = {

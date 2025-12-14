@@ -42,6 +42,7 @@ public class EmailJobAdminController {
         return ResponseEntity.ok().build();
     }
 
+
     @PostMapping("/{jobId}/cancel")
     public ResponseEntity<Void> cancel(@PathVariable String jobId) {
         jobService.cancel(jobId);
