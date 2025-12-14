@@ -10,6 +10,7 @@ const tabs = [
   { name: "Templates", href: "/admin/email/templates" },
   { name: "Logs", href: "/admin/email/logs" },
   { name: "Groups", href: "/admin/email/groups" },
+  { name: "Jobs", href: "/admin/email/jobs" },
 ]
 
 export default function EmailLayout({

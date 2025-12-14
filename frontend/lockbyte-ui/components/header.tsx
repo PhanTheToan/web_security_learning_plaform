@@ -91,10 +91,10 @@ export function Header() {
                     </AvatarFallback>
                   </Avatar>
                 </SelectTrigger>
-                <SelectContent className="bg-card/95 backdrop-blur-sm border-[#ffffff]/20 rounded-xl">
+                <SelectContent >
                   <SelectItem 
                     value="profile" 
-                    className="text-white hover:bg-[#9747ff]/10 focus:bg-[#9747ff]/10 focus:text-white focus:drop-shadow-[0_0_5px_rgba(255,255,255,0.8)] transition-all duration-200"
+                    
                   >
                     <div className="flex items-center">
                       <User className="mr-2 h-4 w-4" />
@@ -103,7 +103,7 @@ export function Header() {
                   </SelectItem>
                   <SelectItem 
                     value="logout" 
-                    className="text-white hover:bg-[#9747ff]/10 focus:bg-[#9747ff]/10 focus:text-white focus:drop-shadow-[0_0_5px_rgba(255,255,255,0.8)] transition-all duration-200"
+                    
                   >
                     <div className="flex items-center">
                       <LogOut className="mr-2 h-4 w-4" />

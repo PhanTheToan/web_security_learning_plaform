@@ -1,5 +1,6 @@
 
-import { EmailTemplateSchema, SendReq, PageResp, EmailLog, EmailGroup, EmailGroupMember, BroadcastGroupReq } from "@/types/email";
+import { EmailTemplateSchema, SendReq, EmailLog, EmailGroup, EmailGroupMember, BroadcastGroupReq } from "@/types/email";
+import type { EmailJob, EmailJobStatus, PageResp } from "@/types/email-jobs";
 
 
 
@@ -1337,5 +1338,48 @@ export const api = {
   patch: <T>(path: string, body: unknown, init?: RequestInit & { extraHeaders?: HeadersInit }) => fetchWithCredentials<T>(path, { ...init, method: "PATCH", body: JSON.stringify(body) }),
   delete: <T>(path: string, init?: RequestInit & { extraHeaders?: HeadersInit }) => fetchWithCredentials<T>(path, { ...init, method: "DELETE" }),
 };
+
+export function listEmailJobs(params: {
+  page?: number;
+  size?: number;
+  status?: EmailJobStatus;
+  groupId?: number;
+}) {
+  const query = new URLSearchParams();
+
+  // lưu ý: phải check undefined, vì page=0 là hợp lệ
+  if (params.page !== undefined) query.set("page", String(params.page));
+  if (params.size !== undefined) query.set("size", String(params.size));
+  if (params.status) query.set("status", params.status);
+  if (params.groupId !== undefined) query.set("groupId", String(params.groupId));
+
+  return fetchWithCredentials<PageResp<EmailJob>>(`/admin/email/jobs?${query.toString()}`, {
+    method: "GET",
+  });
+}
+
+export function getEmailJob(jobId: string) {
+  return fetchWithCredentials<EmailJob>(`/admin/email/jobs/${encodeURIComponent(jobId)}`, {
+    method: "GET",
+  });
+}
+
+export function pauseEmailJob(jobId: string) {
+  return fetchWithCredentials<void>(`/admin/email/jobs/${encodeURIComponent(jobId)}/pause`, {
+    method: "POST",
+  });
+}
+
+export function resumeEmailJob(jobId: string) {
+  return fetchWithCredentials<void>(`/admin/email/jobs/${encodeURIComponent(jobId)}/resume`, {
+    method: "POST",
+  });
+}
+
+export function cancelEmailJob(jobId: string) {
+  return fetchWithCredentials<void>(`/admin/email/jobs/${encodeURIComponent(jobId)}/cancel`, {
+    method: "POST",
+  });
+}
 
 

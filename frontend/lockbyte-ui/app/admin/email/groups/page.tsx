@@ -15,10 +15,10 @@ import {
 
 import type { EmailGroup, EmailGroupMember } from "@/types/email";
 
-import { GroupsToolbar } from "./_components/groups-toolbar";
-import { GroupsTable } from "./_components/groups-table";
-import { GroupDialog } from "./_components/group-dialog";
-import { MembersDrawer } from "./_components/members-drawer";
+import { GroupsToolbar } from "@/components/admin/email/groups/groups-toolbar";
+import { GroupsTable } from "@/components/admin/email/groups/groups-table";
+import { GroupDialog } from "@/components/admin/email/groups/group-dialog";
+import { MembersDrawer } from "@/components/admin/email/groups/members-drawer";
 
 export default function EmailGroupsPage() {
   // ===== Groups state =====
