@@ -42,3 +42,44 @@ export type EmailTemplateSchema = {
     help?: string;
   }>;
 };
+
+export type EmailGroup = {
+  id: number;
+  name: string;
+  description?: string | null;
+  status: "ACTIVE" | "INACTIVE";
+  createdAt?: string;
+  updatedAt?: string;
+  memberCount?: number;
+};
+
+export type EmailGroupMember = {
+  id: number;
+  groupId: number;
+  email: string;
+  userId?: number | null;
+  status: "ACTIVE" | "INACTIVE";
+  createdAt?: string;
+};
+
+export type BroadcastGroupReq = {
+  groupId: number;
+
+  // vẫn cho phép cc/bcc nếu bạn cần
+  cc?: string[];
+  bcc?: string[];
+
+  subject: string;
+  templateName: string;
+  model: Record<string, unknown>;
+
+  partials?: string[];
+  attachmentUrls?: string[];
+
+  generateReport?: boolean;
+  reportKeyPrefix?: string;
+
+  // tối ưu enqueue theo batch
+  batchSize?: number;     // ví dụ 500
+  rateLimitPerSecond?: number; // ví dụ 20 (nếu backend support)
+};

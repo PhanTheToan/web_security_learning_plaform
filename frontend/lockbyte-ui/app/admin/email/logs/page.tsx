@@ -2,7 +2,7 @@
 
 import React, { useState, useEffect, useCallback } from "react"
 import { useDebounce } from "@/hooks/use-debounce"
-import { getAdminEmailLogs } from "@/lib/api"
+import { getAdminEmailLogs, resendEmailByLogId } from "@/lib/api"
 import { EmailLog, PageResp } from "@/types/email"
 import { LogsTable } from "@/components/admin/email/logs-table"
 import { Input } from "@/components/ui/input"
@@ -73,12 +73,15 @@ export default function LogsPage() {
     setIsDetailOpen(true)
   }
 
-  const handleResend = (log: EmailLog) => {
-    toast({
-      title: "Not Implemented",
-      description: `Resend functionality for log #${log.id} is not yet available.`,
-    })
-  }
+  const handleResend = async (log: EmailLog) => {
+    try {
+      await resendEmailByLogId(log.id);
+      toast({ title: "Queued", description: `Resend queued for log #${log.id}` });
+      fetchLogs(); // refresh list
+    } catch (e) {
+      toast({ variant: "destructive", title: "Error", description: "Resend failed." });
+    }
+  };
 
   const handlePageChange = (newPage: number) => {
     setFilters((prev) => ({ ...prev, page: newPage }))

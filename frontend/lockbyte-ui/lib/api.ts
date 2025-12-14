@@ -1,5 +1,5 @@
 
-import { EmailTemplateSchema, SendReq, PageResp, EmailLog } from "@/types/email";
+import { EmailTemplateSchema, SendReq, PageResp, EmailLog, EmailGroup, EmailGroupMember, BroadcastGroupReq } from "@/types/email";
 
 
 
@@ -662,147 +662,211 @@ export async function getEmailTemplateSchema(
 
 
 
-  const schemas: Record<string, EmailTemplateSchema> = {
+    const schemas: Record<string, EmailTemplateSchema> = {
 
 
 
-    welcome: {
+  
 
 
 
-      fields: [
+      welcome: {
 
 
 
-        { key: "subject", label: "Email Subject", type: "string", required: true, default: "🎉 Welcome to Lockbyte" },
+  
 
 
 
-        { key: "user.fullName", label: "Full Name", type: "string", required: true },
+        fields: [
 
 
 
-        { key: "activationCode", label: "Activation Code", type: "string", required: true },
+  
 
 
 
-        { key: "actionUrl", label: "Action URL", type: "url", required: true },
+          { key: "subject", label: "Email Subject", type: "string", required: true, default: "🎉 Welcome to Lockbyte" },
 
 
 
-        { key: "features", label: "Features", type: "array[string]" },
+  
 
 
 
-        { key: "reportUrl", label: "Report URL (optional)", type: "url", required: false }
+          { key: "user.fullName", label: "Full Name", type: "string", required: true },
 
 
 
-      ]
+  
 
 
 
-    },
+          { key: "activationCode", label: "Activation Code", type: "string", required: true },
 
 
 
-    digest: {
+  
 
 
 
-      fields: [
+          { key: "actionUrl", label: "Action URL", type: "url", required: true },
 
 
 
-        { key: "subject", label: "Email Subject", type: "string", required: true, default: "Your Weekly Digest" },
+  
 
 
 
-        { key: "user.firstName", label: "First Name", type: "string", required: true },
+          { key: "features", label: "Features", type: "array[string]" },
 
 
 
-        { key: "articles", label: "Articles", type: "array[object]", help: "Array of objects with title and url" },
+  
 
 
 
-        { key: "unsubscribeUrl", label: "Unsubscribe URL", type: "url", required: true }
+          { key: "reportUrl", label: "Report URL (optional)", type: "url", required: false }
 
 
 
-      ]
+  
 
 
 
-    },
+        ]
 
 
 
-    report: {
+  
 
 
 
-      fields: [
+      },
 
 
 
-        { key: "subject", label: "Email Subject", type: "string", required: true, default: "Your Monthly Report is Ready" },
+  
 
 
 
-        { key: "user.fullName", label: "Full Name", type: "string", required: true },
+      report: {
 
 
 
-        { key: "report.name", label: "Report Name", type: "string", required: true },
+  
 
 
 
-        { key: "report.period", label: "Report Period", type: "string", required: true },
+        fields: [
 
 
 
-        { key: "report.downloadUrl", label: "Download URL", type: "url", required: true }
+  
 
 
 
-      ]
+          { key: "subject", label: "Email Subject", type: "string", required: true, default: "Your Monthly Report is Ready" },
 
 
 
-    },
+  
 
 
 
-    "password-reset": {
+          { key: "user.fullName", label: "Full Name", type: "string", required: true },
 
 
 
-      fields: [
+  
 
 
 
-        { key: "subject", label: "Email Subject", type: "string", required: true, default: "Reset Your Password" },
+          { key: "report.name", label: "Report Name", type: "string", required: true },
 
 
 
-        { key: "user.name", label: "Username", type: "string", required: true },
+  
 
 
 
-        { key: "resetPasswordUrl", label: "Reset URL", type: "url", required: true }
+          { key: "report.period", label: "Report Period", type: "string", required: true },
 
 
 
-      ]
+  
 
 
 
-    }
+          { key: "report.downloadUrl", label: "Download URL", type: "url", required: true }
 
 
 
-  };
+  
+
+
+
+        ]
+
+
+
+  
+
+
+
+      },
+
+
+
+  
+
+
+
+      "async-all": {
+
+
+
+        fields: [
+
+
+
+          { key: "subject", label: "Email Subject", type: "string", required: true, default: "🔔 CyberLock – Thông báo mới" },
+
+
+
+          { key: "title", label: "Tiêu đề chính", type: "string", required: true },
+
+
+
+          { key: "description", label: "Mô tả", type: "string", required: true },
+
+
+
+          { key: "imageUrl", label: "URL ảnh minh họa (optional)", type: "url", required: false },
+
+
+
+          { key: "ctaUrl", label: "URL hành động (optional)", type: "url", required: false },
+
+
+
+          { key: "ctaText", label: "Text nút hành động (optional)", type: "string", required: false },
+
+
+
+        ]
+
+
+
+      },
+
+
+
+  
+
+
+
+    };
 
 
 
@@ -896,7 +960,15 @@ export function getAdminEmailLogs(
 
 
 
+
+
+
+
   params: { page?: number; size?: number; keyword?: string; status?: string }
+
+
+
+
 
 
 
@@ -904,7 +976,15 @@ export function getAdminEmailLogs(
 
 
 
+
+
+
+
   const query = new URLSearchParams();
+
+
+
+
 
 
 
@@ -912,7 +992,15 @@ export function getAdminEmailLogs(
 
 
 
+
+
+
+
   if (params.size) query.set("size", params.size.toString());
+
+
+
+
 
 
 
@@ -920,11 +1008,291 @@ export function getAdminEmailLogs(
 
 
 
+
+
+
+
   if (params.status) query.set("status", params.status);
 
 
 
+
+
+
+
   return fetchWithCredentials<PageResp<EmailLog>>(`/admin/email/logs?${query}`);
+
+
+
+
+
+
+
+}
+
+
+
+
+
+
+
+// ================== Email Group APIs ==================
+
+
+
+
+
+
+
+export function listEmailGroups(params?: { page?: number; size?: number; keyword?: string }) {
+
+
+
+  const query = new URLSearchParams();
+
+
+
+  if (params?.page !== undefined) query.set("page", String(params.page));
+
+
+
+  if (params?.size !== undefined) query.set("size", String(params.size));
+
+
+
+  if (params?.keyword) query.set("keyword", params.keyword);
+
+
+
+  return fetchWithCredentials<PageResp<EmailGroup>>(`/admin/email/groups?${query.toString()}`);
+
+
+
+}
+
+
+
+
+
+
+
+export function createEmailGroup(payload: { name: string; description?: string }) {
+
+
+
+  return fetchWithCredentials<EmailGroup>(`/admin/email/groups`, {
+
+
+
+    method: "POST",
+
+
+
+    body: JSON.stringify(payload),
+
+
+
+  });
+
+
+
+}
+
+
+
+
+
+
+
+export function updateEmailGroup(groupId: number, payload: { name?: string; description?: string; status?: "ACTIVE" | "INACTIVE" }) {
+
+
+
+  return fetchWithCredentials<EmailGroup>(`/admin/email/groups/${groupId}`, {
+
+
+
+    method: "PUT",
+
+
+
+    body: JSON.stringify(payload),
+
+
+
+  });
+
+
+
+}
+
+
+
+
+
+
+
+export function deleteEmailGroup(groupId: number) {
+
+
+
+  return fetchWithCredentials<void>(`/admin/email/groups/${groupId}`, { method: "DELETE" });
+
+
+
+}
+
+
+
+
+
+
+
+export function listEmailGroupMembers(groupId: number, params?: { page?: number; size?: number; keyword?: string }) {
+
+
+
+  const query = new URLSearchParams();
+
+
+
+  if (params?.page !== undefined) query.set("page", String(params.page));
+
+
+
+  if (params?.size !== undefined) query.set("size", String(params.size));
+
+
+
+  if (params?.keyword) query.set("keyword", params.keyword);
+
+
+
+  return fetchWithCredentials<PageResp<EmailGroupMember>>(`/admin/email/groups/${groupId}/members?${query.toString()}`);
+
+
+
+}
+
+
+
+
+
+
+
+export function addEmailGroupMembers(groupId: number, payload: { emails?: string[]; userIds?: number[] }) {
+
+
+
+  return fetchWithCredentials<{ added: number; skipped: number }>(`/admin/email/groups/${groupId}/members`, {
+
+
+
+    method: "POST",
+
+
+
+    body: JSON.stringify(payload),
+
+
+
+  });
+
+
+
+}
+
+
+
+
+
+
+
+export function removeEmailGroupMember(groupId: number, memberId: number) {
+
+
+
+  return fetchWithCredentials<void>(`/admin/email/groups/${groupId}/members/${memberId}`, {
+
+
+
+    method: "DELETE",
+
+
+
+  });
+
+
+
+}
+
+
+
+
+
+
+
+/**
+
+
+
+ * Broadcast group (async): server sẽ phân trang members + enqueue EmailEvent từng batch
+
+
+
+ * (đúng với hướng tối ưu bạn đang theo).
+
+
+
+ */
+
+
+
+export function broadcastGroupAsync(payload: BroadcastGroupReq) {
+
+
+
+  return fetchWithCredentials<string>(`/admin/email/broadcast-group`, {
+
+
+
+    method: "POST",
+
+
+
+    body: JSON.stringify(payload),
+
+
+
+  });
+
+
+
+}
+
+
+
+
+
+
+
+// (Tuỳ chọn) Resend theo logId nếu backend có endpoint
+
+
+
+export function resendEmailByLogId(logId: number) {
+
+
+
+  return fetchWithCredentials<string>(`/admin/email/logs/${logId}/resend`, {
+
+
+
+    method: "POST",
+
+
+
+  });
 
 
 

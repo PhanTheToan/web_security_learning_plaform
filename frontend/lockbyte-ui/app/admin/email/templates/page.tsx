@@ -12,7 +12,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 
 export default function TemplatesPage() {
   const router = useRouter()
-  const [templates] = useState(["welcome", "digest", "report", "password-reset"])
+  const [templates] = useState(["welcome", "report", "async-all"])
   const [previewContent, setPreviewContent] = useState(
     "<html><body><p>Select a template to preview.</p></body></html>"
   )

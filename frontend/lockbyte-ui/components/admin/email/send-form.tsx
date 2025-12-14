@@ -18,8 +18,12 @@ import {
   previewAdminEmail,
   sendAdminEmail,
   sendAdminEmailAsync,
+
+  // new
+  listEmailGroups,
+  broadcastGroupAsync,
 } from "@/lib/api"
-import { EmailTemplateSchema, SendReq } from "@/types/email"
+import type { EmailTemplateSchema, SendReq, EmailGroup, BroadcastGroupReq } from "@/types/email"
 import { set, get, isEmpty } from "lodash"
 import { ArrayInput } from "./shared/array-input"
 import { toast } from "@/hooks/use-toast"
@@ -30,7 +34,7 @@ interface SendFormProps {
 }
 
 export function SendForm({ setPreviewContent }: SendFormProps) {
-  const [templates] = useState(["welcome", "digest", "report", "password-reset"])
+  const [templates] = useState(["welcome", "report", "async-all"])
   const [selectedTemplate, setSelectedTemplate] = useState<string>("")
   const [schema, setSchema] = useState<EmailTemplateSchema | null>(null)
   const [formData, setFormData] = useState<Partial<SendReq>>({
@@ -41,6 +45,30 @@ export function SendForm({ setPreviewContent }: SendFormProps) {
   const [isLoadingSchema, setIsLoadingSchema] = useState(false)
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [action, setAction] = useState<"preview" | "send" | "sendAsync" | null>(null)
+
+  const [recipientMode, setRecipientMode] = useState<"manual" | "group">("manual");
+  const [groups, setGroups] = useState<EmailGroup[]>([]);
+  const [selectedGroupId, setSelectedGroupId] = useState<number | null>(null);
+  const [isLoadingGroups, setIsLoadingGroups] = useState(false);
+
+  useEffect(() => {
+    const load = async () => {
+      setIsLoadingGroups(true);
+      try {
+        const page = await listEmailGroups({ page: 0, size: 200 });
+        setGroups(page.content || []);
+      } catch (e) {
+        toast({
+          variant: "destructive",
+          title: "Error",
+          description: "Could not load email groups.",
+        });
+      } finally {
+        setIsLoadingGroups(false);
+      }
+    };
+    load();
+  }, []);
 
   useEffect(() => {
     if (!selectedTemplate) {
@@ -116,10 +144,43 @@ export function SendForm({ setPreviewContent }: SendFormProps) {
   }
 
   const handleSend = async (isAsync: boolean) => {
-    setIsSubmitting(true)
-    setAction(isAsync ? "sendAsync" : "send")
+    setIsSubmitting(true);
+    setAction(isAsync ? "sendAsync" : "send");
+
     try {
-      const payload: SendReq = {
+      if (!selectedTemplate) throw new Error("Template is required.");
+      if (!formData.subject) throw new Error("Subject is required.");
+
+      // Mode = GROUP: bắt buộc async (vì 10k+)
+      if (recipientMode === "group") {
+        if (!selectedGroupId) throw new Error("Please select an email group.");
+
+        const payload: BroadcastGroupReq = {
+          groupId: selectedGroupId,
+          subject: formData.subject!,
+          templateName: selectedTemplate,
+          model,
+          partials: formData.partials,
+          attachmentUrls: formData.attachmentUrls,
+          generateReport: formData.generateReport,
+          reportKeyPrefix: formData.reportKeyPrefix,
+
+          // gợi ý tối ưu
+          batchSize: 500,
+          rateLimitPerSecond: 20,
+        };
+
+        await broadcastGroupAsync(payload);
+
+        toast({
+          title: "Success",
+          description: "Broadcast queued. Backend will process members in batches.",
+        });
+        return;
+      }
+
+      // Mode = MANUAL: giữ như cũ
+      const payload = {
         to: formData.to!,
         cc: formData.cc,
         bcc: formData.bcc,
@@ -129,27 +190,23 @@ export function SendForm({ setPreviewContent }: SendFormProps) {
         attachmentUrls: formData.attachmentUrls,
         generateReport: formData.generateReport,
         reportKeyPrefix: formData.reportKeyPrefix,
-      }
+      };
 
-      const sendAction = isAsync ? sendAdminEmailAsync : sendAdminEmail
-      await sendAction(payload)
+      const sendAction = isAsync ? sendAdminEmailAsync : sendAdminEmail;
+      await sendAction(payload as any);
 
       toast({
         title: "Success",
-        description: isAsync ? `Email queued for sending.` : `Email sent.`,
-      })
+        description: isAsync ? "Email queued for sending." : "Email sent.",
+      });
     } catch (error: unknown) {
-      const errorMessage = error instanceof Error ? error.message : "An unknown error occurred."
-      toast({
-        variant: "destructive",
-        title: "Error sending email",
-        description: errorMessage,
-      })
+      const msg = error instanceof Error ? error.message : "Unknown error";
+      toast({ variant: "destructive", title: "Error", description: msg });
     } finally {
-      setIsSubmitting(false)
-      setAction(null)
+      setIsSubmitting(false);
+      setAction(null);
     }
-  }
+  };
 
   const renderField = (field: EmailTemplateSchema["fields"][0]) => {
     const value = get(model, field.key)
@@ -190,7 +247,12 @@ export function SendForm({ setPreviewContent }: SendFormProps) {
     }
   }
 
-  const canSubmit = formData.to && formData.subject && selectedTemplate
+  const canSubmit =
+    !!selectedTemplate &&
+    !!formData.subject &&
+    (recipientMode === "group"
+      ? !!selectedGroupId
+      : !!formData.to && formData.to.length > 0);
   const isLoading = isLoadingSchema || isSubmitting
 
   const cardClassName = "bg-transparent border-none shadow-none"
@@ -201,21 +263,64 @@ export function SendForm({ setPreviewContent }: SendFormProps) {
     <div className="space-y-6">
       <Card className={cardClassName}>
         <CardHeader>
-          <CardTitle className="text-xl text-white">Recipient</CardTitle>
+          <CardTitle className="text-xl text-white">Recipients</CardTitle>
         </CardHeader>
         <CardContent className="space-y-4">
           <div className="space-y-2">
-            <Label htmlFor="to" className={labelClassName}>To <span className="text-red-500">*</span></Label>
-            <Input id="to" placeholder="recipient@example.com" required value={formData.to || ""} onChange={(e) => setFormData({ ...formData, to: e.target.value })} className={inputClassName} />
+            <Label className={labelClassName}>Send Mode</Label>
+            <Select value={recipientMode} onValueChange={(v) => setRecipientMode(v as any)}>
+              <SelectTrigger className={inputClassName}>
+                <SelectValue placeholder="Select mode" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="manual">Manual (To/CC/BCC)</SelectItem>
+                <SelectItem value="group">Broadcast group</SelectItem>
+              </SelectContent>
+            </Select>
           </div>
-          <div className="space-y-2">
-            <Label htmlFor="cc" className={labelClassName}>CC</Label>
-            <Input id="cc" placeholder="cc@example.com" value={formData.cc || ""} onChange={(e) => setFormData({ ...formData, cc: e.target.value })} className={inputClassName} />
-          </div>
-          <div className="space-y-2">
-            <Label htmlFor="bcc" className={labelClassName}>BCC</Label>
-            <Input id="bcc" placeholder="bcc@example.com" value={formData.bcc || ""} onChange={(e) => setFormData({ ...formData, bcc: e.target.value })} className={inputClassName} />
-          </div>
+
+          {recipientMode === "group" && (
+            <div className="space-y-2">
+              <Label className={labelClassName}>Email Group</Label>
+              <Select
+                value={selectedGroupId ? String(selectedGroupId) : ""}
+                onValueChange={(v) => setSelectedGroupId(Number(v))}
+                disabled={isLoadingGroups}
+              >
+                <SelectTrigger className={inputClassName}>
+                  <SelectValue placeholder={isLoadingGroups ? "Loading groups..." : "Select a group"} />
+                </SelectTrigger>
+                <SelectContent>
+                  {groups.map((g) => (
+                    <SelectItem key={g.id} value={String(g.id)}>
+                      {g.name} {typeof g.memberCount === "number" ? `(${g.memberCount})` : ""}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+
+              <p className="text-xs text-gray-400">
+                Broadcast sẽ enqueue theo batch ở backend (phù hợp gửi 10k+).
+              </p>
+            </div>
+          )}
+
+          {recipientMode === "manual" && (
+            <>
+              <div className="space-y-2">
+                <Label htmlFor="to" className={labelClassName}>To <span className="text-red-500">*</span></Label>
+                <Input id="to" placeholder="recipient@example.com" required value={formData.to || ""} onChange={(e) => setFormData({ ...formData, to: e.target.value })} className={inputClassName} />
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="cc" className={labelClassName}>CC</Label>
+                <Input id="cc" placeholder="cc@example.com" value={formData.cc || ""} onChange={(e) => setFormData({ ...formData, cc: e.target.value })} className={inputClassName} />
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="bcc" className={labelClassName}>BCC</Label>
+                <Input id="bcc" placeholder="bcc@example.com" value={formData.bcc || ""} onChange={(e) => setFormData({ ...formData, bcc: e.g.target.value })} className={inputClassName} />
+              </div>
+            </>
+          )}
         </CardContent>
       </Card>
 
@@ -234,7 +339,7 @@ export function SendForm({ setPreviewContent }: SendFormProps) {
               <SelectTrigger id="templateName" className={inputClassName}>
                 <SelectValue placeholder="Select a template" />
               </SelectTrigger>
-              <SelectContent className="bg-[#1a1a2e] border-[#ffffff]/20 text-white">
+              <SelectContent >
                 {templates.map((template) => (
                   <SelectItem key={template} value={template} className="hover:bg-[#9747ff]/20 focus:bg-[#9747ff]/20">
                     {template}
