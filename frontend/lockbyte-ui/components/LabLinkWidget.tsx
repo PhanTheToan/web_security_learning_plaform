@@ -65,7 +65,7 @@ export default function LabLinkWidget({
     if (labId) {
       getLabSessionStatus(labId)
         .then(statusResult => {
-          if (statusResult.startsWith("RUNNING")) {
+          if (statusResult?.startsWith("RUNNING")) {
             setStatus("RUNNING");
           } else {
             setStatus(statusResult);

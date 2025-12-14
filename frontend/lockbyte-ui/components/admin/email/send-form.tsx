@@ -57,7 +57,8 @@ export function SendForm({ setPreviewContent }: SendFormProps) {
       try {
         const page = await listEmailGroups({ page: 0, size: 200 });
         setGroups(page.content || []);
-      } catch (e) {
+      // eslint-disable-next-line @typescript-eslint/no-unused-vars
+      } catch (_e) {
         toast({
           variant: "destructive",
           title: "Error",
@@ -193,7 +194,7 @@ export function SendForm({ setPreviewContent }: SendFormProps) {
       };
 
       const sendAction = isAsync ? sendAdminEmailAsync : sendAdminEmail;
-      await sendAction(payload as any);
+      await sendAction(payload as SendReq);
 
       toast({
         title: "Success",
@@ -268,7 +269,7 @@ export function SendForm({ setPreviewContent }: SendFormProps) {
         <CardContent className="space-y-4">
           <div className="space-y-2">
             <Label className={labelClassName}>Send Mode</Label>
-            <Select value={recipientMode} onValueChange={(v) => setRecipientMode(v as any)}>
+            <Select value={recipientMode} onValueChange={(v) => setRecipientMode(v as "manual" | "group")}>
               <SelectTrigger className={inputClassName}>
                 <SelectValue placeholder="Select mode" />
               </SelectTrigger>
@@ -317,7 +318,7 @@ export function SendForm({ setPreviewContent }: SendFormProps) {
               </div>
               <div className="space-y-2">
                 <Label htmlFor="bcc" className={labelClassName}>BCC</Label>
-                <Input id="bcc" placeholder="bcc@example.com" value={formData.bcc || ""} onChange={(e) => setFormData({ ...formData, bcc: e.g.target.value })} className={inputClassName} />
+                <Input id="bcc" placeholder="bcc@example.com" value={formData.bcc || ""} onChange={(e) => setFormData({ ...formData, bcc: e.target.value })} className={inputClassName} />
               </div>
             </>
           )}

@@ -75,7 +75,7 @@ export function Calendar({
       components={{
         Dropdown: (
           p: React.ComponentProps<"select"> & {
-            options?: { value: string; label: string }[]
+            options?: { value: string | number; label: string }[]
           }
         ) => (
           <select
@@ -84,7 +84,7 @@ export function Calendar({
                        focus:ring-2 focus:ring-[#9747ff]/60 focus:outline-none"
           >
             {p.options?.map((option) => (
-              <option key={option.value} value={option.value}>
+              <option key={option.value} value={String(option.value)}>
                 {option.label}
               </option>
             ))}

@@ -78,7 +78,8 @@ export default function LogsPage() {
       await resendEmailByLogId(log.id);
       toast({ title: "Queued", description: `Resend queued for log #${log.id}` });
       fetchLogs(); // refresh list
-    } catch (e) {
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
+    } catch (_e) {
       toast({ variant: "destructive", title: "Error", description: "Resend failed." });
     }
   };

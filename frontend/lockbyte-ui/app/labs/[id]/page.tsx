@@ -135,7 +135,7 @@ export default function LabDetailPage() {
   const [lab, setLab] = useState<LabDetail | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  const [labStatus, setLabStatus] = useState("EXPIRED");
+  const [labStatus, setLabStatus] = useState<string | null>("EXPIRED");
   const [labSessionId, setLabSessionId] = useState<number | null>(null);
   const [runningLabUrl, setRunningLabUrl] = useState<string | null>(null);
   const [isStartingLab, setIsStartingLab] = useState(false);
@@ -154,7 +154,7 @@ export default function LabDetailPage() {
       setCanSubmitSolution(false);
       setRunningLabUrl(null);
 
-      if (statusResult.startsWith("RUNNING")) {
+      if (statusResult && statusResult.startsWith("RUNNING")) {
         const match = statusResult.match(/RUNNING - ID: (\d+) - URL: (.*)/);
         if (match) {
           const [, sessionId, url] = match;
@@ -278,7 +278,7 @@ export default function LabDetailPage() {
   if (!lab) return <div className="p-6 text-center text-white/80">Lab not found.</div>;
 
   const renderAccessButton = () => {
-    if (labStatus.startsWith('RUNNING')) {
+    if (labStatus?.startsWith('RUNNING')) {
       if (runningLabUrl) {
         return (
           <a href={runningLabUrl} target="_blank" rel="noopener noreferrer" className="block">
@@ -302,7 +302,7 @@ export default function LabDetailPage() {
         disabled={isStartingLab}
       >
         {isStartingLab && <Loader2 className="mr-3 h-6 w-6 animate-spin" />}
-        {labStatus.startsWith('SOLVED') ? 'REACTIVE' : 'ACCESS THE LAB'}
+        {labStatus?.startsWith('SOLVED') ? 'REACTIVE' : 'ACCESS THE LAB'}
       </Button>
     );
   };
@@ -320,7 +320,7 @@ export default function LabDetailPage() {
                   <h1 className="text-4xl sm:text-5xl font-bold tracking-tight">{lab.name}</h1>
                   <div className="mt-4 flex flex-wrap items-center gap-2">
                     <DifficultyBadge difficulty={lab.difficulty} />
-                    <StatusBadge status={labStatus} />
+                    <StatusBadge status={labStatus || "EXPIRED"} />
                     {lab.tags?.map(tag => (
                       <Badge key={tag.id} variant="secondary" className="bg-blue-500/10 text-blue-300 border-blue-500/20">
                         {tag.name}
@@ -382,7 +382,7 @@ export default function LabDetailPage() {
                 </div>
               )}
 
-              {labStatus.startsWith('RUNNING') && (
+              {labStatus?.startsWith('RUNNING') && (
                 <div className="space-y-4 rounded-xl border border-white/10 bg-gradient-to-br from-white/5 to-blue-500/8 p-6">
                   <h2 className="text-2xl font-semibold flex items-center"><Flag className="mr-3 h-6 w-6 text-green-400" />Submit Flag</h2>
                   <div className="flex items-center gap-4">

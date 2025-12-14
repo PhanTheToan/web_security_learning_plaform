@@ -34,7 +34,7 @@ export default function EmailJobsPage() {
       page,
       size,
       status: status === "ALL" ? undefined : status,
-      groupId: Number.isFinite(gid as any) ? gid : undefined,
+      groupId: Number.isFinite(gid) ? gid : undefined,
     };
   }, [page, size, status, groupId]);
 
@@ -44,7 +44,8 @@ export default function EmailJobsPage() {
       const resp = await listEmailJobs(query);
       setJobs(resp.content ?? []);
       setTotal(resp.totalElements ?? 0);
-    } catch (e) {
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
+    } catch (_e) {
       toast({ variant: "destructive", title: "Error", description: "Failed to load email jobs." });
     } finally {
       setLoading(false);
@@ -72,7 +73,8 @@ export default function EmailJobsPage() {
     try {
       const detail = await getEmailJob(jobId);
       setActiveJob(detail);
-    } catch (e) {
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
+    } catch (_e) {
       toast({ variant: "destructive", title: "Error", description: "Failed to load job detail." });
       setOpenDetail(false);
     } finally {
@@ -94,8 +96,8 @@ export default function EmailJobsPage() {
         const detail = await getEmailJob(job.id);
         setActiveJob(detail);
       }
-    } catch (e: any) {
-      toast({ variant: "destructive", title: "Error", description: e?.message ?? "Job action failed." });
+    } catch (e: unknown) {
+      toast({ variant: "destructive", title: "Error", description: (e as Error)?.message ?? "Job action failed." });
     }
   };
 

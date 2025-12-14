@@ -68,7 +68,8 @@ export default function EmailGroupsPage() {
 
       setGroups(withCount);
       setGroupsTotal(page.totalElements ?? 0);
-    } catch (e) {
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
+    } catch (_e) {
       toast({ variant: "destructive", title: "Error", description: "Failed to load groups." });
     } finally {
       setLoadingGroups(false);
@@ -92,7 +93,8 @@ export default function EmailGroupsPage() {
       });
       setMembers(page.content ?? []);
       setMembersTotal(page.totalElements ?? 0);
-    } catch (e) {
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
+    } catch (_e) {
       toast({ variant: "destructive", title: "Error", description: "Failed to load group members." });
     } finally {
       setLoadingMembers(false);
@@ -133,8 +135,8 @@ export default function EmailGroupsPage() {
       setOpenGroupDialog(false);
       setEditingGroup(null);
       fetchGroups();
-    } catch (e: any) {
-      toast({ variant: "destructive", title: "Error", description: e?.message ?? "Failed to save group." });
+    } catch (e: unknown) {
+      toast({ variant: "destructive", title: "Error", description: (e as Error)?.message ?? "Failed to save group." });
     }
   };
 
@@ -143,8 +145,8 @@ export default function EmailGroupsPage() {
       await deleteEmailGroup(g.id);
       toast({ title: "Deleted", description: "Group deleted." });
       fetchGroups();
-    } catch (e: any) {
-      toast({ variant: "destructive", title: "Error", description: e?.message ?? "Failed to delete group." });
+    } catch (e: unknown) {
+      toast({ variant: "destructive", title: "Error", description: (e as Error)?.message ?? "Failed to delete group." });
     }
   };
 
@@ -167,8 +169,8 @@ export default function EmailGroupsPage() {
       setSelectedUserIds([]);
       fetchMembers();
       fetchGroups();
-    } catch (e: any) {
-      toast({ variant: "destructive", title: "Error", description: e?.message ?? "Failed to add members." });
+    } catch (e: unknown) {
+      toast({ variant: "destructive", title: "Error", description: (e as Error)?.message ?? "Failed to add members." });
     }
   };
 
@@ -189,8 +191,8 @@ export default function EmailGroupsPage() {
       setSelectedUserIds([]);
       fetchMembers();
       fetchGroups();
-    } catch (e: any) {
-      toast({ variant: "destructive", title: "Error", description: e?.message ?? "Failed to remove members." });
+    } catch (e: unknown) {
+      toast({ variant: "destructive", title: "Error", description: (e as Error)?.message ?? "Failed to remove members." });
     }
   };
 

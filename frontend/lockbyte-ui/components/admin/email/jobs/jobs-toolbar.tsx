@@ -41,7 +41,7 @@ export function JobsToolbar(props: {
           onChange={(e) => props.onGroupIdChange(e.target.value)}
         />
 
-        <Select value={props.status} onValueChange={(v) => props.onStatusChange(v as any)}>
+        <Select value={props.status} onValueChange={(v) => props.onStatusChange(v as EmailJobStatus | "ALL")}>
           <SelectTrigger className={`w-full md:w-[200px] ${selectTriggerStyles}`}>
             <SelectValue placeholder="Status" />
           </SelectTrigger>
