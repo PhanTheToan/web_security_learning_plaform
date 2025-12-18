@@ -12,7 +12,7 @@ import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover
 import { Badge } from "@/components/ui/badge"
 import { MoveIcon as RemoveIcon, Check } from "lucide-react"
 import { cn } from "@/lib/utils"
-import { toast } from "sonner"
+import { toast } from "@/hooks/use-toast"
 import MarkdownEditor from "@/components/admin/shared/markdown-editor"
 import { FileUploader } from "@/components/admin/shared/file-uploader"
 
@@ -160,15 +160,35 @@ export function LabForm({ mode = "create", initialData }: LabFormProps) {
         credentials: "include",
       })
       if (res.ok) {
-        toast.success(`Lab ${isEdit ? "updated" : "created"} successfully!`)
+
+        toast({
+          title: `${isEdit ? "Cập nhật" : "Tạo mới"} thành công!`,
+          description: `Lab ${isEdit ? "updated" : "created"} successfully!`,
+        })
         router.push("/admin/labs")
         router.refresh()
       } else {
-        const errorData = await res.json()
-        toast.error(`Failed to ${isEdit ? "update" : "create"} lab: ${errorData.message || "Unknown error"}`)
+        if (res.status === 401) {
+          toast({
+            title: "Tạo lab mới không thành công",
+            description: "Yêu cầu nhập đầy đủ các trường yêu cầu trước khi tạo lab mới",
+            variant: "destructive",
+          })
+        } else {
+          const errorData = await res.json()
+          toast({
+            title: `Failed to ${isEdit ? "update" : "create"} lab`,
+            description: errorData.message || "Unknown error",
+            variant: "destructive",
+          })
+        }
       }
-    } catch {
-      toast.error(`An error occurred while submitting the lab.`)
+    } catch (error) {
+      toast({
+        title: "An error occurred",
+        description: "An error occurred while submitting the lab.",
+        variant: "destructive",
+      })
     }
   }
 
@@ -440,17 +460,10 @@ export function LabForm({ mode = "create", initialData }: LabFormProps) {
           <CardFooter className="flex items-center justify-end gap-4 border-t border-[#ffffff]/20 pt-6">
             <Button
               type="button"
-              onClick={() => setStatus("Draft")}
-              className="bg-gradient-to-br from-[#ffffff]/5 via-[#9747ff]/5 to-[#5a5bed]/5 border border-[#ffffff]/10 text-white hover:from-[#9747ff]/10 hover:via-[#5a5bed]/8 hover:to-[#821db6]/10 hover:border-[#9747ff]/60 transition-all duration-300 rounded-xl shadow-[0_0_15px_rgba(99,102,241,0.15)] hover:shadow-[0_0_25px_rgba(99,102,241,0.3)]"
-            >
-              Save Draft
-            </Button>
-            <Button
-              type="button"
               onClick={handleSubmit}
               className="bg-gradient-to-br from-[#9747ff]/20 to-[#5a5bed]/10 hover:from-[#9747ff]/30 hover:to-[#821db6]/20 text-white border border-[#9747ff]/40 hover:border-[#9747ff]/60 transition-all duration-300 hover:scale-105 rounded-xl shadow-[0_0_15px_rgba(99,102,241,0.15)] hover:shadow-[0_0_25px_rgba(99,102,241,0.3)]"
             >
-              {mode === "edit" ? "Save Changes" : "Publish Lab"}
+              {mode === "edit" ? "Save Changes" : "Save Lab"}
             </Button>
           </CardFooter>
         </Card>

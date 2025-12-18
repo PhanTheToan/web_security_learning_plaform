@@ -1,5 +1,6 @@
 package web_security_plaform.backend.service;
 
+import org.checkerframework.checker.units.qual.s;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
@@ -7,6 +8,8 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+
+import web_security_plaform.backend.model.ENum.ESolutionStatus;
 import web_security_plaform.backend.model.ENum.EStatus;
 import web_security_plaform.backend.model.Lab;
 import web_security_plaform.backend.model.LabSession;
@@ -168,7 +171,7 @@ public class LabService {
                 .collect(Collectors.toSet()) : Collections.emptySet();
 
         List<CommunitySolutionsDTO> communitySolutions = communitySolutionRepository.findByLabId(lab.getId())
-                .stream()
+                .stream().filter(s->s.getStatus().equals(ESolutionStatus.Approved))
                 .map(solution -> {
                     CommunitySolutionsDTO dto = new CommunitySolutionsDTO();
                     dto.setId(solution.getId());
