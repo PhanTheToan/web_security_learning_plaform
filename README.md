@@ -33,7 +33,7 @@ Bạn cần một máy chủ MySQL đang chạy. Backend được cấu hình đ
    - Kết nối với máy chủ MySQL của bạn.
    - Sử dụng câu lệnh SQL để tạo cơ sở dữ liệu:
    ```
-   mysql -u [TÊN_NGƯỜI_DÙNG] -p web_security_db < Database/backup_full.sql
+   mysql -u root -p web_security_db < Database/backup_full.sql
    ```
 
 **b) Khôi phục dữ liệu:**

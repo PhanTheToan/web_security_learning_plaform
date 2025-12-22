@@ -279,17 +279,17 @@ export function LabForm({ mode = "create", initialData }: LabFormProps) {
                   Status
                 </Label>
                 <Select value={status} onValueChange={setStatus}>
-                  <SelectTrigger id="status" className="border-[#ffffff]/20 rounded-xl bg-[#ffffff]/5 text-white">
+                  <SelectTrigger id="status">
                     <SelectValue placeholder="Select status" />
                   </SelectTrigger>
-                  <SelectContent className="bg-card/95 backdrop-blur-sm border-[#ffffff]/20 rounded-xl">
-                    <SelectItem value="Draft" className="text-white hover:bg-[#9747ff]/10 focus:bg-[#9747ff]/10 focus:text-white focus:drop-shadow-[0_0_5px_rgba(255,255,255,0.8)] transition-all duration-200">
+                  <SelectContent >
+                    <SelectItem value="Draft">
                       Draft
                     </SelectItem>
-                    <SelectItem value="Published" className="text-white hover:bg-[#9747ff]/10 focus:bg-[#9747ff]/10 focus:text-white focus:drop-shadow-[0_0_5px_rgba(255,255,255,0.8)] transition-all duration-200">
+                    <SelectItem value="Published">
                       Published
                     </SelectItem>
-                    <SelectItem value="Archived" className="text-white hover:bg-[#9747ff]/10 focus:bg-[#9747ff]/10 focus:text-white focus:drop-shadow-[0_0_5px_rgba(255,255,255,0.8)] transition-all duration-200">
+                    <SelectItem value="Archived" >
                       Archived
                     </SelectItem>
                   </SelectContent>
@@ -300,20 +300,20 @@ export function LabForm({ mode = "create", initialData }: LabFormProps) {
                   Difficulty
                 </Label>
                 <Select value={difficulty} onValueChange={setDifficulty}>
-                  <SelectTrigger id="difficulty" className="border-[#ffffff]/20 rounded-xl bg-[#ffffff]/5 text-white">
+                  <SelectTrigger id="difficulty" >
                     <SelectValue placeholder="Select difficulty" />
                   </SelectTrigger>
-                  <SelectContent className="bg-card/95 backdrop-blur-sm border-[#ffffff]/20 rounded-xl">
-                    <SelectItem value="Easy" className="text-white hover:bg-[#9747ff]/10 focus:bg-[#9747ff]/10 focus:text-white focus:drop-shadow-[0_0_5px_rgba(255,255,255,0.8)] transition-all duration-200">
+                  <SelectContent>
+                    <SelectItem value="Easy" >
                       Easy
                     </SelectItem>
-                    <SelectItem value="Medium" className="text-white hover:bg-[#9747ff]/10 focus:bg-[#9747ff]/10 focus:text-white focus:drop-shadow-[0_0_5px_rgba(255,255,255,0.8)] transition-all duration-200">
+                    <SelectItem value="Medium">
                       Medium
                     </SelectItem>
-                    <SelectItem value="Hard" className="text-white hover:bg-[#9747ff]/10 focus:bg-[#9747ff]/10 focus:text-white focus:drop-shadow-[0_0_5px_rgba(255,255,255,0.8)] transition-all duration-200">
+                    <SelectItem value="Hard">
                       Hard
                     </SelectItem>
-                    <SelectItem value="Expert" className="text-white hover:bg-[#9747ff]/10 focus:bg-[#9747ff]/10 focus:text-white focus:drop-shadow-[0_0_5px_rgba(255,255,255,0.8)] transition-all duration-200">
+                    <SelectItem value="Expert" >
                       Expert
                     </SelectItem>
                   </SelectContent>
@@ -325,7 +325,6 @@ export function LabForm({ mode = "create", initialData }: LabFormProps) {
 
               <Popover open={isTagsPopoverOpen} onOpenChange={setTagsPopoverOpen}>
                 <PopoverTrigger asChild>
-                  {/* ✅ Dùng div role=button để tránh nested button bên trong Badge */}
                   <div
                     role="button"
                     tabIndex={0}
