@@ -1,4 +1,6 @@
 package web_security_plaform.backend.service;
+import jakarta.persistence.EntityManager;
+import jakarta.persistence.PersistenceContext;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Service;
@@ -16,6 +18,8 @@ import java.util.stream.Collectors;
 @RequiredArgsConstructor
 public class LeaderboardService {
     private final UserStarRepository userStarRepository;
+    @PersistenceContext
+    private EntityManager em;
 
     /**
      * Lấy toàn bộ bảng xếp hạng.
@@ -29,21 +33,28 @@ public class LeaderboardService {
 
     @Transactional
     public void updateStatsOnFirstSolve(User user, int timeSolvedMinutes, int errorCount) {
-        UserStats stats = userStatsRepository.findById(user.getId())
-                .orElseGet(() -> UserStats.builder()
-                        .userId(user.getId())
-                        .user(user)
-                        .labsSolved(0)
-                        .totalTimeMinutes(0L)
-                        .totalErrors(0)
-                        .build()
-                );
+
+        Integer userId = user.getId();
+
+        UserStats stats = userStatsRepository.findById(userId).orElse(null);
+
+        if (stats == null) {
+            User userRef = em.getReference(User.class, userId);
+
+            stats = new UserStats();
+            stats.setUser(userRef);
+            stats.setLabsSolved(0);
+            stats.setTotalTimeMinutes(0L);
+            stats.setTotalErrors(0);
+
+            em.persist(stats);
+            em.flush();
+        }
 
         stats.setLabsSolved(stats.getLabsSolved() + 1);
         stats.setTotalTimeMinutes(stats.getTotalTimeMinutes() + timeSolvedMinutes);
         stats.setTotalErrors(stats.getTotalErrors() + errorCount);
 
-        userStatsRepository.save(stats);
     }
 
     public List<UserRankingDto> getTop10Leaderboard() {

@@ -26,6 +26,9 @@ public class UserStar {
     @JoinColumn(name = "lab_id", nullable = false)
     private Lab lab;
 
+    @Version
+    private Long version;
+
     @Column(name = "time_solved")
     private Integer timeSolved;
 
