@@ -3,7 +3,8 @@
 import React, { useState, useEffect, useCallback } from "react"
 import { useDebounce } from "@/hooks/use-debounce"
 import { getAdminEmailLogs, resendEmailByLogId } from "@/lib/api"
-import { EmailLog, PageResp } from "@/types/email"
+import { EmailLog } from "@/types/email"
+import type { PageResp } from "@/types/pagination"
 import { LogsTable } from "@/components/admin/email/logs-table"
 import { Input } from "@/components/ui/input"
 import {

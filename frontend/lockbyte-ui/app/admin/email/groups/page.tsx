@@ -41,7 +41,6 @@ export default function EmailGroupsPage() {
   const [membersTotal, setMembersTotal] = useState(0);
   const [membersPage, setMembersPage] = useState(0);
   const [membersSize, setMembersSize] = useState(20);
-  const [membersKeyword, setMembersKeyword] = useState("");
   const [loadingMembers, setLoadingMembers] = useState(false);
 
   // ===== Bulk selection (Option B) =====
@@ -89,7 +88,6 @@ export default function EmailGroupsPage() {
       const page = await listEmailGroupMembers(activeGroup.id, {
         page: membersPage,
         size: membersSize,
-        keyword: membersKeyword || undefined,
       });
       setMembers(page.content ?? []);
       setMembersTotal(page.totalElements ?? 0);
@@ -105,12 +103,12 @@ export default function EmailGroupsPage() {
     if (!openMembers) return;
     fetchMembers();
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [openMembers, activeGroup?.id, membersPage, membersSize, membersKeyword]);
+  }, [openMembers, activeGroup?.id, membersPage, membersSize]);
 
   // Reset selection when member list context changes
   useEffect(() => {
     setSelectedUserIds([]);
-  }, [activeGroup?.id, membersPage, membersSize, membersKeyword]);
+  }, [activeGroup?.id, membersPage, membersSize]);
 
   // ===== Handlers =====
   const onClickCreate = () => {
@@ -146,14 +144,17 @@ export default function EmailGroupsPage() {
       toast({ title: "Deleted", description: "Group deleted." });
       fetchGroups();
     } catch (e: unknown) {
-      toast({ variant: "destructive", title: "Error", description: (e as Error)?.message ?? "Failed to delete group." });
+      toast({
+        variant: "destructive",
+        title: "Error",
+        description: (e as Error)?.message ?? "Failed to delete group.",
+      });
     }
   };
 
   const onOpenMembers = (g: EmailGroup) => {
     setActiveGroup(g);
     setMembersPage(0);
-    setMembersKeyword("");
     setSelectedUserIds([]);
     setOpenMembers(true);
   };
@@ -242,11 +243,6 @@ export default function EmailGroupsPage() {
         page={membersPage}
         size={membersSize}
         total={membersTotal}
-        keyword={membersKeyword}
-        onKeywordChange={(v) => {
-          setMembersKeyword(v);
-          setMembersPage(0);
-        }}
         onPageChange={setMembersPage}
         onSizeChange={(s) => {
           setMembersSize(s);

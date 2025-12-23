@@ -1,8 +1,8 @@
 "use client";
 
-import { useState } from "react";
+import { useMemo, useState } from "react";
 import type { EmailGroup, EmailGroupMember } from "@/types/email";
-import { Sheet, SheetContent, SheetHeader, SheetTitle } from "@/components/ui/sheet";
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 
@@ -20,9 +20,6 @@ type Props = {
   page: number;
   size: number;
   total: number;
-
-  keyword: string;
-  onKeywordChange: (v: string) => void;
 
   onPageChange: (p: number) => void;
   onSizeChange: (s: number) => void;
@@ -46,8 +43,6 @@ export function MembersDrawer({
   page,
   size,
   total,
-  keyword,
-  onKeywordChange,
   onPageChange,
   onSizeChange,
   onAddMembers,
@@ -58,13 +53,19 @@ export function MembersDrawer({
   onClearSelection,
 }: Props) {
   const [openAdd, setOpenAdd] = useState(false);
+  const [q, setQ] = useState("");
+
+  const filteredMembers = useMemo(() => {
+    if (!q) return members;
+    return members.filter((m) => m.email.toLowerCase().includes(q.toLowerCase()));
+  }, [members, q]);
 
   return (
-    <Sheet open={open} onOpenChange={onOpenChange}>
-      <SheetContent side="right" className="w-full sm:w-[760px] border-white/10 bg-gray-950 text-white">
-        <SheetHeader>
-          <SheetTitle>Group Members {group ? `— ${group.name}` : ""}</SheetTitle>
-        </SheetHeader>
+    <Dialog open={open} onOpenChange={onOpenChange}>
+      <DialogContent className="max-w-2xl border-white/10 bg-gray-950 text-white">
+        <DialogHeader>
+          <DialogTitle>Group Members {group ? `— ${group.name}` : ""}</DialogTitle>
+        </DialogHeader>
 
         <div className="mt-4 space-y-4">
           <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
@@ -72,8 +73,8 @@ export function MembersDrawer({
               <Input
                 className="w-[320px] border-purple-500/30 bg-white/5 text-white placeholder:text-gray-400"
                 placeholder="Search members..."
-                value={keyword}
-                onChange={(e) => onKeywordChange(e.target.value)}
+                value={q}
+                onChange={(e) => setQ(e.target.value)}
               />
               <Button variant="secondary" onClick={onRefresh} disabled={!!loading}>
                 Refresh
@@ -103,7 +104,7 @@ export function MembersDrawer({
           </div>
 
           <MembersTable
-            data={members}
+            data={filteredMembers}
             loading={loading}
             page={page}
             size={size}
@@ -117,7 +118,7 @@ export function MembersDrawer({
 
           <AddMembersDialog open={openAdd} onOpenChange={setOpenAdd} onSubmit={onAddMembers} />
         </div>
-      </SheetContent>
-    </Sheet>
+      </DialogContent>
+    </Dialog>
   );
 }

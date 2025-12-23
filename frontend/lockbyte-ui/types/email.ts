@@ -1,3 +1,5 @@
+import type { PageResp } from "@/types/pagination";
+
 export type SendReq = {
   to: string;
   cc?: string | null;
@@ -22,14 +24,6 @@ export type EmailLog = {
   errorMessage?: string | null;
   sentAt: string; // ISO
   metadataJson?: string | null;
-};
-
-export type PageResp<T> = {
-  content: T[];
-  totalElements: number;
-  totalPages: number;
-  number: number; // current page
-  size: number;
 };
 
 export type EmailTemplateSchema = {

@@ -1,6 +1,11 @@
 
 import { EmailTemplateSchema, SendReq, EmailLog, EmailGroup, EmailGroupMember, BroadcastGroupReq } from "@/types/email";
-import type { EmailJob, EmailJobStatus, PageResp } from "@/types/email-jobs";
+
+import type { EmailJob, EmailJobStatus } from "@/types/email-jobs";
+
+import type { PageResp } from "@/types/pagination";
+
+
 
 
 
@@ -8,11 +13,23 @@ const API_BASE = process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:8082/api";
 
 
 
+
+
+
+
 async function buildHeaders(extra?: HeadersInit): Promise<Headers> {
 
 
 
+
+
+
+
   const h = new Headers(extra ?? {});
+
+
+
+
 
 
 
@@ -24,7 +41,19 @@ async function buildHeaders(extra?: HeadersInit): Promise<Headers> {
 
 
 
+
+
+
+
+
+
+
+
   return h;
+
+
+
+
 
 
 
@@ -32,15 +61,29 @@ async function buildHeaders(extra?: HeadersInit): Promise<Headers> {
 
 
 
+
+
+
+
 async function fetchWithCredentials<T>(
+
+
 
   path: string,
 
+
+
   init?: RequestInit & { extraHeaders?: HeadersInit }
+
+
 
 ): Promise<T> {
 
+
+
   const url = `${API_BASE}${path}`;
+
+
 
   const headers = await buildHeaders(init?.extraHeaders);
 
@@ -48,19 +91,39 @@ async function fetchWithCredentials<T>(
 
 
 
+
+
+
+
   const resp = await fetch(url, {
+
+
 
     method: init?.method ?? "GET",
 
+
+
     headers,
+
+
 
     body: init?.body,
 
+
+
     cache: "no-store",
+
+
 
     credentials: isBrowser ? "include" : undefined, // client mới sử dụng được
 
+
+
   });
+
+
+
+
 
 
 
@@ -68,25 +131,53 @@ async function fetchWithCredentials<T>(
 
   if (!resp.ok) {
 
+
+
     console.error(`API Error: ${resp.status} ${resp.statusText}`, raw);
+
+
 
     throw new Error(raw || `Request failed: ${resp.status}`);
 
+
+
   }
+
+
+
+
 
 
 
   try {
 
+
+
     return JSON.parse(raw) as T;
+
+
 
   } catch {
 
+
+
     return raw as unknown as T;
+
+
 
   }
 
+
+
 }
+
+
+
+
+
+
+
+
 
 
 
@@ -98,97 +189,199 @@ async function fetchWithCredentials<T>(
 
 
 
+
+
+
+
 export type TopicListItem = {
+
+
 
   id: number;
 
+
+
   title: string;
+
+
 
   status: string;
 
+
+
   authorName: string;
 
+
+
 };
+
+
+
+
 
 
 
 export type TopicsApiResponse = {
 
+
+
   content: TopicListItem[];
+
+
 
   pageable: unknown;
 
+
+
   totalPages: number;
+
+
 
   totalElements: number;
 
+
+
   last: boolean;
+
+
 
   size: number;
 
+
+
   number: number;
+
+
 
   sort: unknown;
 
+
+
   numberOfElements: number;
+
+
 
   first: boolean;
 
+
+
   empty: boolean;
 
+
+
 };
+
+
+
+
 
 
 
 export type Lab = { id: number; name: string; estatus: string };
 
+
+
 export type Tag = { id: number; name: string };
+
+
+
+
 
 
 
 export type TopicDetail = {
 
+
+
   id: number;
+
+
 
   title: string;
 
+
+
   content: string;
+
+
 
   status: "Draft" | "Published";
 
+
+
   labs: Lab[];
+
+
 
   tags: Tag[];
 
+
+
 };
+
+
+
+
 
 
 
 export type LabListItem = {
 
+
+
   id: number;
+
+
 
   name: string;
 
+
+
   tags: Tag[];
+
+
 
   estatus: "Published" | "Draft";
 
+
+
 };
+
+
+
+
 
 
 
 export type LabsApiResponse = {
 
+
+
   headers: object;
+
+
 
   body: LabListItem[];
 
+
+
   statusCode: string;
+
+
 
   statusCodeValue: number;
 
+
+
 };
+
+
+
+
+
+
+
+
 
 
 
@@ -200,7 +393,15 @@ export type CommunitySolution = {
 
 
 
+
+
+
+
   id: number;
+
+
+
+
 
 
 
@@ -208,7 +409,15 @@ export type CommunitySolution = {
 
 
 
+
+
+
+
   writeup: string;
+
+
+
+
 
 
 
@@ -216,7 +425,15 @@ export type CommunitySolution = {
 
 
 
+
+
+
+
   labId: number;
+
+
+
+
 
 
 
@@ -224,11 +441,27 @@ export type CommunitySolution = {
 
 
 
+
+
+
+
   fullName: string;
 
 
 
+
+
+
+
 };
+
+
+
+
+
+
+
+
 
 
 
@@ -240,7 +473,15 @@ export type LabDetail = {
 
 
 
+
+
+
+
   id: number;
+
+
+
+
 
 
 
@@ -248,7 +489,15 @@ export type LabDetail = {
 
 
 
+
+
+
+
   difficulty: "Beginner" | "Intermediate" | "Advanced" | "Expert";
+
+
+
+
 
 
 
@@ -256,7 +505,15 @@ export type LabDetail = {
 
 
 
+
+
+
+
   status: "Published" | "Draft";
+
+
+
+
 
 
 
@@ -264,7 +521,15 @@ export type LabDetail = {
 
 
 
+
+
+
+
   tags: Tag[];
+
+
+
+
 
 
 
@@ -272,7 +537,15 @@ export type LabDetail = {
 
 
 
+
+
+
+
   hint: string;
+
+
+
+
 
 
 
@@ -280,7 +553,15 @@ export type LabDetail = {
 
 
 
+
+
+
+
   fixVulnerabilities: string;
+
+
+
+
 
 
 
@@ -288,7 +569,15 @@ export type LabDetail = {
 
 
 
+
+
+
+
   linkSource: string | null;
+
+
+
+
 
 
 
@@ -296,7 +585,19 @@ export type LabDetail = {
 
 
 
+
+
+
+
 };
+
+
+
+
+
+
+
+
 
 
 
@@ -308,7 +609,15 @@ export type UserProfile = {
 
 
 
+
+
+
+
   username: string;
+
+
+
+
 
 
 
@@ -316,7 +625,15 @@ export type UserProfile = {
 
 
 
+
+
+
+
   fullName: string;
+
+
+
+
 
 
 
@@ -324,7 +641,15 @@ export type UserProfile = {
 
 
 
+
+
+
+
   dateOfBirth?: string;
+
+
+
+
 
 
 
@@ -332,7 +657,19 @@ export type UserProfile = {
 
 
 
+
+
+
+
 };
+
+
+
+
+
+
+
+
 
 
 
@@ -344,7 +681,15 @@ export type ChangePasswordPayload = {
 
 
 
+
+
+
+
   oldPassword?: string;
+
+
+
+
 
 
 
@@ -352,7 +697,19 @@ export type ChangePasswordPayload = {
 
 
 
+
+
+
+
 };
+
+
+
+
+
+
+
+
 
 
 
@@ -368,7 +725,23 @@ export type UpsertTopicPayload = {
 
 
 
+
+
+
+
+
+
+
+
   title: string;
+
+
+
+
+
+
+
+
 
 
 
@@ -384,7 +757,23 @@ export type UpsertTopicPayload = {
 
 
 
+
+
+
+
+
+
+
+
   status: "Draft" | "Published" | "Archived";
+
+
+
+
+
+
+
+
 
 
 
@@ -400,7 +789,23 @@ export type UpsertTopicPayload = {
 
 
 
+
+
+
+
+
+
+
+
   tagId: number[];
+
+
+
+
+
+
+
+
 
 
 
@@ -416,7 +821,23 @@ export type UpsertTopicPayload = {
 
 
 
+
+
+
+
+
+
+
+
 };
+
+
+
+
+
+
+
+
 
 
 
@@ -428,11 +849,27 @@ export function getPublicLabs() {
 
 
 
+
+
+
+
   return fetchWithCredentials<LabsApiResponse>("/lab");
 
 
 
+
+
+
+
 }
+
+
+
+
+
+
+
+
 
 
 
@@ -444,7 +881,15 @@ export function filterPublicLabs(name?: string, tagIds?: number[]) {
 
 
 
+
+
+
+
   const params = new URLSearchParams();
+
+
+
+
 
 
 
@@ -452,7 +897,15 @@ export function filterPublicLabs(name?: string, tagIds?: number[]) {
 
 
 
+
+
+
+
   if (tagIds?.length) params.set("tagIds", tagIds.join(","));
+
+
+
+
 
 
 
@@ -460,7 +913,19 @@ export function filterPublicLabs(name?: string, tagIds?: number[]) {
 
 
 
+
+
+
+
 }
+
+
+
+
+
+
+
+
 
 
 
@@ -472,11 +937,27 @@ export function getPublicLabById(id: string | number) {
 
 
 
+
+
+
+
   return fetchWithCredentials<LabDetail>(`/lab/${id}`);
 
 
 
+
+
+
+
 }
+
+
+
+
+
+
+
+
 
 
 
@@ -488,11 +969,27 @@ export function getUserProfile() {
 
 
 
+
+
+
+
   return fetchWithCredentials<UserProfile>("/user/profile");
 
 
 
+
+
+
+
 }
+
+
+
+
+
+
+
+
 
 
 
@@ -504,7 +1001,15 @@ export function updateUserProfile(payload: Partial<UserProfile>) {
 
 
 
+
+
+
+
   // This function is now for personal info only
+
+
+
+
 
 
 
@@ -512,7 +1017,15 @@ export function updateUserProfile(payload: Partial<UserProfile>) {
 
 
 
+
+
+
+
     method: "PATCH", // Changed to PATCH for partial updates
+
+
+
+
 
 
 
@@ -520,11 +1033,27 @@ export function updateUserProfile(payload: Partial<UserProfile>) {
 
 
 
+
+
+
+
   });
 
 
 
+
+
+
+
 }
+
+
+
+
+
+
+
+
 
 
 
@@ -536,7 +1065,15 @@ export function changePassword(payload: ChangePasswordPayload) {
 
 
 
+
+
+
+
   // New function specifically for changing the password
+
+
+
+
 
 
 
@@ -544,7 +1081,15 @@ export function changePassword(payload: ChangePasswordPayload) {
 
 
 
+
+
+
+
     method: "POST",
+
+
+
+
 
 
 
@@ -552,92 +1097,183 @@ export function changePassword(payload: ChangePasswordPayload) {
 
 
 
+
+
+
+
   });
 
 
 
+
+
+
+
 }
+
+
 
 /** ================== APIs ================== **/
 
 
 
 
+
+
+
+
+
 export function getAdminTopics() {
+
+
 
   return fetchWithCredentials<TopicsApiResponse>("/admin/topics");
 
+
+
 }
+
+
+
+
 
 
 
 export function getAdminTopicById(id: string | number) {
 
+
+
   return fetchWithCredentials<TopicDetail>(`/admin/topics/${id}`);
 
+
+
 }
+
+
+
+
 
 
 
 export function getAdminLabs() {
 
+
+
   return fetchWithCredentials<Lab[]>("/admin/labs");
 
+
+
 }
+
+
+
+
 
 
 
 export function createAdminTopic(payload: UpsertTopicPayload) {
 
+
+
   return fetchWithCredentials<string>("/admin/topics", {
+
+
 
     method: "POST",
 
+
+
     body: JSON.stringify(payload),
+
+
 
   });
 
+
+
 }
+
+
+
+
 
 
 
 export function updateAdminTopic(id: string | number, payload: UpsertTopicPayload) {
 
+
+
   return fetchWithCredentials<string>(`/admin/topics/${id}`, {
+
+
 
     method: "PUT",
 
+
+
     body: JSON.stringify(payload),
+
+
 
   });
 
+
+
 }
+
+
+
+
 
 
 
 export function getPublicTags() {
 
+
+
   return fetchWithCredentials<Tag[]>("/public/tags");
 
+
+
 }
+
+
+
+
 
 
 
 export function searchAdminTags(name: string) {
 
+
+
   const params = new URLSearchParams({ type: "tag", name, like: "true" });
 
+
+
   return fetchWithCredentials<{ items: Tag[] }>(`/admin/search?${params}`);
+
+
 
 }
 
 
 
+
+
+
+
 export function searchAdminLabs(name: string) {
+
+
 
   const params = new URLSearchParams({ type: "lab", name, like: "true" });
 
+
+
   return fetchWithCredentials<{ items: Lab[] }>(`/admin/search?${params}`);
+
+
 
 }
 
@@ -647,7 +1283,15 @@ export function searchAdminLabs(name: string) {
 
 
 
+
+
+
+
 // This is a mock function. In a real app, it would fetch a schema from a remote source.
+
+
+
+
 
 
 
@@ -655,7 +1299,15 @@ export async function getEmailTemplateSchema(
 
 
 
+
+
+
+
   templateName: string
+
+
+
+
 
 
 
@@ -663,11 +1315,23 @@ export async function getEmailTemplateSchema(
 
 
 
+
+
+
+
     const schemas: Record<string, EmailTemplateSchema> = {
 
 
 
+
+
+
+
   
+
+
+
+
 
 
 
@@ -675,7 +1339,15 @@ export async function getEmailTemplateSchema(
 
 
 
+
+
+
+
   
+
+
+
+
 
 
 
@@ -683,7 +1355,15 @@ export async function getEmailTemplateSchema(
 
 
 
+
+
+
+
   
+
+
+
+
 
 
 
@@ -691,7 +1371,15 @@ export async function getEmailTemplateSchema(
 
 
 
+
+
+
+
   
+
+
+
+
 
 
 
@@ -699,7 +1387,15 @@ export async function getEmailTemplateSchema(
 
 
 
+
+
+
+
   
+
+
+
+
 
 
 
@@ -707,7 +1403,15 @@ export async function getEmailTemplateSchema(
 
 
 
+
+
+
+
   
+
+
+
+
 
 
 
@@ -715,7 +1419,15 @@ export async function getEmailTemplateSchema(
 
 
 
+
+
+
+
   
+
+
+
+
 
 
 
@@ -723,7 +1435,15 @@ export async function getEmailTemplateSchema(
 
 
 
+
+
+
+
   
+
+
+
+
 
 
 
@@ -731,7 +1451,15 @@ export async function getEmailTemplateSchema(
 
 
 
+
+
+
+
   
+
+
+
+
 
 
 
@@ -739,7 +1467,15 @@ export async function getEmailTemplateSchema(
 
 
 
+
+
+
+
   
+
+
+
+
 
 
 
@@ -747,7 +1483,15 @@ export async function getEmailTemplateSchema(
 
 
 
+
+
+
+
   
+
+
+
+
 
 
 
@@ -755,7 +1499,15 @@ export async function getEmailTemplateSchema(
 
 
 
+
+
+
+
   
+
+
+
+
 
 
 
@@ -763,7 +1515,15 @@ export async function getEmailTemplateSchema(
 
 
 
+
+
+
+
   
+
+
+
+
 
 
 
@@ -771,7 +1531,15 @@ export async function getEmailTemplateSchema(
 
 
 
+
+
+
+
   
+
+
+
+
 
 
 
@@ -779,7 +1547,15 @@ export async function getEmailTemplateSchema(
 
 
 
+
+
+
+
   
+
+
+
+
 
 
 
@@ -787,7 +1563,15 @@ export async function getEmailTemplateSchema(
 
 
 
+
+
+
+
   
+
+
+
+
 
 
 
@@ -795,7 +1579,15 @@ export async function getEmailTemplateSchema(
 
 
 
+
+
+
+
   
+
+
+
+
 
 
 
@@ -803,7 +1595,15 @@ export async function getEmailTemplateSchema(
 
 
 
+
+
+
+
   
+
+
+
+
 
 
 
@@ -811,7 +1611,15 @@ export async function getEmailTemplateSchema(
 
 
 
+
+
+
+
   
+
+
+
+
 
 
 
@@ -819,7 +1627,15 @@ export async function getEmailTemplateSchema(
 
 
 
+
+
+
+
   
+
+
+
+
 
 
 
@@ -827,7 +1643,15 @@ export async function getEmailTemplateSchema(
 
 
 
+
+
+
+
         fields: [
+
+
+
+
 
 
 
@@ -835,7 +1659,15 @@ export async function getEmailTemplateSchema(
 
 
 
+
+
+
+
           { key: "title", label: "Tiêu đề chính", type: "string", required: true },
+
+
+
+
 
 
 
@@ -843,7 +1675,15 @@ export async function getEmailTemplateSchema(
 
 
 
+
+
+
+
           { key: "imageUrl", label: "URL ảnh minh họa (optional)", type: "url", required: false },
+
+
+
+
 
 
 
@@ -851,7 +1691,15 @@ export async function getEmailTemplateSchema(
 
 
 
+
+
+
+
           { key: "ctaText", label: "Text nút hành động (optional)", type: "string", required: false },
+
+
+
+
 
 
 
@@ -859,11 +1707,23 @@ export async function getEmailTemplateSchema(
 
 
 
+
+
+
+
       },
 
 
 
+
+
+
+
   
+
+
+
+
 
 
 
@@ -875,33 +1735,71 @@ export async function getEmailTemplateSchema(
 
 
 
+
+
+
+
+
+
+
+
   return Promise.resolve(schemas[templateName] || null);
 
 
 
+
+
+
+
 }
+
+
+
+
 
 
 
 export function previewAdminEmail(payload: Partial<SendReq>) {
 
+
+
   return fetchWithCredentials<string>("/admin/email/preview", {
+
+
 
     method: "POST",
 
+
+
     body: JSON.stringify(payload),
+
+
 
     extraHeaders: {
 
+
+
       "Content-Type": "application/json",
+
+
 
       "Accept": "text/html"
 
+
+
     }
+
+
 
   });
 
+
+
 }
+
+
+
+
 
 
 
@@ -909,7 +1807,15 @@ export function sendAdminEmail(payload: SendReq) {
 
 
 
+
+
+
+
   return fetchWithCredentials<string>("/admin/email/send", {
+
+
+
+
 
 
 
@@ -917,7 +1823,15 @@ export function sendAdminEmail(payload: SendReq) {
 
 
 
+
+
+
+
     body: JSON.stringify(payload)
+
+
+
+
 
 
 
@@ -925,7 +1839,19 @@ export function sendAdminEmail(payload: SendReq) {
 
 
 
+
+
+
+
 }
+
+
+
+
+
+
+
+
 
 
 
@@ -937,7 +1863,15 @@ export function sendAdminEmailAsync(payload: SendReq) {
 
 
 
+
+
+
+
   return fetchWithCredentials<string>("/admin/email/send-async", {
+
+
+
+
 
 
 
@@ -945,7 +1879,15 @@ export function sendAdminEmailAsync(payload: SendReq) {
 
 
 
+
+
+
+
     body: JSON.stringify(payload)
+
+
+
+
 
 
 
@@ -953,11 +1895,27 @@ export function sendAdminEmailAsync(payload: SendReq) {
 
 
 
+
+
+
+
 }
 
 
 
+
+
+
+
 export function getAdminEmailLogs(
+
+
+
+
+
+
+
+
 
 
 
@@ -973,6 +1931,14 @@ export function getAdminEmailLogs(
 
 
 
+
+
+
+
+
+
+
+
 ) {
 
 
@@ -981,7 +1947,23 @@ export function getAdminEmailLogs(
 
 
 
+
+
+
+
+
+
+
+
   const query = new URLSearchParams();
+
+
+
+
+
+
+
+
 
 
 
@@ -997,7 +1979,23 @@ export function getAdminEmailLogs(
 
 
 
+
+
+
+
+
+
+
+
   if (params.size) query.set("size", params.size.toString());
+
+
+
+
+
+
+
+
 
 
 
@@ -1013,7 +2011,23 @@ export function getAdminEmailLogs(
 
 
 
+
+
+
+
+
+
+
+
   if (params.status) query.set("status", params.status);
+
+
+
+
+
+
+
+
 
 
 
@@ -1029,7 +2043,23 @@ export function getAdminEmailLogs(
 
 
 
+
+
+
+
+
+
+
+
 }
+
+
+
+
+
+
+
+
 
 
 
@@ -1045,7 +2075,19 @@ export function getAdminEmailLogs(
 
 
 
+
+
+
+
+
+
+
+
 export function listEmailGroups(params?: { page?: number; size?: number; keyword?: string }) {
+
+
+
+
 
 
 
@@ -1053,7 +2095,15 @@ export function listEmailGroups(params?: { page?: number; size?: number; keyword
 
 
 
+
+
+
+
   if (params?.page !== undefined) query.set("page", String(params.page));
+
+
+
+
 
 
 
@@ -1061,7 +2111,15 @@ export function listEmailGroups(params?: { page?: number; size?: number; keyword
 
 
 
+
+
+
+
   if (params?.keyword) query.set("keyword", params.keyword);
+
+
+
+
 
 
 
@@ -1069,7 +2127,19 @@ export function listEmailGroups(params?: { page?: number; size?: number; keyword
 
 
 
+
+
+
+
 }
+
+
+
+
+
+
+
+
 
 
 
@@ -1081,7 +2151,15 @@ export function createEmailGroup(payload: { name: string; description?: string }
 
 
 
+
+
+
+
   return fetchWithCredentials<EmailGroup>(`/admin/email/groups`, {
+
+
+
+
 
 
 
@@ -1089,7 +2167,15 @@ export function createEmailGroup(payload: { name: string; description?: string }
 
 
 
+
+
+
+
     body: JSON.stringify(payload),
+
+
+
+
 
 
 
@@ -1097,7 +2183,19 @@ export function createEmailGroup(payload: { name: string; description?: string }
 
 
 
+
+
+
+
 }
+
+
+
+
+
+
+
+
 
 
 
@@ -1109,7 +2207,15 @@ export function updateEmailGroup(groupId: number, payload: { name?: string; desc
 
 
 
+
+
+
+
   return fetchWithCredentials<EmailGroup>(`/admin/email/groups/${groupId}`, {
+
+
+
+
 
 
 
@@ -1117,7 +2223,15 @@ export function updateEmailGroup(groupId: number, payload: { name?: string; desc
 
 
 
+
+
+
+
     body: JSON.stringify(payload),
+
+
+
+
 
 
 
@@ -1125,7 +2239,19 @@ export function updateEmailGroup(groupId: number, payload: { name?: string; desc
 
 
 
+
+
+
+
 }
+
+
+
+
+
+
+
+
 
 
 
@@ -1137,11 +2263,27 @@ export function deleteEmailGroup(groupId: number) {
 
 
 
+
+
+
+
   return fetchWithCredentials<void>(`/admin/email/groups/${groupId}`, { method: "DELETE" });
 
 
 
+
+
+
+
 }
+
+
+
+
+
+
+
+
 
 
 
@@ -1150,23 +2292,49 @@ export function deleteEmailGroup(groupId: number) {
 
 
 export function listEmailGroupMembers(groupId: number, params?: { page?: number; size?: number; keyword?: string }) {
+
   const query = new URLSearchParams();
+
   if (params?.page !== undefined) query.set("page", String(params.page));
+
   if (params?.size !== undefined) query.set("size", String(params.size));
+
   if (params?.keyword) query.set("keyword", params.keyword);
 
+
+
   return fetchWithCredentials<PageResp<[number, string]>>(
+
   `/admin/email/groups/${groupId}/members?${query.toString()}`
+
 ).then((pageResp) => {
+
   const members: EmailGroupMember[] = (pageResp.content ?? []).map(([userId, email]) => ({
+
     id: userId,
+
     userId,
+
     email,
+
   }));
+
   return { ...pageResp, content: members };
+
 });
 
+
+
 }
+
+
+
+
+
+
+
+
+
 
 
 
@@ -1179,7 +2347,15 @@ export function addEmailGroupMembers(groupId: number, payload: { emails?: string
 
 
 
+
+
+
+
   return fetchWithCredentials<{ added: number; skipped: number }>(`/admin/email/groups/${groupId}/members`, {
+
+
+
+
 
 
 
@@ -1187,7 +2363,15 @@ export function addEmailGroupMembers(groupId: number, payload: { emails?: string
 
 
 
+
+
+
+
     body: JSON.stringify(payload),
+
+
+
+
 
 
 
@@ -1195,7 +2379,19 @@ export function addEmailGroupMembers(groupId: number, payload: { emails?: string
 
 
 
+
+
+
+
 }
+
+
+
+
+
+
+
+
 
 
 
@@ -1204,11 +2400,23 @@ export function addEmailGroupMembers(groupId: number, payload: { emails?: string
 
 
 export function removeEmailGroupMembers(groupId: number, payload: { userIds: number[] }) {
+
   return fetchWithCredentials<{ removed: number }>(`/admin/email/groups/${groupId}/members`, {
+
     method: "DELETE",
+
     body: JSON.stringify(payload),
+
   });
+
 }
+
+
+
+
+
+
+
 
 
 
@@ -1219,7 +2427,15 @@ export function removeEmailGroupMembers(groupId: number, payload: { userIds: num
 
 
 
+
+
+
+
  * Broadcast group (async): server sẽ phân trang members + enqueue EmailEvent từng batch
+
+
+
+
 
 
 
@@ -1227,7 +2443,15 @@ export function removeEmailGroupMembers(groupId: number, payload: { userIds: num
 
 
 
+
+
+
+
  */
+
+
+
+
 
 
 
@@ -1235,7 +2459,15 @@ export function broadcastGroupAsync(payload: BroadcastGroupReq) {
 
 
 
+
+
+
+
   return fetchWithCredentials<string>(`/admin/email/broadcast-group`, {
+
+
+
+
 
 
 
@@ -1243,7 +2475,15 @@ export function broadcastGroupAsync(payload: BroadcastGroupReq) {
 
 
 
+
+
+
+
     body: JSON.stringify(payload),
+
+
+
+
 
 
 
@@ -1251,7 +2491,19 @@ export function broadcastGroupAsync(payload: BroadcastGroupReq) {
 
 
 
+
+
+
+
 }
+
+
+
+
+
+
+
+
 
 
 
@@ -1263,7 +2515,15 @@ export function broadcastGroupAsync(payload: BroadcastGroupReq) {
 
 
 
+
+
+
+
 export function resendEmailByLogId(logId: number) {
+
+
+
+
 
 
 
@@ -1271,7 +2531,15 @@ export function resendEmailByLogId(logId: number) {
 
 
 
+
+
+
+
     method: "POST",
+
+
+
+
 
 
 
@@ -1279,107 +2547,218 @@ export function resendEmailByLogId(logId: number) {
 
 
 
+
+
+
+
 }
+
+
 
 export function getLabSessionStatus(labId?: string | number | null) {
+
   const id = typeof labId === "string" ? labId.trim() : labId;
+
   if (id === undefined || id === null || id === "") return Promise.resolve(null);
 
+
+
   return fetchWithCredentials<string>(
+
     `/lab-session/user-sessions?labId=${encodeURIComponent(String(id))}`
+
   );
+
 }
 
+
+
 export type StartLabSessionResponse = {
+
   id: number;
+
   message: string;
+
   containerId: string;
+
   url: string;
+
   port: number;
+
   expiresAt: string;
+
 };
+
+
+
 
 
 export function startLabSession(labId: string | number) {
+
   return fetchWithCredentials<StartLabSessionResponse>(`/lab-session/active?labId=${labId}`, {
+
     method: "POST",
+
   });
+
 }
+
+
 
 export function submitLabFlag(labId: string | number, labSessionId: number, flag: string) {
+
   return fetchWithCredentials<string>(`/lab-session/submit?labId=${labId}&labSessionId=${labSessionId}`, {
+
     method: "POST",
+
     body: flag,
+
     extraHeaders: {
+
       "Content-Type": "text/plain",
+
     },
+
   });
+
 }
+
+
 
 export function submitCommunitySolution(labId: string | number, youtubeLink: string, writeUpLink: string) {
+
   return fetchWithCredentials<void>(
+
     `/lab/community-solutions?${new URLSearchParams({
+
       labId: labId.toString(),
+
       youtubeLink,
+
       writeUpLink,
+
     })}`,
+
     {
+
       method: "POST",
+
     }
+
   );
 
+
+
 }
+
+
+
 
 
 export const api = {
+
   get: <T>(path: string, init?: RequestInit & { extraHeaders?: HeadersInit }) => fetchWithCredentials<T>(path, { ...init, method: "GET" }),
+
   post: <T>(path: string, body: unknown, init?: RequestInit & { extraHeaders?: HeadersInit }) => fetchWithCredentials<T>(path, { ...init, method: "POST", body: JSON.stringify(body) }),
+
   put: <T>(path: string, body: unknown, init?: RequestInit & { extraHeaders?: HeadersInit }) => fetchWithCredentials<T>(path, { ...init, method: "PUT", body: JSON.stringify(body) }),
+
   patch: <T>(path: string, body: unknown, init?: RequestInit & { extraHeaders?: HeadersInit }) => fetchWithCredentials<T>(path, { ...init, method: "PATCH", body: JSON.stringify(body) }),
+
   delete: <T>(path: string, init?: RequestInit & { extraHeaders?: HeadersInit }) => fetchWithCredentials<T>(path, { ...init, method: "DELETE" }),
+
 };
 
+
+
 export function listEmailJobs(params: {
+
   page?: number;
+
   size?: number;
+
   status?: EmailJobStatus;
+
   groupId?: number;
+
 }) {
+
   const query = new URLSearchParams();
 
+
+
   // lưu ý: phải check undefined, vì page=0 là hợp lệ
+
   if (params.page !== undefined) query.set("page", String(params.page));
+
   if (params.size !== undefined) query.set("size", String(params.size));
+
   if (params.status) query.set("status", params.status);
+
   if (params.groupId !== undefined) query.set("groupId", String(params.groupId));
 
+
+
   return fetchWithCredentials<PageResp<EmailJob>>(`/admin/email/jobs?${query.toString()}`, {
+
     method: "GET",
+
   });
+
 }
+
+
 
 export function getEmailJob(jobId: string) {
+
   return fetchWithCredentials<EmailJob>(`/admin/email/jobs/${encodeURIComponent(jobId)}`, {
+
     method: "GET",
+
   });
+
 }
+
+
 
 export function pauseEmailJob(jobId: string) {
+
   return fetchWithCredentials<void>(`/admin/email/jobs/${encodeURIComponent(jobId)}/pause`, {
+
     method: "POST",
+
   });
+
 }
+
+
 
 export function resumeEmailJob(jobId: string) {
+
   return fetchWithCredentials<void>(`/admin/email/jobs/${encodeURIComponent(jobId)}/resume`, {
+
     method: "POST",
+
   });
+
 }
 
+
+
 export function cancelEmailJob(jobId: string) {
+
   return fetchWithCredentials<void>(`/admin/email/jobs/${encodeURIComponent(jobId)}/cancel`, {
+
     method: "POST",
+
   });
+
 }
+
+
+
+
+
+
 
 

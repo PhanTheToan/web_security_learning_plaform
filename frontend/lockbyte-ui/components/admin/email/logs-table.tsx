@@ -10,7 +10,8 @@ import {
   TableCell,
 } from "@/components/ui/table"
 import { Button } from "@/components/ui/button"
-import { EmailLog, PageResp } from "@/types/email"
+import { EmailLog } from "@/types/email"
+import type { PageResp } from "@/types/pagination"
 import {
   Tooltip,
   TooltipContent,
@@ -26,7 +27,7 @@ interface LogsTableProps {
 }
 
 export function LogsTable({ data, onView, onResend }: LogsTableProps) {
-  if (!data || data.content.length === 0) {
+  if (!data || !data.content || data.content.length === 0) {
     return <p className="text-gray-400">No logs found.</p>
   }
 

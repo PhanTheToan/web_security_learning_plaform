@@ -1,3 +1,5 @@
+import type { PageResp } from "@/types/pagination";
+
 export type EmailJobStatus =
   | "QUEUED"
   | "RUNNING"
@@ -22,12 +24,4 @@ export type EmailJob = {
   finishedAt?: string | null;
 
   lastError?: string | null;
-};
-
-export type PageResp<T> = {
-  content: T[];
-  totalElements: number;
-  totalPages: number;
-  number: number;
-  size: number;
 };

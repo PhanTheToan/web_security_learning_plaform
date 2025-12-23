@@ -87,9 +87,9 @@ export function LabForm({ mode = "create", initialData }: LabFormProps) {
         const apiUrl = `${process.env.NEXT_PUBLIC_API_URL}/public/tags`
         const res = await fetch(apiUrl, { credentials: "include" })
         if (res.ok) setAllTags(await res.json())
-        else toast.error("Failed to load tags.")
+        else toast({ variant: "destructive", title: "Error", description: "Failed to load tags." });
       } catch {
-        toast.error("Failed to load tags.")
+        toast({ variant: "destructive", title: "Error", description: "Failed to load tags." });
       }
     }
     fetchTags()
@@ -128,7 +128,11 @@ export function LabForm({ mode = "create", initialData }: LabFormProps) {
   // Form submission handler
   const handleSubmit = async () => {
     if (mode === "edit" && !initialData) {
-      toast.error("Cannot update lab without initial data.")
+      toast({
+        variant: "destructive",
+        title: "Error",
+        description: "Cannot update lab without initial data.",
+      });
       return
     }
 
@@ -183,7 +187,7 @@ export function LabForm({ mode = "create", initialData }: LabFormProps) {
           })
         }
       }
-    } catch (error) {
+    } catch {
       toast({
         title: "An error occurred",
         description: "An error occurred while submitting the lab.",
