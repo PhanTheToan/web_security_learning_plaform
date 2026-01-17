@@ -51,6 +51,15 @@ services:
       - /app/node_modules
     working_dir: /app
     command: sh -c "npm install && npm run dev"
+  nginx:
+    image: nginx:1.25-alpine
+    depends_on:
+      - frontend
+      - backend
+    ports:
+      - "80:80"
+    volumes:
+      - ./nginx/conf.d:/etc/nginx/conf.d:ro
 
 volumes:
   db-data:
