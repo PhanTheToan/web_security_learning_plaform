@@ -63,3 +63,6 @@ services:
       - "80:80"
     volumes:
       - ./nginx/conf.d:/etc/nginx/conf.d:ro
+volumes:
+  db-data:
+  maven-repo:
